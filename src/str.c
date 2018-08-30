@@ -4,6 +4,7 @@
 
 #include <masc/str.h>
 #include <masc/cstr.h>
+#include <masc/math.h>
 #include <masc/print.h>
 
 
@@ -43,7 +44,8 @@ void str_init_len(Str *self, size_t len)
 {
     object_init(&self->obj, StrCls);
     self->size = len + 1;
-    self->cstr = calloc(sizeof(char), self->size);
+    self->cstr = malloc(self->size);
+    self->cstr[0] = '\0';
 }
 
 Str *str_new_fmt(const char *fmt, ...)
@@ -234,6 +236,43 @@ char *str_strip(Str *self)
     return self->cstr;
 }
 
+Str *str_slice(Str *self, size_t start, size_t end) {
+    if (start >= self->size) {
+        start = self->size - 1;
+    }
+    if (end >= self->size) {
+        end = self->size - 1;
+    }
+    size_t len = max(0, end - start);
+    Str *s = str_new_len(len);
+    cstr_copy(s->cstr, self->cstr + start, len);
+    return s;
+}
+
+List *str_split(Str *self, const char *sep, int maxsplit)
+{
+    List *l = list_new();
+    char *start = self->cstr, *end = self->cstr;
+    size_t sep_len = strlen(sep);
+    size_t split = 0;
+    do {
+        Str *slice;
+        if (maxsplit < 0 || split < maxsplit) {
+            end = strstr(start, sep);
+        } else {
+            end = NULL;
+        }
+        if (end != NULL) {
+            slice = str_slice(self, start - self->cstr, end - self->cstr);
+        } else {
+            slice = str_slice(self, start - self->cstr, self->size - 1);
+        }
+        list_append(l, slice);
+        start = end + sep_len;
+        split++;
+    } while (end != NULL);
+    return l;
+}
 
 Str *to_str(void *self)
 {

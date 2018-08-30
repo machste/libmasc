@@ -3,6 +3,7 @@
 
 #include <masc/object.h>
 #include <masc/iter.h>
+#include <masc/list.h>
 
 
 typedef struct {
@@ -51,6 +52,10 @@ char *str_swapcase(Str *self);
 char *str_lstrip(Str *self);
 char *str_rstrip(Str *self);
 char *str_strip(Str *self);
+
+Str *str_slice(Str *self, size_t start, size_t end);
+
+List *str_split(Str *self, const char *sep, int maxsplit);
 
 Str *to_str(void *self);
 

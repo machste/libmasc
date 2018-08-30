@@ -15,12 +15,20 @@ int main(int argc, char *argv[])
     print("rstrip: '%s'\n", str_rstrip(s));
     str_copy(s, "   Hallo Welt   ");
     print("strip:  '%s'\n", str_strip(s));
+    Str *slice = str_slice(s, 2, 7);
+    print("slice(2, 7): '%O'\n", slice);
     // Iterate over string
     Iter i = str_iter(s);
     for (char *c = next(&i); c != NULL; c = next(&i)) {
         print("%c\n", *c);
     }
+    Str *split = new(Str, ";;token1;;token2;;token3;;;;");
+    List *splitted = str_split(split, ";;", -1);
+    put(splitted);
     // Clean-up
+    delete(split);
+    delete(splitted);
+    delete(slice);
     delete(s);
     return 0;
 }
