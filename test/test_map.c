@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <masc/map.h>
 #include <masc/num.h>
 #include <masc/str.h>
@@ -17,11 +15,10 @@ int main(int argc, char *argv[])
     put(m);
     // Iterate over map
     Iter i = map_iter(m);
-    for (void *v = next(&i); v != NULL; v = next(&i)) {
-        Str *v_str = to_str(v);
-        printf("%zu: key: %s, value: %s\n", i.index, i.key, str_cstr(v_str));
-        delete(v_str);
+    for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
+        print("%zu: key: %s, value: %O\n", i.index, i.key, obj);
     }
+    print("map: %O\n", m);
     delete(m);
     return 0;
 }

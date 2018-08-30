@@ -4,6 +4,7 @@
 
 #include <masc/str.h>
 #include <masc/cstr.h>
+#include <masc/print.h>
 
 
 Str *str_new(const char *cstr)
@@ -71,11 +72,11 @@ void str_init_vfmt(Str *self, const char *fmt, va_list va)
     // Make a copy of va to use it twice
     va_copy(va2, va);
     // Calculate length of the formatted string
-    len = vsnprintf(NULL, 0, fmt, va);
+    len = vformat(NULL, 0, fmt, va);
     self->size = len + 1;
     self->cstr = malloc(self->size);
     // Do the actual work
-    vsnprintf(self->cstr, self->size, fmt, va2);
+    vformat(self->cstr, self->size, fmt, va2);
     va_end(va2);
 }
 
@@ -152,12 +153,12 @@ char *str_fmt(Str *self, const char *fmt, ...)
     // Make a copy of va to use it for the second run
     va_copy(va2, va1);
     // Calculate length of the formatted string
-    int len = vsnprintf(NULL, 0, fmt, va1);
+    int len = vformat(NULL, 0, fmt, va1);
     va_end(va1);
     self->size = len + 1;
     self->cstr = realloc(self->cstr, self->size);
     // Do the actual work
-    vsnprintf(self->cstr, self->size, fmt, va2);
+    vformat(self->cstr, self->size, fmt, va2);
     va_end(va2);
     return self->cstr;
 }

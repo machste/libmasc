@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <masc/array.h>
 #include <masc/str.h>
 #include <masc/num.h>
@@ -52,7 +50,7 @@ int main(int argc, char *argv[])
     Iter i = array_iter(mixed);
     for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
         Str *s = to_str(obj);
-        printf("%zu: %s\n", i.index, str_cstr(s));
+        print("%zu: %O\n", i.index, s);
         delete(s);
     }
     // Clean-up
