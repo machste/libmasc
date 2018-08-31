@@ -26,7 +26,12 @@ int main(int argc, char *argv[])
             print("%c, ", *c);
         }
     }
-    Str *split = new(Str, ";;token1;;token2;;token3;;;;");
+    // Append
+    Str *split = new(Str, ";;token1;;");
+    str_append(split, "token2;;");
+    str_append_fmt(split, "token%i;;;;", 3);
+    print("split: %O\n", split);
+    // Split string
     List *splitted = str_split(split, ";;", -1);
     put(splitted);
     // Clean-up

@@ -58,12 +58,29 @@ Str *str_new_fmt(const char *fmt, ...)
     return self;
 }
 
+Str Str_init_fmt(const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    Str self;
+    str_init_vfmt(&self, fmt, va);
+    va_end(va);
+    return self;
+}
+
 void str_init_fmt(Str *self, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
     str_init_vfmt(self, fmt, va);
     va_end(va);
+}
+
+Str Str_init_vfmt(const char *fmt, va_list va)
+{
+    Str self;
+    str_init_vfmt(&self, fmt, va);
+    return self;
 }
 
 void str_init_vfmt(Str *self, const char *fmt, va_list va)
@@ -151,6 +168,26 @@ void str_copy(Str *self, const char *cstr)
     self->size = len + 1;
     self->cstr = realloc(self->cstr, self->size);
     strcpy(self->cstr, cstr);
+}
+
+void str_append(Str *self, const char *cstr)
+{
+    size_t len = strlen(cstr);
+    size_t self_len = str_len(self);
+    // Calculate new size
+    self->size += len;
+    self->cstr = realloc(self->cstr, self->size);
+    strcpy(self->cstr + self_len, cstr);
+}
+
+void str_append_fmt(Str *self, const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    Str new = Str_init_vfmt(fmt, va);
+    va_end(va);
+    str_append(self, new.cstr);
+    str_destroy(&new);
 }
 
 char *str_fmt(Str *self, const char *fmt, ...)

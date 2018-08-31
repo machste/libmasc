@@ -26,7 +26,9 @@ Str *str_new_len(size_t len);
 void str_init_len(Str *self, size_t len);
 
 Str *str_new_fmt(const char *fmt, ...);
+Str Str_init_fmt(const char *fmt, ...);
 void str_init_fmt(Str *self, const char *fmt, ...);
+Str Str_init_vfmt(const char *fmt, va_list va);
 void str_init_vfmt(Str *self, const char *fmt, va_list va);
 void str_vinit(Str *self, va_list va);
 
@@ -42,6 +44,8 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size);
 Iter str_iter(Str *self);
 
 void str_copy(Str *self, const char *cstr);
+void str_append(Str *self, const char *cstr);
+void str_append_fmt(Str *self, const char *fmt, ...);
 
 char *str_fmt(Str *self, const char *fmt, ...);
 
