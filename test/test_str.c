@@ -5,17 +5,17 @@ int main(int argc, char *argv[])
 {
     Str *s = new(Str, "Hello %s!", "World");
     print("s: %O\n", s);
-    print("lower: %s\n", str_lower(s));
-    print("upper: %s\n", str_upper(s));
-    print("swap:  %s\n", str_swapcase(s));
+    print("lower: %s\n", str_lower(s)->cstr);
+    print("upper: %O\n", str_upper(s));
+    print("swap:  %O\n", str_swapcase(s));
     // Set other string
     str_copy(s, "   Hallo Welt   ");
-    print("lstrip: '%s'\n", str_lstrip(s));
+    print("lstrip: '%O'\n", str_lstrip(s));
     str_copy(s, "   Hallo Welt   ");
-    print("rstrip: '%s'\n", str_rstrip(s));
+    print("rstrip: '%O'\n", str_rstrip(s));
     str_copy(s, "   Hallo Welt   ");
-    print("strip:  '%s'\n", str_strip(s));
-    print("slice(2, 7): '%s'\n", str_slice(s, 2, 7));
+    print("strip:  '%O'\n", str_strip(s));
+    print("slice(2, 7): '%O'\n", str_slice(s, 2, 7));
     // Iterate over string
     char data[] = "Interate";
     str_fmt(s, "'%s' has %i chars.", data, sizeof(data));

@@ -43,21 +43,21 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size);
 
 Iter str_iter(Str *self);
 
-void str_copy(Str *self, const char *cstr);
-void str_append(Str *self, const char *cstr);
-void str_append_fmt(Str *self, const char *fmt, ...);
+Str *str_copy(Str *self, const char *cstr);
+Str *str_append(Str *self, const char *cstr);
+Str *str_append_fmt(Str *self, const char *fmt, ...);
 
-char *str_fmt(Str *self, const char *fmt, ...);
+Str *str_fmt(Str *self, const char *fmt, ...);
 
-char *str_lower(Str *self);
-char *str_upper(Str *self);
-char *str_swapcase(Str *self);
+Str *str_lower(Str *self);
+Str *str_upper(Str *self);
+Str *str_swapcase(Str *self);
 
-char *str_lstrip(Str *self);
-char *str_rstrip(Str *self);
-char *str_strip(Str *self);
+Str *str_lstrip(Str *self);
+Str *str_rstrip(Str *self);
+Str *str_strip(Str *self);
 
-char *str_slice(Str *self, size_t start, size_t end);
+Str *str_slice(Str *self, size_t start, size_t end);
 
 List *str_split(Str *self, const char *sep, int maxsplit);
 

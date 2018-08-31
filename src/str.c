@@ -178,15 +178,16 @@ Iter str_iter(Str *self)
     return i;
 }
 
-void str_copy(Str *self, const char *cstr)
+Str *str_copy(Str *self, const char *cstr)
 {
     size_t len = strlen(cstr);
     self->size = len + 1;
     self->cstr = realloc(self->cstr, self->size);
     strcpy(self->cstr, cstr);
+    return self;
 }
 
-void str_append(Str *self, const char *cstr)
+Str *str_append(Str *self, const char *cstr)
 {
     size_t len = strlen(cstr);
     size_t self_len = str_len(self);
@@ -194,9 +195,10 @@ void str_append(Str *self, const char *cstr)
     self->size += len;
     self->cstr = realloc(self->cstr, self->size);
     strcpy(self->cstr + self_len, cstr);
+    return self;
 }
 
-void str_append_fmt(Str *self, const char *fmt, ...)
+Str *str_append_fmt(Str *self, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
@@ -205,9 +207,10 @@ void str_append_fmt(Str *self, const char *fmt, ...)
     va_end(va);
     str_append(self, new.cstr);
     str_destroy(&new);
+    return self;
 }
 
-char *str_fmt(Str *self, const char *fmt, ...)
+Str *str_fmt(Str *self, const char *fmt, ...)
 {
     va_list va1, va2;
     va_start(va1, fmt);
@@ -221,26 +224,26 @@ char *str_fmt(Str *self, const char *fmt, ...)
     // Do the actual work
     vformat(self->cstr, self->size, fmt, va2);
     va_end(va2);
-    return self->cstr;
+    return self;
 }
 
-char *str_lower(Str *self)
+Str *str_lower(Str *self)
 {
     for (size_t i = 0; i < self->size - 1; i++) {
         self->cstr[i] = tolower(self->cstr[i]);
     }
-    return self->cstr;
+    return self;
 }
 
-char *str_upper(Str *self)
+Str *str_upper(Str *self)
 {
     for (size_t i = 0; i < self->size - 1; i++) {
         self->cstr[i] = toupper(self->cstr[i]);
     }
-    return self->cstr;
+    return self;
 }
 
-char *str_swapcase(Str *self)
+Str *str_swapcase(Str *self)
 {
     for (size_t i = 0; i < self->size - 1; i++) {
         if (islower(self->cstr[i])) {
@@ -251,10 +254,10 @@ char *str_swapcase(Str *self)
             self->cstr[i] = self->cstr[i];
         }
     }
-    return self->cstr;
+    return self;
 }
 
-char *str_lstrip(Str *self)
+Str *str_lstrip(Str *self)
 {
     size_t i, j;
     for (i = 0; i < self->size - 1 && isspace(self->cstr[i]); i++);
@@ -264,10 +267,10 @@ char *str_lstrip(Str *self)
     }
     self->cstr[j] = '\0';
     self->cstr = realloc(self->cstr, self->size);
-    return self->cstr;
+    return self;
 }
 
-char *str_rstrip(Str *self)
+Str *str_rstrip(Str *self)
 {
     size_t i, j;
     for (i = self->size - 2; i >= 0 && isspace(self->cstr[i]); i--);
@@ -277,10 +280,10 @@ char *str_rstrip(Str *self)
         self->cstr[j] = self->cstr[j];
     }
     self->cstr[j] = '\0';
-    return self->cstr;
+    return self;
 }
 
-char *str_strip(Str *self)
+Str *str_strip(Str *self)
 {
     size_t l, r, i;
     for (l = 0; l < self->size && isspace(self->cstr[l]); l++);
@@ -292,10 +295,10 @@ char *str_strip(Str *self)
     }
     self->cstr[i] = '\0';
     self->cstr = realloc(self->cstr, self->size);
-    return self->cstr;
+    return self;
 }
 
-char *str_slice(Str *self, size_t start, size_t end) {
+Str *str_slice(Str *self, size_t start, size_t end) {
     start = _fix_index(self, start);
     end = _fix_index(self, end);
     self->size = max(0, end - start) + 1;
@@ -303,7 +306,7 @@ char *str_slice(Str *self, size_t start, size_t end) {
     self->cstr = malloc(self->size);
     cstr_copy(self->cstr, old_cstr + start, self->size - 1);
     free(old_cstr);
-    return self->cstr;
+    return self;
 }
 
 List *str_split(Str *self, const char *sep, int maxsplit)
