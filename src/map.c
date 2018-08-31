@@ -152,12 +152,17 @@ static void *_next(Iter *itr, Map *self)
     return NULL;
 }
 
+static bool _is_last(Iter *itr, Map *self)
+{
+    return itr->ptr == NULL;
+}
 
 Iter map_iter(Map *self)
 {
     Iter i;
     const char *key = self->node != NULL ? self->node->key : NULL;
-    iter_init(&i, self, (next_cb)_next, self->node, -1, key);
+    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
+            self->node, -1, key);
     return i;
 }
 

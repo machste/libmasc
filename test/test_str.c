@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
     Str *s = new(Str, "Hello %s!", "World");
-    print("s: %O", s);
+    print("s: %O\n", s);
     print("lower: %s\n", str_lower(s));
     print("upper: %s\n", str_upper(s));
     print("swap:  %s\n", str_swapcase(s));
@@ -20,7 +20,11 @@ int main(int argc, char *argv[])
     // Iterate over string
     Iter i = str_iter(s);
     for (char *c = next(&i); c != NULL; c = next(&i)) {
-        print("%c\n", *c);
+        if (is_last(&i)) {
+            print("%c\n", *c);
+        } else {
+            print("%c, ", *c);
+        }
     }
     Str *split = new(Str, ";;token1;;token2;;token3;;;;");
     List *splitted = str_split(split, ";;", -1);

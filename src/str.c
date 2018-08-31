@@ -133,10 +133,15 @@ static void *_next(Iter *itr, Str *self)
     return NULL;
 }
 
+static bool _is_last(Iter *itr, Str *self)
+{
+    return itr->index + 2 == self->size;
+}
+
 Iter str_iter(Str *self)
 {
     Iter i;
-    iter_init(&i, self, (next_cb)_next, NULL, -1, NULL);
+    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last, NULL, -1, NULL);
     return i;
 }
 

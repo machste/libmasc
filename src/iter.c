@@ -4,12 +4,13 @@
 const void *IterCls;
 
 
-void iter_init(Iter *self, void *iterable, next_cb next, void *ptr,
-        size_t index, const char *key)
+void iter_init(Iter *self, void *iterable, next_cb next, is_last_cb is_last,
+        void *ptr, size_t index, const char *key)
 {
     object_init(&self->obj, IterCls);
     self->iterable = iterable;
     self->next = next;
+    self->is_last = is_last;
     self->ptr = ptr;
     self->index = index;
     self->key = key;
@@ -24,12 +25,21 @@ void *next(Iter *self)
     }
 }
 
+bool is_last(Iter *self)
+{
+    if (self->is_last != NULL) {
+        return self->is_last(self, self->iterable);
+    } else {
+        return false;
+    }
+}
 
 static void _vinit(Iter *self, va_list va)
 {
     object_init(&self->obj, IterCls);
     self->iterable = va_arg(va, void *);
     self->next = va_arg(va, next_cb);
+    self->is_last = va_arg(va, is_last_cb);
     self->ptr = va_arg(va, void *);
     self->index = va_arg(va, size_t);
     self->key = va_arg(va, const char *);

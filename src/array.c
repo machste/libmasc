@@ -153,10 +153,16 @@ static void *_next(Iter *itr, Array *self)
     return obj;
 }
 
+static bool _is_last(Iter *itr, Array *self)
+{
+    return itr->index == self->len - 1;
+}
+
 Iter array_iter(Array *self)
 {
     Iter i;
-    iter_init(&i, self, (next_cb)_next, self->data, -1, NULL);
+    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
+            self->data, -1, NULL);
     return i;
 }
 

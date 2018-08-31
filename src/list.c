@@ -103,11 +103,16 @@ static void *_next(Iter *itr, List *self)
     return NULL;
 }
 
+static bool _is_last(Iter *itr, List *self)
+{
+    return itr->ptr == NULL;
+}
 
 Iter list_iter(List *self)
 {
     Iter i;
-    iter_init(&i, self, (next_cb)_next, self->node, -1, NULL);
+    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
+            self->node, -1, NULL);
     return i;
 }
 
