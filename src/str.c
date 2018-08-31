@@ -178,6 +178,18 @@ Iter str_iter(Str *self)
     return i;
 }
 
+char str_get_at(Str *self, size_t index)
+{
+    index = _fix_index(self, index);
+    return self->cstr[index];
+}
+
+void str_set_at(Str *self, size_t index, char c)
+{
+    index = _fix_index(self, index);
+    self->cstr[index] = c;
+}
+
 Str *str_copy(Str *self, const char *cstr)
 {
     size_t len = strlen(cstr);
@@ -253,6 +265,17 @@ Str *str_swapcase(Str *self)
         } else {
             self->cstr[i] = self->cstr[i];
         }
+    }
+    return self;
+}
+
+Str *str_reverse(Str *self)
+{
+    size_t half_len = str_len(self) / 2;
+    for (size_t i = 0; i < half_len; i++) {
+        char tmp = self->cstr[i];
+        self->cstr[i] = self->cstr[self->size - i - 2];
+        self->cstr[self->size - i - 2] = tmp;
     }
     return self;
 }

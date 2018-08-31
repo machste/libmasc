@@ -43,6 +43,9 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size);
 
 Iter str_iter(Str *self);
 
+char str_get_at(Str *self, size_t index);
+void str_set_at(Str *self, size_t index, char c);
+
 Str *str_copy(Str *self, const char *cstr);
 Str *str_append(Str *self, const char *cstr);
 Str *str_append_fmt(Str *self, const char *fmt, ...);
@@ -52,6 +55,8 @@ Str *str_fmt(Str *self, const char *fmt, ...);
 Str *str_lower(Str *self);
 Str *str_upper(Str *self);
 Str *str_swapcase(Str *self);
+
+Str *str_reverse(Str *self);
 
 Str *str_lstrip(Str *self);
 Str *str_rstrip(Str *self);
