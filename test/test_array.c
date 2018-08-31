@@ -17,8 +17,7 @@ int main(int argc, char *argv[])
     put(a1);
     // Fill it with some strings
     for (int i = 0; i < array_len(a1); i++) {
-        Str s;
-        init(Str, &s, "item %i", i);
+        Str s = init(Str, "item %i", i);
         array_set_at(a1, i, &s);
     }
     put(a1);
@@ -33,12 +32,10 @@ int main(int argc, char *argv[])
     // Fill it with strings and nums
     for (int i = 0; i < array_len(mixed); i++) {
         if (i % 2 == 0) {
-            Str s;
-            init(Str, &s, "string %i", i);
+            Str s = init(Str, "string %i", i);
             array_set_at(mixed, i, &s);
         } else {
-            Num n;
-            init(Num, &n, (double)i);
+            Num n = init(Num, (double)i);
             array_set_at(mixed, i, &n);
         }
     }

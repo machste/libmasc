@@ -22,7 +22,7 @@ void list_init(List *self)
     self->node = NULL;
 }
 
-void list_vinit(List *self, va_list va)
+static void _vinit(List *self, va_list va)
 {
     list_init(self);
 }
@@ -151,11 +151,11 @@ size_t list_to_cstr(List *self, char *cstr, size_t size)
 static Class _ListCls = {
     .name = "List",
     .size = sizeof(List),
-    .vinit = (vinit_cb)list_vinit,
+    .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)list_init_copy,
     .destroy = (destroy_cb)list_destroy,
     .repr = (repr_cb)list_to_cstr,
     .to_cstr = (to_cstr_cb)list_to_cstr,
 };
 
-const void *ListCls = &_ListCls;
+const Class *ListCls = &_ListCls;

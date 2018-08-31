@@ -14,6 +14,11 @@ void object_init(Object *self, const Class *cls)
     self->cls = cls;
 }
 
+static void _vinit(void *self, va_list _)
+{
+    object_init(self, ObjectCls);
+}
+
 void object_init_copy(Object *self, Object *other)
 {
     memcpy(self, other, class_of(other)->size);
@@ -116,11 +121,6 @@ size_t to_cstr(void *self, char *cstr, size_t size)
 }
 
 
-static void _vinit(void *self, va_list _)
-{
-    object_init(self, ObjectCls);
-}
-
 static Class _ObjectCls = {
     .name = "Object",
     .size = sizeof(Object),
@@ -131,4 +131,4 @@ static Class _ObjectCls = {
     .to_cstr = (to_cstr_cb)object_to_cstr,
 };
 
-const void *ObjectCls = &_ObjectCls;
+const Class *ObjectCls = &_ObjectCls;

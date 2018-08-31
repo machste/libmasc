@@ -26,7 +26,7 @@ void map_init(Map *self)
     self->node = NULL;
 }
 
-void map_vinit(Map *self, va_list va)
+static void _vinit(Map *self, va_list va)
 {
     map_init(self);
 }
@@ -216,11 +216,11 @@ size_t map_to_cstr(Map *self, char *cstr, size_t size)
 static Class _MapCls = {
     .name = "Map",
     .size = sizeof(Map),
-    .vinit = (vinit_cb)map_vinit,
+    .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)map_init_copy,
     .destroy = (destroy_cb)map_destroy,
     .repr = (repr_cb)map_to_cstr,
     .to_cstr = (to_cstr_cb)map_to_cstr,
 };
 
-const void *MapCls = &_MapCls;
+const Class *MapCls = &_MapCls;

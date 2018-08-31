@@ -13,12 +13,11 @@ typedef struct {
 } List;
 
 
-extern const void *ListCls;
+extern const Class *ListCls;
 
 
 List *list_new(void);
 void list_init(List *self);
-void list_vinit(List *self, va_list va);
 
 List *list_new_copy(List *other);
 void list_init_copy(List *self, List *other);

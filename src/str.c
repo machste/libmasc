@@ -8,14 +8,53 @@
 #include <masc/print.h>
 
 
-Str *str_new(const char *cstr)
+Str *str_new(const char *fmt, ...)
 {
+    va_list va;
     Str *self = malloc(sizeof(Str));
-    str_init(self, cstr);
+    va_start(va, fmt);
+    str_vinit(self, fmt, va);
+    va_end(va);
     return self;
 }
 
-void str_init(Str *self, const char *cstr)
+void str_init(Str *self, const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    str_vinit(self, fmt, va);
+    va_end(va);
+}
+
+void str_vinit(Str *self, const char *fmt, va_list va)
+{
+    int len;
+    va_list va2;
+    object_init(&self->obj, StrCls);
+    // Make a copy of va to use it twice
+    va_copy(va2, va);
+    // Calculate length of the formatted string
+    len = vformat(NULL, 0, fmt, va);
+    self->size = len + 1;
+    self->cstr = malloc(self->size);
+    // Do the actual work
+    vformat(self->cstr, self->size, fmt, va2);
+    va_end(va2);
+}
+
+static void _vinit(Str *self, va_list va)
+{
+    str_vinit(self, va_arg(va, char *), va);
+}
+
+Str *str_new_cstr(const char *cstr)
+{
+    Str *self = malloc(sizeof(Str));
+    str_init_cstr(self, cstr);
+    return self;
+}
+
+void str_init_cstr(Str *self, const char *cstr)
 {
     object_init(&self->obj, StrCls);
     self->size = strlen(cstr) + 1;
@@ -79,62 +118,6 @@ void str_init_slice(Str *self, Str *other, size_t start, size_t end)
     size_t len = max(0, end - start);
     str_init_len(self, len);
     cstr_copy(self->cstr, other->cstr + start, len);
-}
-
-Str *str_new_fmt(const char *fmt, ...)
-{
-    va_list va;
-    Str *self = malloc(sizeof(Str));
-    va_start(va, fmt);
-    str_init_vfmt(self, fmt, va);
-    va_end(va);
-    return self;
-}
-
-Str Str_init_fmt(const char *fmt, ...)
-{
-    va_list va;
-    va_start(va, fmt);
-    Str self;
-    str_init_vfmt(&self, fmt, va);
-    va_end(va);
-    return self;
-}
-
-void str_init_fmt(Str *self, const char *fmt, ...)
-{
-    va_list va;
-    va_start(va, fmt);
-    str_init_vfmt(self, fmt, va);
-    va_end(va);
-}
-
-Str Str_init_vfmt(const char *fmt, va_list va)
-{
-    Str self;
-    str_init_vfmt(&self, fmt, va);
-    return self;
-}
-
-void str_init_vfmt(Str *self, const char *fmt, va_list va)
-{
-    int len;
-    va_list va2;
-    object_init(&self->obj, StrCls);
-    // Make a copy of va to use it twice
-    va_copy(va2, va);
-    // Calculate length of the formatted string
-    len = vformat(NULL, 0, fmt, va);
-    self->size = len + 1;
-    self->cstr = malloc(self->size);
-    // Do the actual work
-    vformat(self->cstr, self->size, fmt, va2);
-    va_end(va2);
-}
-
-void str_vinit(Str *self, va_list va)
-{
-    str_init_vfmt(self, va_arg(va, char *), va);
 }
 
 void str_destroy(Str *self)
@@ -217,7 +200,8 @@ void str_append_fmt(Str *self, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
-    Str new = Str_init_vfmt(fmt, va);
+    Str new;
+    str_vinit(&new, fmt, va);
     va_end(va);
     str_append(self, new.cstr);
     str_destroy(&new);
@@ -363,11 +347,11 @@ Str *to_str(void *self)
 static Class _StrCls = {
     .name = "Str",
     .size = sizeof(Str),
-    .vinit = (vinit_cb)str_vinit,
+    .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)str_init_copy,
     .destroy = (destroy_cb)str_destroy,
     .repr = (repr_cb)str_repr,
     .to_cstr = (to_cstr_cb)str_to_cstr,
 };
 
-const void *StrCls = &_StrCls;
+const Class *StrCls = &_StrCls;

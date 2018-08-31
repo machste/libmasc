@@ -16,12 +16,11 @@ typedef struct {
 } Array;
 
 
-extern const void *ArrayCls;
+extern const Class *ArrayCls;
 
 
 Array *array_new(size_t obj_size, size_t len);
 void array_init(Array *self, size_t obj_size, size_t len);
-void array_vinit(Array *self, va_list va);
 
 Array *array_new_copy(Array *other);
 void array_init_copy(Array *self, Array *other);

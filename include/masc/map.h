@@ -13,12 +13,11 @@ typedef struct {
 } Map;
 
 
-extern const void *MapCls;
+extern const Class *MapCls;
 
 
 Map *map_new(void);
 void map_init(Map *self);
-void map_vinit(Map *self, va_list va);
 
 Map *map_new_copy(Map *other);
 void map_init_copy(Map *self, Map *other);

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+
 void put(void *self);
 
 size_t print(char const *fmt, ...);

@@ -13,11 +13,15 @@ typedef struct {
 } Str;
 
 
-extern const void *StrCls;
+extern const Class *StrCls;
 
 
-Str *str_new(const char *cstr);
-void str_init(Str *self, const char *cstr);
+Str *str_new(const char *fmt, ...);
+void str_init(Str *self, const char *fmt, ...);
+void str_vinit(Str *self, const char *fmt, va_list va);
+
+Str *str_new_cstr(const char *cstr);
+void str_init_cstr(Str *self, const char *cstr);
 
 Str *str_new_len(size_t len);
 void str_init_len(Str *self, size_t len);
@@ -27,13 +31,6 @@ void str_init_copy(Str *self, Str *other);
 
 Str *str_new_slice(Str *other, size_t start, size_t end);
 void str_init_slice(Str *self, Str *other, size_t start, size_t end);
-
-Str *str_new_fmt(const char *fmt, ...);
-Str Str_init_fmt(const char *fmt, ...);
-void str_init_fmt(Str *self, const char *fmt, ...);
-Str Str_init_vfmt(const char *fmt, va_list va);
-void str_init_vfmt(Str *self, const char *fmt, va_list va);
-void str_vinit(Str *self, va_list va);
 
 void str_destroy(Str *self);
 void str_delete(Str *self);

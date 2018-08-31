@@ -20,7 +20,7 @@ void array_init(Array *self, size_t obj_size, size_t len)
     self->data = calloc(len, obj_size);
 }
 
-void array_vinit(Array *self, va_list va)
+static void _vinit(Array *self, va_list va)
 {
     size_t obj_size = va_arg(va, size_t);
     size_t len = va_arg(va, size_t);
@@ -203,11 +203,11 @@ size_t array_to_cstr(Array *self, char *cstr, size_t size)
 static Class _ArrayCls = {
     .name = "Array",
     .size = sizeof(Array),
-    .vinit = (vinit_cb)array_vinit,
+    .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)array_init_copy,
     .destroy = (destroy_cb)array_destroy,
     .repr = (repr_cb)array_to_cstr,
     .to_cstr = (to_cstr_cb)array_to_cstr,
 };
 
-const void *ArrayCls = &_ArrayCls;
+const Class *ArrayCls = &_ArrayCls;

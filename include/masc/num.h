@@ -10,12 +10,11 @@ typedef struct {
 } Num;
 
 
-extern const void *NumCls;
+extern const Class *NumCls;
 
 
 Num *num_new(double val);
 void num_init(Num *self, double val);
-void num_vinit(Num *self, va_list va);
 
 Num *num_new_copy(Num *other);
 void num_init_copy(Num *self, Num *other);

@@ -5,8 +5,8 @@
 #include <stdarg.h>
 
 
-#define new(cls, ...) __new__(cls ## Cls, ##__VA_ARGS__)
-#define init(cls, self, ...) __init__(cls ## Cls, self, ##__VA_ARGS__)
+#define new(cls, ...) __new__(cls##Cls, ##__VA_ARGS__)
+#define init(cls, ...) ({cls s; __init__(cls##Cls, &s, ##__VA_ARGS__);s;})
 
 
 typedef void (*vinit_cb)(void *self, va_list va);
@@ -31,7 +31,7 @@ typedef struct {
 } Object;
 
 
-extern const void *ObjectCls;
+extern const Class *ObjectCls;
 
 
 void object_init(Object *self, const Class *cls);
