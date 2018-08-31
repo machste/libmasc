@@ -4,7 +4,7 @@ project(masc VERSION 1.0.0)
 
 include(GNUInstallDirs)
 
-set(CMAKE_C_FLAGS "-g -std=gnu99 -Wall -Werror")
+set(CMAKE_C_FLAGS "-O0 -g -std=gnu99 -Wall -Werror")
 
 file(GLOB HEADERS include/masc/*.h)
 file(GLOB SOURCES src/*.c)
