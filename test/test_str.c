@@ -15,9 +15,10 @@ int main(int argc, char *argv[])
     print("rstrip: '%s'\n", str_rstrip(s));
     str_copy(s, "   Hallo Welt   ");
     print("strip:  '%s'\n", str_strip(s));
-    Str *slice = str_slice(s, 2, 7);
-    print("slice(2, 7): '%O'\n", slice);
+    print("slice(2, 7): '%s'\n", str_slice(s, 2, 7));
     // Iterate over string
+    char data[] = "Interate";
+    str_fmt(s, "'%s' has %i chars.", data, sizeof(data));
     Iter i = str_iter(s);
     for (char *c = next(&i); c != NULL; c = next(&i)) {
         if (is_last(&i)) {
@@ -37,7 +38,6 @@ int main(int argc, char *argv[])
     // Clean-up
     delete(split);
     delete(splitted);
-    delete(slice);
     delete(s);
     return 0;
 }

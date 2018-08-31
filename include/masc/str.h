@@ -19,11 +19,14 @@ extern const void *StrCls;
 Str *str_new(const char *cstr);
 void str_init(Str *self, const char *cstr);
 
+Str *str_new_len(size_t len);
+void str_init_len(Str *self, size_t len);
+
 Str *str_new_copy(Str *other);
 void str_init_copy(Str *self, Str *other);
 
-Str *str_new_len(size_t len);
-void str_init_len(Str *self, size_t len);
+Str *str_new_slice(Str *other, size_t start, size_t end);
+void str_init_slice(Str *self, Str *other, size_t start, size_t end);
 
 Str *str_new_fmt(const char *fmt, ...);
 Str Str_init_fmt(const char *fmt, ...);
@@ -57,7 +60,7 @@ char *str_lstrip(Str *self);
 char *str_rstrip(Str *self);
 char *str_strip(Str *self);
 
-Str *str_slice(Str *self, size_t start, size_t end);
+char *str_slice(Str *self, size_t start, size_t end);
 
 List *str_split(Str *self, const char *sep, int maxsplit);
 

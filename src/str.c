@@ -23,16 +23,6 @@ void str_init(Str *self, const char *cstr)
     strcpy(self->cstr, cstr);
 }
 
-Str *str_new_copy(Str *other)
-{
-    return str_new(other->cstr);
-}
-
-void str_init_copy(Str *self, Str *other)
-{
-    str_init(self, other->cstr);
-}
-
 Str *str_new_len(size_t len)
 {
     Str *self = malloc(sizeof(Str));
@@ -46,6 +36,49 @@ void str_init_len(Str *self, size_t len)
     self->size = len + 1;
     self->cstr = malloc(self->size);
     self->cstr[0] = '\0';
+}
+
+Str *str_new_copy(Str *other)
+{
+    return str_new(other->cstr);
+}
+
+void str_init_copy(Str *self, Str *other)
+{
+    str_init(self, other->cstr);
+}
+
+static size_t _fix_index(Str *self, int index)
+{
+    // Handle negative indexes (e.g. -1 equals to the last index)
+    size_t len = str_len(self);
+    if (index < 0) {
+        index += len;
+        if (index < 0) {
+            // Use first element
+            index = 0;
+        }
+    } else if (index >= len) {
+        // Use last element
+        index = len;
+    }
+    return index;
+}
+
+Str *str_new_slice(Str *other, size_t start, size_t end)
+{
+    Str *self = malloc(sizeof(Str));
+    str_init_slice(self, other, start, end);
+    return self;
+}
+
+void str_init_slice(Str *self, Str *other, size_t start, size_t end)
+{
+    start = _fix_index(other, start);
+    end = _fix_index(other, end);
+    size_t len = max(0, end - start);
+    str_init_len(self, len);
+    cstr_copy(self->cstr, other->cstr + start, len);
 }
 
 Str *str_new_fmt(const char *fmt, ...)
@@ -278,17 +311,15 @@ char *str_strip(Str *self)
     return self->cstr;
 }
 
-Str *str_slice(Str *self, size_t start, size_t end) {
-    if (start >= self->size) {
-        start = self->size - 1;
-    }
-    if (end >= self->size) {
-        end = self->size - 1;
-    }
-    size_t len = max(0, end - start);
-    Str *s = str_new_len(len);
-    cstr_copy(s->cstr, self->cstr + start, len);
-    return s;
+char *str_slice(Str *self, size_t start, size_t end) {
+    start = _fix_index(self, start);
+    end = _fix_index(self, end);
+    self->size = max(0, end - start) + 1;
+    char *old_cstr = self->cstr;
+    self->cstr = malloc(self->size);
+    cstr_copy(self->cstr, old_cstr + start, self->size - 1);
+    free(old_cstr);
+    return self->cstr;
 }
 
 List *str_split(Str *self, const char *sep, int maxsplit)
@@ -305,9 +336,9 @@ List *str_split(Str *self, const char *sep, int maxsplit)
             end = NULL;
         }
         if (end != NULL) {
-            slice = str_slice(self, start - self->cstr, end - self->cstr);
+            slice = str_new_slice(self, start - self->cstr, end - self->cstr);
         } else {
-            slice = str_slice(self, start - self->cstr, self->size - 1);
+            slice = str_new_slice(self, start - self->cstr, self->size - 1);
         }
         list_append(l, slice);
         start = end + sep_len;
