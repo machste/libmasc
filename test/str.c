@@ -39,9 +39,13 @@ int main(int argc, char *argv[])
     // Split string
     List *splitted = str_split(split, ";;", -1);
     put(splitted);
+    // Join string again
+    Str *joined = str_join(splitted, ", ");
+    put(joined);
     // Clean-up
     delete(split);
     delete(splitted);
+    delete(joined);
     delete(s);
     return 0;
 }

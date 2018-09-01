@@ -44,7 +44,8 @@ void str_vinit(Str *self, const char *fmt, va_list va)
 
 static void _vinit(Str *self, va_list va)
 {
-    str_vinit(self, va_arg(va, char *), va);
+	char *fmt = va_arg(va, char *);
+    str_vinit(self, fmt, va);
 }
 
 Str *str_new_cstr(const char *cstr)
@@ -358,6 +359,19 @@ List *str_split(Str *self, const char *sep, int maxsplit)
         split++;
     } while (end != NULL);
     return l;
+}
+
+Str *str_join(List *objs, const char *sep) {
+	Iter i = list_iter(objs);
+	Str *str = str_new_cstr("");
+    for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
+        if (is_last(&i)) {
+            str_append_fmt(str, "%O", obj);
+        } else {
+            str_append_fmt(str, "%O%s", obj, sep);
+        }
+    }
+    return str;
 }
 
 Str *to_str(void *self)

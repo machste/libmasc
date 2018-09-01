@@ -22,7 +22,6 @@ void bool_vinit(Bool *self, va_list va);
 Bool *bool_new_copy(Bool *other);
 void bool_init_copy(Bool *self, Bool *other);
 
-void bool_destroy(Bool *self);
 void bool_delete(Bool *self);
 
 bool bool_get(Bool *self);

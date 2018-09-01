@@ -23,7 +23,8 @@ void regex_init(Regex *self, const char *regex)
 
 static void _vinit(Regex *self, va_list va)
 {
-    regex_init(self, va_arg(va, char *));
+	char * regex = va_arg(va, char *);
+    regex_init(self, regex);
 }
 
 Regex *regex_new_copy(Regex *other)
