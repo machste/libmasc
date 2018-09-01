@@ -60,15 +60,17 @@ size_t regex_get_nsub(Regex *self)
 Array *regex_search(Regex *self, const char *cstr)
 {
     Array *result = NULL;
-    size_t nmatch = self->re.re_nsub + 1;
-    regmatch_t pmatch[nmatch];
-    if (regexec(&self->re, cstr, nmatch, pmatch, 0) == 0) {
-        result = array_new(sizeof(Str), nmatch);
-        for (int i = 0; i < nmatch; i++) {
-            Str *str = array_get_at(result, i);
-            str_init_ncopy(str, cstr + pmatch[i].rm_so,
-					pmatch[i].rm_eo - pmatch[i].rm_so);
-        }
+	if(self->err == 0) {
+		size_t nmatch = self->re.re_nsub + 1;
+		regmatch_t pmatch[nmatch];
+		if (regexec(&self->re, cstr, nmatch, pmatch, 0) == 0) {
+			result = array_new(sizeof(Str), nmatch);
+			for (int i = 0; i < nmatch; i++) {
+				Str *str = array_get_at(result, i);
+				str_init_ncopy(str, cstr + pmatch[i].rm_so,
+						pmatch[i].rm_eo - pmatch[i].rm_so);
+			}
+		}
     }
     return result;
 }
