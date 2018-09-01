@@ -4,6 +4,7 @@
 #include <regex.h>
 
 #include <masc/object.h>
+#include <masc/str.h>
 #include <masc/array.h>
 
 
@@ -29,6 +30,7 @@ void regex_delete(Regex *self);
 
 size_t regex_get_nsub(Regex *self);
 
+Str *regex_find(Regex *self, const char *cstr);
 Array *regex_search(Regex *self, const char *cstr);
 
 size_t regex_to_cstr(Regex *self, char *cstr, size_t size);

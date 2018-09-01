@@ -57,18 +57,29 @@ size_t regex_get_nsub(Regex *self)
     }
 }
 
+Str *regex_find(Regex *self, const char *cstr)
+{
+	Str *str = NULL;
+	if(self->err == 0) {
+		regmatch_t p;
+		if (regexec(&self->re, cstr, 1, &p, 0) == 0) {
+			str = str_new_ncopy(cstr + p.rm_so, p.rm_eo - p.rm_so);
+		}
+	}
+	return str;
+}
+
 Array *regex_search(Regex *self, const char *cstr)
 {
     Array *result = NULL;
 	if(self->err == 0) {
-		size_t nmatch = self->re.re_nsub + 1;
-		regmatch_t pmatch[nmatch];
-		if (regexec(&self->re, cstr, nmatch, pmatch, 0) == 0) {
-			result = array_new(sizeof(Str), nmatch);
-			for (int i = 0; i < nmatch; i++) {
-				Str *str = array_get_at(result, i);
-				str_init_ncopy(str, cstr + pmatch[i].rm_so,
-						pmatch[i].rm_eo - pmatch[i].rm_so);
+		size_t n = self->re.re_nsub + 1;
+		regmatch_t p[n];
+		if (regexec(&self->re, cstr, n, p, 0) == 0) {
+			result = array_new(sizeof(Str), n);
+			for (int i = 0; i < n; i++) {
+				Str *s = array_get_at(result, i);
+				str_init_ncopy(s, cstr + p[i].rm_so, p[i].rm_eo - p[i].rm_so);
 			}
 		}
     }
