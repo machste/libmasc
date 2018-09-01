@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     print("reverse: %O\n", str_reverse(s));
     print("slice(2, 7): '%O'\n", str_slice(s, 2, 7));
     // Iterate over string
-    char data[] = "Interate";
+    char data[] = "Iterate";
     str_fmt(s, "'%s' has %i chars.", data, sizeof(data));
     Iter i = str_iter(s);
     for (char *c = next(&i); c != NULL; c = next(&i)) {

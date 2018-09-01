@@ -3,13 +3,13 @@
 #include <masc/cstr.h>
 
 
-size_t cstr_copy(char *dest, const char *src, size_t size)
+size_t cstr_ncopy(char *dest, const char *src, size_t size)
 {
     if (size == 0 || dest == NULL) {
         return strlen(src);
     }
     for (size_t i = 0; ; i++) {
-        if (i > size - 1) {
+        if (i >= size - 1) {
             dest[i] = '\0';
             return i + strlen(src + i);
         }

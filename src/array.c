@@ -183,20 +183,20 @@ void array_for_each(Array *self, void (*obj_cb)(void *))
 size_t array_to_cstr(Array *self, char *cstr, size_t size)
 {
     int len = 0;
-    len += cstr_copy(cstr, "[", size);
+    len += cstr_ncopy(cstr, "[", size);
     void *obj = self->data;
     for (int i = 0; i < self->len; i++) {
         if (class_of(obj) != NULL) {
             len += repr(obj, cstr + len, max(0, size - len));
         } else {
-            len += cstr_copy(cstr + len, "null", max(0, size - len));
+            len += cstr_ncopy(cstr + len, "null", max(0, size - len));
         }
         if (i < self->len - 1) {
-            len += cstr_copy(cstr + len, ", ", max(0, size - len));
+            len += cstr_ncopy(cstr + len, ", ", max(0, size - len));
         }
         obj += self->obj_size;
     }
-    len += cstr_copy(cstr + len, "]", max(0, size - len));
+    len += cstr_ncopy(cstr + len, "]", max(0, size - len));
     return len;
 }
 

@@ -63,15 +63,12 @@ Array *regex_search(Regex *self, const char *cstr)
     size_t nmatch = self->re.re_nsub + 1;
     regmatch_t pmatch[nmatch];
     if (regexec(&self->re, cstr, nmatch, pmatch, 0) == 0) {
-        // TODO: cstr_slice()
-        Str str;
-        str_init_cstr(&str, cstr);
         result = array_new(sizeof(Str), nmatch);
         for (int i = 0; i < nmatch; i++) {
-            Str *s = array_get_at(result, i);
-            str_init_slice(s, &str, pmatch[i].rm_so, pmatch[i].rm_eo);
+            Str *str = array_get_at(result, i);
+            str_init_ncopy(str, cstr + pmatch[i].rm_so,
+					pmatch[i].rm_eo - pmatch[i].rm_so);
         }
-        str_destroy(&str);
     }
     return result;
 }
@@ -84,7 +81,7 @@ size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
         len += snprintf(cstr + len, max(0, size - len), " (Error %i: ",
                 self->err);
         len += regerror(self->err, &self->re, cstr + len, max(0, size - len));
-        len += cstr_copy(cstr + len, ")", max(0, size - len));
+        len += cstr_ncopy(cstr + len, ")", max(0, size - len));
     }
     return len;
 }

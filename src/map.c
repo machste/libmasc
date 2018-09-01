@@ -194,21 +194,21 @@ void map_for_each_kv(Map *self, void (*kv_cb)(const char *, void *))
 size_t map_to_cstr(Map *self, char *cstr, size_t size)
 {
     int len = 0;
-    len += cstr_copy(cstr, "{", size);
+    len += cstr_ncopy(cstr, "{", size);
     MapNode *node = self->node;
     while (node != NULL) {
         len += snprintf(cstr + len, max(0, size - len), "\"%s\": ", node->key);
         if (node->value != NULL && class_of(node->value) != NULL) {
             len += repr(node->value, cstr + len, max(0, size - len));
         } else {
-            len += cstr_copy(cstr + len, "null", max(0, size - len));
+            len += cstr_ncopy(cstr + len, "null", max(0, size - len));
         }
         if (node->next != NULL) {
-            len += cstr_copy(cstr + len, ", ", max(0, size - len));
+            len += cstr_ncopy(cstr + len, ", ", max(0, size - len));
         }
         node = node->next;
     }
-    len += cstr_copy(cstr + len, "}", max(0, size - len));
+    len += cstr_ncopy(cstr + len, "}", max(0, size - len));
     return len;
 }
 

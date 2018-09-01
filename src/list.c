@@ -130,20 +130,20 @@ void list_for_each(List *self, void (*obj_cb)(void *))
 size_t list_to_cstr(List *self, char *cstr, size_t size)
 {
     int len = 0;
-    len += cstr_copy(cstr, "[", size);
+    len += cstr_ncopy(cstr, "[", size);
     ListNode *node = self->node;
     while (node != NULL) {
         if (node->obj != NULL && class_of(node->obj) != NULL) {
             len += repr(node->obj, cstr + len, max(0, size - len));
         } else {
-            len += cstr_copy(cstr + len, "null", max(0, size - len));
+            len += cstr_ncopy(cstr + len, "null", max(0, size - len));
         }
         if (node->next != NULL) {
-            len += cstr_copy(cstr + len, ", ", max(0, size - len));
+            len += cstr_ncopy(cstr + len, ", ", max(0, size - len));
         }
         node = node->next;
     }
-    len += cstr_copy(cstr + len, "]", max(0, size - len));
+    len += cstr_ncopy(cstr + len, "]", max(0, size - len));
     return len;
 }
 

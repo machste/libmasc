@@ -106,7 +106,7 @@ size_t repr(void *self, char *cstr, size_t size)
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->repr(self, cstr, size);
     } else {
-        cstr_copy(cstr, null_as_cstr, size);
+        cstr_ncopy(cstr, null_as_cstr, size);
         return 4;
     }
 }
@@ -116,7 +116,7 @@ size_t to_cstr(void *self, char *cstr, size_t size)
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->to_cstr(self, cstr, size);
     } else {
-        return cstr_copy(cstr, null_as_cstr, size);
+        return cstr_ncopy(cstr, null_as_cstr, size);
     }
 }
 
