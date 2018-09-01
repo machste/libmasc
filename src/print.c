@@ -230,10 +230,10 @@ size_t vformat(char *cstr, size_t size, char const *fmt, va_list va)
                 free(sub_fmt);
                 // 'ap_p' can only be used once, end it.
                 va_end(ap_p);
-                // Initialise 'ap_p' with the next vas
-                va_copy(ap_p, ap_q);
             }
             len += to_cstr(obj, cstr + len, max(0, size - len));
+            // Initialise 'ap_p' with the next vas
+            va_copy(ap_p, ap_q);
             fmt_p = p + 1;
             break;
         }
