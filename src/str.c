@@ -44,7 +44,7 @@ void str_vinit(Str *self, const char *fmt, va_list va)
 
 static void _vinit(Str *self, va_list va)
 {
-	char *fmt = va_arg(va, char *);
+    char *fmt = va_arg(va, char *);
     str_vinit(self, fmt, va);
 }
 
@@ -76,10 +76,10 @@ void str_init_ncopy(Str *self, const char* cstr, size_t len)
     self->size = len + 1;
     self->cstr = malloc(self->size);
     if (cstr != NULL) {
-		cstr_ncopy(self->cstr, cstr, self->size);
-	} else {
-		self->cstr[0] = '\0';
-	}
+        cstr_ncopy(self->cstr, cstr, self->size);
+    } else {
+        self->cstr[0] = '\0';
+    }
 }
 
 Str *str_new_copy(Str *other)
@@ -362,8 +362,8 @@ List *str_split(Str *self, const char *sep, int maxsplit)
 }
 
 Str *str_join(List *objs, const char *sep) {
-	Iter i = list_iter(objs);
-	Str *str = str_new_cstr("");
+    Iter i = list_iter(objs);
+    Str *str = str_new_cstr("");
     for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
         if (is_last(&i)) {
             str_append_fmt(str, "%O", obj);

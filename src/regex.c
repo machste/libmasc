@@ -23,7 +23,7 @@ void regex_init(Regex *self, const char *regex)
 
 static void _vinit(Regex *self, va_list va)
 {
-	char * regex = va_arg(va, char *);
+    char * regex = va_arg(va, char *);
     regex_init(self, regex);
 }
 
@@ -60,29 +60,29 @@ size_t regex_get_nsub(Regex *self)
 
 Str *regex_find(Regex *self, const char *cstr)
 {
-	Str *str = NULL;
-	if(self->err == 0) {
-		regmatch_t p;
-		if (regexec(&self->re, cstr, 1, &p, 0) == 0) {
-			str = str_new_ncopy(cstr + p.rm_so, p.rm_eo - p.rm_so);
-		}
-	}
-	return str;
+    Str *str = NULL;
+    if(self->err == 0) {
+        regmatch_t p;
+        if (regexec(&self->re, cstr, 1, &p, 0) == 0) {
+            str = str_new_ncopy(cstr + p.rm_so, p.rm_eo - p.rm_so);
+        }
+    }
+    return str;
 }
 
 Array *regex_search(Regex *self, const char *cstr)
 {
     Array *result = NULL;
-	if(self->err == 0) {
-		size_t n = self->re.re_nsub + 1;
-		regmatch_t p[n];
-		if (regexec(&self->re, cstr, n, p, 0) == 0) {
-			result = array_new(sizeof(Str), n);
-			for (int i = 0; i < n; i++) {
-				Str *s = array_get_at(result, i);
-				str_init_ncopy(s, cstr + p[i].rm_so, p[i].rm_eo - p[i].rm_so);
-			}
-		}
+    if(self->err == 0) {
+        size_t n = self->re.re_nsub + 1;
+        regmatch_t p[n];
+        if (regexec(&self->re, cstr, n, p, 0) == 0) {
+            result = array_new(sizeof(Str), n);
+            for (int i = 0; i < n; i++) {
+                Str *s = array_get_at(result, i);
+                str_init_ncopy(s, cstr + p[i].rm_so, p[i].rm_eo - p[i].rm_so);
+            }
+        }
     }
     return result;
 }
