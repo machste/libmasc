@@ -45,9 +45,9 @@ bool bool_toggle(Bool *self)
 size_t bool_to_cstr(Bool *self, char *cstr, size_t size)
 {
     if (self->b) {
-        return cstr_ncopy(cstr, "True", size);
+        return cstr_ncopy(cstr, "true", size);
     } else {
-        return cstr_ncopy(cstr, "False", size);
+        return cstr_ncopy(cstr, "false", size);
     }
 }
 
