@@ -76,33 +76,38 @@ size_t array_size(Array *self)
     return self->obj_size * self->len;
 }
 
-static int fixup_index(size_t len, int index)
+static int _fix_index(Array *self, int idx)
 {
+    size_t len = array_len(self);
+        if (len == 0) {
+        return -1;
+    }
     // Handle negative indexes (e.g. -1 equals to the last index)
-    if (index < 0) {
-        index += len;
+    if (idx < 0) {
+        idx += len;
+        if (idx < 0) {
+            // Use first element
+            idx = 0;
+        }
+    } else if (idx >= len) {
+        // Use last element
+        idx = len;
     }
-    // Check the range
-    if (index < 0 || index >= len) {
-        // Index could not be corrected!
-        index = -1;
-    }
-    return index;
+    return idx;
 }
 
-void *array_get_at(Array *self, int index)
+void *array_get_at(Array *self, int idx)
 {
-    
-    if ((index = fixup_index(self->len, index)) >= 0) {
-        return self->data + self->obj_size * index;
+    if ((idx = _fix_index(self, idx)) >= 0) {
+        return self->data + self->obj_size * idx;
     }
     return NULL;
 }
 
-bool array_set_at(Array *self, int index, void *obj)
+bool array_set_at(Array *self, int idx, void *obj)
 {
-    if ((index = fixup_index(self->len, index)) >= 0) {
-        void *dest = self->data + self->obj_size * index;
+    if ((idx = _fix_index(self, idx)) >= 0) {
+        void *dest = self->data + self->obj_size * idx;
         // Before setting a new object destroy the old one
         if (class_of(dest) != NULL) {
             destroy(dest);
@@ -113,10 +118,10 @@ bool array_set_at(Array *self, int index, void *obj)
     return false;
 }
 
-bool array_copy_at(Array *self, int index, void *obj)
+bool array_copy_at(Array *self, int idx, void *obj)
 {
-    if ((index = fixup_index(self->len, index)) >= 0) {
-        void *dest = self->data + self->obj_size * index;
+    if ((idx = _fix_index(self, idx)) >= 0) {
+        void *dest = self->data + self->obj_size * idx;
         // Before copy a new object destroy the old one
         if (class_of(dest) != NULL) {
             destroy(dest);
@@ -127,10 +132,10 @@ bool array_copy_at(Array *self, int index, void *obj)
     return false;
 }
 
-bool array_destroy_at(Array *self, int index)
+bool array_destroy_at(Array *self, int idx)
 {
-    if ((index = fixup_index(self->len, index)) >= 0) {
-        void *dest = self->data + self->obj_size * index;
+    if ((idx = _fix_index(self, idx)) >= 0) {
+        void *dest = self->data + self->obj_size * idx;
         if (class_of(dest) != NULL) {
             destroy(dest);
             // Mark the array index as empty
