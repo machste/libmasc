@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include <masc/array.h>
+#include <masc/none.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
 
@@ -45,9 +46,7 @@ void array_init_copy(Array *self, Array *other)
     void *s_obj = self->data;
     void *o_obj = other->data;
     for (int i = 0; i < self->len && i < other->len; i++) {
-        if(class_of(o_obj) != NULL) {
-            init_copy(s_obj, o_obj);
-        }
+        init_copy(s_obj, o_obj);
         s_obj += self->obj_size;
         o_obj += other->obj_size;
     }    
@@ -109,10 +108,12 @@ bool array_set_at(Array *self, int idx, void *obj)
     if ((idx = _fix_index(self, idx)) >= 0) {
         void *dest = self->data + self->obj_size * idx;
         // Before setting a new object destroy the old one
-        if (class_of(dest) != NULL) {
-            destroy(dest);
+        destroy(dest);
+        if(obj != NULL) {
+            memcpy(dest, obj, self->obj_size);
+        } else {
+            *(None *)dest = init(None);
         }
-        memcpy(dest, obj, self->obj_size);
         return true;
     }
     return false;
@@ -123,9 +124,7 @@ bool array_copy_at(Array *self, int idx, void *obj)
     if ((idx = _fix_index(self, idx)) >= 0) {
         void *dest = self->data + self->obj_size * idx;
         // Before copy a new object destroy the old one
-        if (class_of(dest) != NULL) {
-            destroy(dest);
-        }
+        destroy(dest);
         init_copy(dest, obj);
         return true;
     }
@@ -136,11 +135,8 @@ bool array_destroy_at(Array *self, int idx)
 {
     if ((idx = _fix_index(self, idx)) >= 0) {
         void *dest = self->data + self->obj_size * idx;
-        if (class_of(dest) != NULL) {
-            destroy(dest);
-            // Mark the array index as empty
-            ((Object *)dest)->cls = NULL;
-        }
+        destroy(dest);
+        *(None *)dest = init(None);
         return true;
     }
     return false;

@@ -6,9 +6,6 @@
 #include <masc/cstr.h>
 
 
-static const char *null_as_cstr = "null";
-
-
 void object_init(Object *self, const Class *cls)
 {
     self->cls = cls;
@@ -33,100 +30,6 @@ size_t object_to_cstr(Object *self, char *cstr, size_t size)
     return snprintf(cstr, size, "<%s at %p>", name_of(self), self);
 }
 
-const Class *class_of(const void *self)
-{
-    if (self != NULL) {
-        return ((Object *)self)->cls;
-    } else {
-        return NULL;
-    }
-}
-
-const char *name_of(const void *self)
-{
-    if (self != NULL && class_of(self) != NULL) {
-        return class_of(self)->name;
-    } else {
-        return null_as_cstr;
-    }
-}
-
-void *__new__(const Class *cls, ...)
-{
-    va_list va;
-    void *self = malloc(cls->size);
-    va_start(va, cls);
-    cls->vinit(self, va);
-    va_end(va);
-    return self;
-}
-
-void __init__(const Class *cls, void *self, ...)
-{
-    va_list va;
-    va_start(va, self);
-    cls->vinit(self, va);
-    va_end(va);
-}
-
-void *new_copy(const void *other)
-{
-    if (other == NULL || class_of(other) == NULL) {
-        return NULL;
-    }
-    const Class *cls = class_of(other);
-    void *self = malloc(cls->size);
-    cls->init_copy(self, other);
-    return self;
-}
-
-void init_copy(void *self, const void *other)
-{
-    if (other == NULL || class_of(other) == NULL) {
-        ((Object *)self)->cls = NULL;
-    } else {
-        const Class *cls = class_of(other);
-        cls->init_copy(self, other);
-    }
-}
-
-void destroy(void *self)
-{
-    if (self == NULL || class_of(self) == NULL) {
-        return;
-    }
-    class_of(self)->destroy(self);
-    
-}
-
-void delete(void *self)
-{
-    if (self == NULL || class_of(self) == NULL) {
-        return;
-    }
-    class_of(self)->destroy(self);
-    free(self);
-}
-
-size_t repr(const void *self, char *cstr, size_t size)
-{
-    if (self != NULL && class_of(self) != NULL) {
-        return class_of(self)->repr(self, cstr, size);
-    } else {
-        cstr_ncopy(cstr, null_as_cstr, size);
-        return 4;
-    }
-}
-
-size_t to_cstr(const void *self, char *cstr, size_t size)
-{
-    if (self != NULL && class_of(self) != NULL) {
-        return class_of(self)->to_cstr(self, cstr, size);
-    } else {
-        return cstr_ncopy(cstr, null_as_cstr, size);
-    }
-}
-
 
 static Class _ObjectCls = {
     .name = "Object",
@@ -139,7 +42,3 @@ static Class _ObjectCls = {
 };
 
 const Class *ObjectCls = &_ObjectCls;
-
-static const Object _null = { .cls = NULL };
-
-const Object *const null = &_null;

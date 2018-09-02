@@ -1,4 +1,5 @@
 #include <masc/list.h>
+#include <masc/none.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
 
@@ -48,7 +49,7 @@ void list_init_copy(List *self, List *other)
 static ListNode *listnode_new(void *obj) {
     ListNode *self = malloc(sizeof(ListNode));
     if (obj == NULL) {
-        self->obj = (void *)null;
+        self->obj = new(None);
     } else {
         self->obj = obj;
     }
