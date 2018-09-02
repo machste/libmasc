@@ -25,7 +25,17 @@ void list_init_copy(List *self, List *other);
 void list_destroy(List *self);
 void list_delete(List *self);
 
+size_t list_len(List *self);
+
+void *list_get_at(List *self, int idx);
+void list_set_at(List *self, int idx, void *obj);
+void list_insert_at(List *self, int idx, void *obj);
+void list_insert_after(List *self, int idx, void *obj);
+
 void list_append(List *self, void *obj);
+
+void *list_remove_at(List *self, int idx);
+bool list_delete_at(List *self, int idx);
 
 Iter list_iter(List *self);
 
