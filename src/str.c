@@ -82,12 +82,12 @@ void str_init_ncopy(Str *self, const char* cstr, size_t len)
     }
 }
 
-Str *str_new_copy(Str *other)
+Str *str_new_copy(const Str *other)
 {
     return str_new_cstr(other->cstr);
 }
 
-void str_init_copy(Str *self, Str *other)
+void str_init_copy(Str *self, const Str *other)
 {
     str_init_cstr(self, other->cstr);
 }
@@ -374,7 +374,7 @@ Str *str_join(List *objs, const char *sep) {
     return str;
 }
 
-Str *to_str(void *self)
+Str *to_str(const void *self)
 {
     if (class_of(self) == StrCls) {
         return str_new_copy(self);

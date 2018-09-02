@@ -19,7 +19,7 @@ static void _vinit(void *self, va_list _)
     object_init(self, ObjectCls);
 }
 
-void object_init_copy(Object *self, Object *other)
+void object_init_copy(Object *self, const Object *other)
 {
     memcpy(self, other, class_of(other)->size);
 }
@@ -33,7 +33,7 @@ size_t object_to_cstr(Object *self, char *cstr, size_t size)
     return snprintf(cstr, size, "<%s at %p>", name_of(self), self);
 }
 
-const Class *class_of(void *self)
+const Class *class_of(const void *self)
 {
     if (self != NULL) {
         return ((Object *)self)->cls;
@@ -42,9 +42,9 @@ const Class *class_of(void *self)
     }
 }
 
-const char *name_of(void *self)
+const char *name_of(const void *self)
 {
-    if (self != NULL) {
+    if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->name;
     } else {
         return null_as_cstr;
@@ -69,23 +69,30 @@ void __init__(const Class *cls, void *self, ...)
     va_end(va);
 }
 
-void *new_copy(void *other)
+void *new_copy(const void *other)
 {
+    if (other == NULL || class_of(other) == NULL) {
+        return NULL;
+    }
     const Class *cls = class_of(other);
     void *self = malloc(cls->size);
     cls->init_copy(self, other);
     return self;
 }
 
-void init_copy(void *self, void *other)
+void init_copy(void *self, const void *other)
 {
-    const Class *cls = class_of(other);
-    cls->init_copy(self, other);
+    if (other == NULL || class_of(other) == NULL) {
+        ((Object *)self)->cls = NULL;
+    } else {
+        const Class *cls = class_of(other);
+        cls->init_copy(self, other);
+    }
 }
 
 void destroy(void *self)
 {
-    if (self == NULL) {
+    if (self == NULL || class_of(self) == NULL) {
         return;
     }
     class_of(self)->destroy(self);
@@ -94,14 +101,14 @@ void destroy(void *self)
 
 void delete(void *self)
 {
-    if (self == NULL) {
+    if (self == NULL || class_of(self) == NULL) {
         return;
     }
     class_of(self)->destroy(self);
     free(self);
 }
 
-size_t repr(void *self, char *cstr, size_t size)
+size_t repr(const void *self, char *cstr, size_t size)
 {
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->repr(self, cstr, size);
@@ -111,7 +118,7 @@ size_t repr(void *self, char *cstr, size_t size)
     }
 }
 
-size_t to_cstr(void *self, char *cstr, size_t size)
+size_t to_cstr(const void *self, char *cstr, size_t size)
 {
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->to_cstr(self, cstr, size);
@@ -132,3 +139,7 @@ static Class _ObjectCls = {
 };
 
 const Class *ObjectCls = &_ObjectCls;
+
+static const Object _null = { .cls = NULL };
+
+const Object *const null = &_null;

@@ -23,8 +23,8 @@ void str_vinit(Str *self, const char *fmt, va_list va);
 Str *str_new_cstr(const char *cstr);
 void str_init_cstr(Str *self, const char *cstr);
 
-Str *str_new_copy(Str *other);
-void str_init_copy(Str *self, Str *other);
+Str *str_new_copy(const Str *other);
+void str_init_copy(Str *self, const Str *other);
 
 Str *str_new_ncopy(const char* cstr, size_t len);
 void str_init_ncopy(Str *self, const char* cstr, size_t len);
@@ -67,6 +67,6 @@ Str *str_slice(Str *self, size_t start, size_t end);
 List *str_split(Str *self, const char *sep, int maxsplit);
 Str *str_join(List *strs, const char *sep);
 
-Str *to_str(void *self);
+Str *to_str(const void *self);
 
 #endif /* _MASC_STR_H_ */

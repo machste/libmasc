@@ -39,10 +39,7 @@ void list_init_copy(List *self, List *other)
     list_init(self);
     ListNode *node = other->node;
     while (node != NULL) {
-        void *new_obj = NULL;
-        if (node->obj != NULL && class_of(node->obj) != NULL) {
-            new_obj = new_copy(node->obj);
-        }
+        void *new_obj = new_copy(node->obj);
         list_append(self, new_obj);
         node = node->next;
     }
@@ -50,15 +47,17 @@ void list_init_copy(List *self, List *other)
 
 static ListNode *listnode_new(void *obj) {
     ListNode *self = malloc(sizeof(ListNode));
-    self->obj = obj;
+    if (obj == NULL) {
+        self->obj = (void *)null;
+    } else {
+        self->obj = obj;
+    }
     self->next = NULL;
     return self;
 }
 
 static void listnode_delete(ListNode *self) {
-    if (self->obj != NULL && class_of(self->obj) != NULL) {
-        delete(self->obj);
-    }
+    delete(self->obj);
     free(self);
 }
 

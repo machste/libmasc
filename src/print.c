@@ -10,14 +10,14 @@
 #include <masc/math.h>
 
 
-void put(void *self)
+void put(const void *self)
 {
     Str *s = to_str(self);
     puts(str_cstr(s));
     delete(s);
 }
 
-size_t print(char const *fmt, ...)
+size_t print(const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
@@ -26,7 +26,7 @@ size_t print(char const *fmt, ...)
     return len;
 }
 
-size_t fprint(FILE *stream, char const *fmt, ...)
+size_t fprint(FILE *stream, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
@@ -35,7 +35,7 @@ size_t fprint(FILE *stream, char const *fmt, ...)
     return len;
 }
 
-size_t vfprint(FILE *stream, char const *fmt, va_list va)
+size_t vfprint(FILE *stream, const char *fmt, va_list va)
 {
     va_list va2;
     // Make a copy of va to use it twice
@@ -49,7 +49,7 @@ size_t vfprint(FILE *stream, char const *fmt, va_list va)
     return len;
 }
 
-size_t format(char *cstr, size_t size, char const *fmt, ...)
+size_t format(char *cstr, size_t size, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
@@ -58,7 +58,7 @@ size_t format(char *cstr, size_t size, char const *fmt, ...)
     return len;
 }
 
-size_t vformat(char *cstr, size_t size, char const *fmt, va_list va)
+size_t vformat(char *cstr, size_t size, const char *fmt, va_list va)
 {
     size_t len = 0;
     char const *p = fmt, *end = p + strlen(fmt), *fmt_p = fmt, *fmt_q = fmt;

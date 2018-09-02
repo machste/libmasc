@@ -6,14 +6,14 @@
 #include <stdio.h>
 
 
-void put(void *self);
+void put(const void *self);
 
-size_t print(char const *fmt, ...);
-size_t fprint(FILE *stream, char const *fmt, ...);
-size_t vfprint(FILE *stream, char const *fmt, va_list va);
+size_t print(const char *fmt, ...);
+size_t fprint(FILE *stream, const char *fmt, ...);
+size_t vfprint(FILE *stream, const char *fmt, va_list va);
 
-size_t format(char *cstr, size_t size, char const *fmt, ...);
-size_t vformat(char *cstr, size_t size, char const *fmt, va_list va);
+size_t format(char *cstr, size_t size, const char *fmt, ...);
+size_t vformat(char *cstr, size_t size, const char *fmt, va_list va);
 
 void hexdump(const void *data, size_t size);
 

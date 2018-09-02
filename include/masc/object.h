@@ -10,11 +10,11 @@
 
 
 typedef void (*vinit_cb)(void *self, va_list va);
-typedef void (*init_copy_cb)(void *self, void *other);
+typedef void (*init_copy_cb)(void *self, const void *other);
 typedef void (*destroy_cb)(void *self);
 
-typedef size_t (*repr_cb)(void *self, char *cstr, size_t size);
-typedef size_t (*to_cstr_cb)(void *self, char *cstr, size_t size);
+typedef size_t (*repr_cb)(const void *self, char *cstr, size_t size);
+typedef size_t (*to_cstr_cb)(const void *self, char *cstr, size_t size);
 
 typedef struct {
     const char *name;
@@ -32,28 +32,29 @@ typedef struct {
 
 
 extern const Class *ObjectCls;
+extern const Object *const null;
 
 
 void object_init(Object *self, const Class *cls);
 
-void object_init_copy(Object *self, Object *other);
+void object_init_copy(Object *self, const Object *other);
 
 void object_destroy(Object *self);
 
 size_t object_to_cstr(Object *self, char *cstr, size_t size);
 
 
-const Class *class_of(void *self);
-const char *name_of(void *self);
+const Class *class_of(const void *self);
+const char *name_of(const void *self);
 
 void *__new__(const Class *cls, ...);
 void __init__(const Class *cls, void *self, ...);
-void *new_copy(void *other);
-void init_copy(void *self, void *other);
+void *new_copy(const void *other);
+void init_copy(void *self, const void *other);
 void destroy(void *self);
 void delete(void *self);
 
-size_t repr(void *self, char *cstr, size_t size);
-size_t to_cstr(void *self, char *cstr, size_t size);
+size_t repr(const void *self, char *cstr, size_t size);
+size_t to_cstr(const void *self, char *cstr, size_t size);
 
 #endif /* _MASC_OBJECT_H_ */
