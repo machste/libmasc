@@ -1,6 +1,7 @@
 #include <masc/list.h>
 #include <masc/num.h>
 #include <masc/bool.h>
+#include <masc/char.h>
 #include <masc/str.h>
 #include <masc/print.h>
 
@@ -28,8 +29,8 @@ int main(int argc, char *argv[])
     list_append(&l2, new(Str, "foobar"));
     list_append(&l2, NULL);
     list_append(&l2, new(Bool, false));
-    list_set_at(&l2, 4, new(Str, "4"));
-    put(&l2);
+    list_set_at(&l2, 4, new(Char, '4'));
+    print("l2: %O\n", &l2);
     list_insert_after(&l2, 2, new(Num, 2.5));
     list_insert_at(&l2, 0, new(Num, 0.5));
     list_insert_at(&l2, -1, new(Bool, true));
