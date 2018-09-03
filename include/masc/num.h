@@ -16,10 +16,6 @@ extern const Class *NumCls;
 Num *num_new(double val);
 void num_init(Num *self, double val);
 
-Num *num_new_copy(Num *other);
-void num_init_copy(Num *self, Num *other);
-
-void num_destroy(Num *self);
 void num_delete(Num *self);
 
 double num_get(Num *self);
