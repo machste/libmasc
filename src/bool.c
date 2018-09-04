@@ -60,6 +60,7 @@ static Class _BoolCls = {
     .destroy = (destroy_cb)object_destroy,
     .repr = (repr_cb)bool_to_cstr,
     .to_cstr = (to_cstr_cb)bool_to_cstr,
+    .iter_init = NULL,
 };
 
 const void *BoolCls = &_BoolCls;

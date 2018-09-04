@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #include <masc/object.h>
-#include <masc/iter.h>
 
 
 typedef struct {
@@ -36,8 +35,6 @@ void *array_get_at(Array *self, int idx);
 bool array_set_at(Array *self, int idx, void *obj);
 bool array_copy_at(Array *self, int idx, void *obj);
 bool array_destroy_at(Array *self, int idx);
-
-Iter array_iter(Array *self);
 
 void array_for_each(Array *self, void (*obj_cb)(void *));
 

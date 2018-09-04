@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <masc/map.h>
+#include <masc/iter.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
 
@@ -87,6 +88,15 @@ void map_delete(Map *self)
     free(self);
 }
 
+size_t map_len(Map *self)
+{
+    size_t len = 0;
+    for (MapNode *n = self->node; n != NULL; n = n->next) {
+        len++;
+    }
+    return len;
+}
+
 static MapNode *_node_by_key(Map *self, const char *key)
 {
     MapNode *node = self->node;
@@ -140,32 +150,6 @@ void map_set(Map *self, const char *key, void *value)
     }
 }
 
-static void *_next(Iter *itr, Map *self)
-{
-    MapNode *node = itr->ptr;
-    if (node != NULL) {
-        itr->index++;
-        itr->ptr = node->next;
-        itr->key = node->key;
-        return node->value;
-    }
-    return NULL;
-}
-
-static bool _is_last(Iter *itr, Map *self)
-{
-    return itr->ptr == NULL;
-}
-
-Iter map_iter(Map *self)
-{
-    Iter i;
-    const char *key = self->node != NULL ? self->node->key : NULL;
-    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
-            self->node, -1, key);
-    return i;
-}
-
 static void _for_each_node(Map *self, void (*node_cb)(MapNode *))
 {
     MapNode *node = self->node;
@@ -213,6 +197,54 @@ size_t map_to_cstr(Map *self, char *cstr, size_t size)
 }
 
 
+typedef struct {
+    MapNode *next;
+    int idx;
+    const char *key;
+} _IterPriv;
+
+static void *_next(Iter *itr, Map *self)
+{
+    MapNode *node = ((_IterPriv *)itr->priv)->next;
+    if (node != NULL) {
+        ((_IterPriv *)itr->priv)->idx++;
+        ((_IterPriv *)itr->priv)->key = node->key;
+        ((_IterPriv *)itr->priv)->next = node->next;
+        return node->value;
+    }
+    return NULL;
+
+}
+
+static bool _is_last(Iter *itr, Map *self)
+{
+    return ((_IterPriv *)itr->priv)->next == NULL;
+}
+
+static int _get_idx(Iter *itr, Map *self)
+{
+    return ((_IterPriv *)itr->priv)->idx;
+}
+
+static const char *_get_key(Iter *itr, Map *self)
+{
+    return ((_IterPriv *)itr->priv)->key;
+}
+
+static void _iter_init(Map *self, Iter *itr)
+{
+    itr->next = (iter_next_cb)_next;
+    itr->is_last = (iter_is_last_cb)_is_last;
+    itr->get_idx = (iter_get_idx_cb)_get_idx;
+    itr->get_key = (iter_get_key_cb)_get_key;
+    itr->priv = malloc(sizeof(_IterPriv));
+    ((_IterPriv *)itr->priv)->next = self->node;
+    ((_IterPriv *)itr->priv)->idx = -1;
+    ((_IterPriv *)itr->priv)->key = NULL;
+    itr->free_priv = free;
+}
+
+
 static Class _MapCls = {
     .name = "Map",
     .size = sizeof(Map),
@@ -221,6 +253,7 @@ static Class _MapCls = {
     .destroy = (destroy_cb)map_destroy,
     .repr = (repr_cb)map_to_cstr,
     .to_cstr = (to_cstr_cb)map_to_cstr,
+    .iter_init = (iter_init_cb)_iter_init,
 };
 
 const Class *MapCls = &_MapCls;

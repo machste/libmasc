@@ -1,6 +1,7 @@
 #include <masc/array.h>
 #include <masc/str.h>
 #include <masc/num.h>
+#include <masc/iter.h>
 #include <masc/math.h>
 #include <masc/print.h>
 
@@ -44,12 +45,13 @@ int main(int argc, char *argv[])
     array_destroy_at(mixed, 2);
     put(mixed);
     // Iterate over array
-    Iter i = array_iter(mixed);
-    for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
+    Iter *itr = new(Iter, mixed);
+    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
         Str *s = to_str(obj);
-        print("%zu: %O\n", i.index, s);
+        print("%i: %O\n", iter_get_idx(itr), s);
         delete(s);
     }
+    delete(itr);
     // Clean-up
     delete(a1);
     delete(a2);

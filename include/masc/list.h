@@ -1,8 +1,9 @@
 #ifndef _MASC_LIST_H_
 #define _MASC_LIST_H_
 
+#include <stdbool.h>
+
 #include <masc/object.h>
-#include <masc/iter.h>
 
 
 typedef struct ListNode ListNode;
@@ -36,8 +37,6 @@ void list_append(List *self, void *obj);
 
 void *list_remove_at(List *self, int idx);
 bool list_delete_at(List *self, int idx);
-
-Iter list_iter(List *self);
 
 void list_for_each(List *self, void (*obj_cb)(void *));
 

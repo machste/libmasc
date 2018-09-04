@@ -8,12 +8,16 @@
 #define init(cls, ...) ({cls s; __init__(cls##Cls, &s, ##__VA_ARGS__);s;})
 
 
+typedef struct Iter Iter;
+
 typedef void (*vinit_cb)(void *self, va_list va);
 typedef void (*init_copy_cb)(void *self, const void *other);
 typedef void (*destroy_cb)(void *self);
 
 typedef size_t (*repr_cb)(const void *self, char *cstr, size_t size);
 typedef size_t (*to_cstr_cb)(const void *self, char *cstr, size_t size);
+
+typedef void (*iter_init_cb)(const void *self, Iter *itr);
 
 typedef struct {
     const char *name;
@@ -23,6 +27,7 @@ typedef struct {
     destroy_cb destroy;
     repr_cb repr;
     to_cstr_cb to_cstr;
+    iter_init_cb iter_init;
 } Class;
 
 const Class *class_of(const void *self);

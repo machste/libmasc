@@ -61,6 +61,7 @@ static Class _CharCls = {
     .destroy = (destroy_cb)object_destroy,
     .repr = (repr_cb)char_repr,
     .to_cstr = (to_cstr_cb)char_to_cstr,
+    .iter_init = NULL,
 };
 
 const void *CharCls = &_CharCls;

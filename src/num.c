@@ -61,6 +61,7 @@ static Class _NumCls = {
     .destroy = (destroy_cb)object_destroy,
     .repr = (repr_cb)num_to_cstr,
     .to_cstr = (to_cstr_cb)num_to_cstr,
+    .iter_init = NULL,
 };
 
 const Class *NumCls = &_NumCls;

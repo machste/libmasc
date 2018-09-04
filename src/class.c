@@ -1,7 +1,10 @@
+#include <string.h>
+
 #include <masc/class.h>
 #include <masc/object.h>
 #include <masc/none.h>
 #include <masc/cstr.h>
+#include <masc/iter.h>
 
 
 const Class *class_of(const void *self)

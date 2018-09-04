@@ -39,6 +39,7 @@ static Class _NoneCls = {
     .destroy = (destroy_cb)object_destroy,
     .repr = (repr_cb)_repr,
     .to_cstr = (to_cstr_cb)_to_cstr,
+    .iter_init = NULL,
 };
 
 const Class *NoneCls = &_NoneCls;

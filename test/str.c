@@ -1,4 +1,6 @@
 #include <masc/str.h>
+#include <masc/char.h>
+#include <masc/iter.h>
 #include <masc/print.h>
 
 int main(int argc, char *argv[])
@@ -23,14 +25,15 @@ int main(int argc, char *argv[])
     // Iterate over string
     char data[] = "Iterate";
     str_fmt(s, "'%s' has %i chars.", data, sizeof(data));
-    Iter i = str_iter(s);
-    for (char *c = next(&i); c != NULL; c = next(&i)) {
-        if (is_last(&i)) {
-            print("%c\n", *c);
+    Iter *itr = new(Iter, s);
+    for (Char *c = next(itr); c != NULL; c = next(itr)) {
+        if (iter_is_last(itr)) {
+            print("%O\n", c);
         } else {
-            print("%c, ", *c);
+            print("%O, ", c);
         }
     }
+    delete(itr);
     // Append
     Str *split = new(Str, ";;token1;;");
     str_append(split, "token2;;");

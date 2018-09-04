@@ -8,24 +8,32 @@
 
 typedef struct Iter Iter;
 
-typedef void *(*next_cb)(Iter *self, void *iterable);
-typedef bool (*is_last_cb)(Iter *self, void *iterable);
+typedef void *(*iter_next_cb)(Iter *self, void *iterable);
+typedef bool (*iter_is_last_cb)(Iter *self, void *iterable);
+typedef int (*iter_get_idx_cb)(Iter *self, void *iterable);
+typedef const char *(*iter_get_key_cb)(Iter *self, void *iterable);
+
+typedef void (*iter_free_priv_cb)(void *priv);
 
 struct Iter {
     Object obj;
-    size_t index;
-    const char *key;
     void *iterable;
-    next_cb next;
-    is_last_cb is_last;
-    void *ptr;
+    void *priv;
+    iter_next_cb next;
+    iter_is_last_cb is_last;
+    iter_get_idx_cb get_idx;
+    iter_get_key_cb get_key;
+    iter_free_priv_cb free_priv;
 };
 
 
-void iter_init(Iter *self, void *iterable, next_cb next, is_last_cb is_last,
-        void *ptr, size_t index, const char *key);
+extern const Class *IterCls;
+
 
 void *next(Iter *self);
-bool is_last(Iter *self);
+
+bool iter_is_last(Iter *self);
+int iter_get_idx(Iter *self);
+const char *iter_get_key(Iter *self);
 
 #endif /* _MASC_ITER_H_ */

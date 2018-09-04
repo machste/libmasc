@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include <masc/array.h>
+#include <masc/iter.h>
 #include <masc/none.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
@@ -142,31 +143,6 @@ bool array_destroy_at(Array *self, int idx)
     return false;
 }
 
-static void *_next(Iter *itr, Array *self)
-{
-    void *obj = itr->ptr;
-    itr->index++;
-    if (itr->index < self->len) {
-        itr->ptr += self->obj_size;
-    } else {
-        return NULL;
-    }
-    return obj;
-}
-
-static bool _is_last(Iter *itr, Array *self)
-{
-    return itr->index == self->len - 1;
-}
-
-Iter array_iter(Array *self)
-{
-    Iter i;
-    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
-            self->data, -1, NULL);
-    return i;
-}
-
 void array_for_each(Array *self, void (*obj_cb)(void *))
 {
     if (obj_cb == NULL) {
@@ -201,6 +177,46 @@ size_t array_to_cstr(Array *self, char *cstr, size_t size)
     return len;
 }
 
+
+typedef struct {
+    void *ptr;
+    int idx;
+} _IterPriv;
+
+static void *_next(Iter *itr, Array *self)
+{
+    void *obj = ((_IterPriv *)itr->priv)->ptr;
+    ((_IterPriv *)itr->priv)->idx++;
+    if (((_IterPriv *)itr->priv)->idx < self->len) {
+        ((_IterPriv *)itr->priv)->ptr += self->obj_size;
+    } else {
+        return NULL;
+    }
+    return obj;
+}
+
+static bool _is_last(Iter *itr, Array *self)
+{
+    return ((_IterPriv *)itr->priv)->idx == self->len - 1;
+}
+
+static int _get_idx(Iter *itr, Array *self)
+{
+    return ((_IterPriv *)itr->priv)->idx;
+}
+
+static void _iter_init(Array *self, Iter *itr)
+{
+    itr->next = (iter_next_cb)_next;
+    itr->is_last = (iter_is_last_cb)_is_last;
+    itr->get_idx = (iter_get_idx_cb)_get_idx;
+    itr->priv = malloc(sizeof(_IterPriv));
+    ((_IterPriv *)itr->priv)->ptr = self->data;
+    ((_IterPriv *)itr->priv)->idx = -1;
+    itr->free_priv = free;
+}
+
+
 static Class _ArrayCls = {
     .name = "Array",
     .size = sizeof(Array),
@@ -209,6 +225,7 @@ static Class _ArrayCls = {
     .destroy = (destroy_cb)array_destroy,
     .repr = (repr_cb)array_to_cstr,
     .to_cstr = (to_cstr_cb)array_to_cstr,
+    .iter_init = (iter_init_cb)_iter_init,
 };
 
 const Class *ArrayCls = &_ArrayCls;

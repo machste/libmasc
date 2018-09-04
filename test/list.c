@@ -3,6 +3,7 @@
 #include <masc/bool.h>
 #include <masc/char.h>
 #include <masc/str.h>
+#include <masc/iter.h>
 #include <masc/print.h>
 
 
@@ -19,10 +20,11 @@ int main(int argc, char *argv[])
     print("get_at(-3): %O, get_at(4): %O\n", list_get_at(l1, -3),
             list_get_at(l1, 4));
     // Iterate over list
-    Iter i = list_iter(l1);
-    for (Num *n = next(&i); n != NULL; n = next(&i)) {
-        print("%s: %O\n", name_of(n), n);
+    Iter *itr = new(Iter, l1);
+    for (Num *n = next(itr); n != NULL; n = next(itr)) {
+        print("%s: %O (idx: %i)\n", name_of(n), n, iter_get_idx(itr));
     }
+    delete(itr);
     // Copy list
     List l2;
     init_copy(&l2, l1);

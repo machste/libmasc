@@ -3,6 +3,8 @@
 #include <ctype.h>
 
 #include <masc/str.h>
+#include <masc/char.h>
+#include <masc/iter.h>
 #include <masc/cstr.h>
 #include <masc/math.h>
 #include <masc/print.h>
@@ -159,27 +161,6 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size)
     size_t len = str_len(self);
     cstr_ncopy(cstr, self->cstr, size);
     return len;
-}
-
-static void *_next(Iter *itr, Str *self)
-{
-    itr->index++;
-    if (itr->index < self->size - 1) {
-        return self->cstr + itr->index;
-    }
-    return NULL;
-}
-
-static bool _is_last(Iter *itr, Str *self)
-{
-    return itr->index + 2 == self->size;
-}
-
-Iter str_iter(Str *self)
-{
-    Iter i;
-    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last, NULL, -1, NULL);
-    return i;
 }
 
 char str_get_at(Str *self, size_t index)
@@ -361,16 +342,17 @@ List *str_split(Str *self, const char *sep, int maxsplit)
     return l;
 }
 
-Str *str_join(List *objs, const char *sep) {
-    Iter i = list_iter(objs);
+Str *str_join(List *iterable, const char *sep) {
+    Iter *itr = new(Iter, iterable);
     Str *str = str_new_cstr("");
-    for (void *obj = next(&i); obj != NULL; obj = next(&i)) {
-        if (is_last(&i)) {
+    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
+        if (iter_is_last(itr)) {
             str_append_fmt(str, "%O", obj);
         } else {
             str_append_fmt(str, "%O%s", obj, sep);
         }
     }
+    delete(itr);
     return str;
 }
 
@@ -387,6 +369,46 @@ Str *to_str(const void *self)
 }
 
 
+typedef struct {
+    char *ptr;
+    Char c;
+    int idx;
+} _IterPriv;
+
+static void *_next(Iter *itr, Str *self)
+{
+    int i = ++((_IterPriv *)itr->priv)->idx;
+    if (i < self->size - 1) {
+        ((_IterPriv *)itr->priv)->c.c = self->cstr[i];
+        return &((_IterPriv *)itr->priv)->c;
+    }
+    return NULL;
+}
+
+static bool _is_last(Iter *itr, Str *self)
+{
+    return ((_IterPriv *)itr->priv)->idx == self->size - 2;
+}
+
+static int _get_idx(Iter *itr, Str *self)
+{
+    return ((_IterPriv *)itr->priv)->idx;
+}
+
+static void _iter_init(Str *self, Iter *itr)
+{
+    itr->next = (iter_next_cb)_next;
+    itr->is_last = (iter_is_last_cb)_is_last;
+    itr->get_idx = (iter_get_idx_cb)_get_idx;
+    itr->priv = malloc(sizeof(_IterPriv));
+    ((_IterPriv *)itr->priv)->ptr = self->cstr;
+    char_init(&((_IterPriv *)itr->priv)->c, '\0');
+    ((_IterPriv *)itr->priv)->idx = -1;
+    itr->free_priv = free;
+}
+
+
+
 static Class _StrCls = {
     .name = "Str",
     .size = sizeof(Str),
@@ -395,6 +417,7 @@ static Class _StrCls = {
     .destroy = (destroy_cb)str_destroy,
     .repr = (repr_cb)str_repr,
     .to_cstr = (to_cstr_cb)str_to_cstr,
+    .iter_init = (iter_init_cb)_iter_init,
 };
 
 const Class *StrCls = &_StrCls;

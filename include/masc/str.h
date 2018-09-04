@@ -2,7 +2,6 @@
 #define _MASC_STR_H_
 
 #include <masc/object.h>
-#include <masc/iter.h>
 #include <masc/list.h>
 
 
@@ -40,8 +39,6 @@ size_t str_len(Str *self);
 char *str_cstr(Str *self);
 size_t str_repr(Str *self, char *cstr, size_t size);
 size_t str_to_cstr(Str *self, char *cstr, size_t size);
-
-Iter str_iter(Str *self);
 
 char str_get_at(Str *self, size_t index);
 void str_set_at(Str *self, size_t index, char c);

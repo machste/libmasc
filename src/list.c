@@ -1,4 +1,5 @@
 #include <masc/list.h>
+#include <masc/iter.h>
 #include <masc/none.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
@@ -227,30 +228,6 @@ bool list_delete_at(List *self, int idx)
     return false;    
 }
 
-static void *_next(Iter *itr, List *self)
-{
-    ListNode *node = itr->ptr;
-    if (node != NULL) {
-        itr->index++;
-        itr->ptr = node->next;
-        return node->obj;
-    }
-    return NULL;
-}
-
-static bool _is_last(Iter *itr, List *self)
-{
-    return itr->ptr == NULL;
-}
-
-Iter list_iter(List *self)
-{
-    Iter i;
-    iter_init(&i, self, (next_cb)_next, (is_last_cb)_is_last,
-            self->node, -1, NULL);
-    return i;
-}
-
 void list_for_each(List *self, void (*obj_cb)(void *))
 {
     ListNode *node = self->node;
@@ -283,6 +260,44 @@ size_t list_to_cstr(List *self, char *cstr, size_t size)
 }
 
 
+typedef struct {
+    ListNode *next;
+    int idx;
+} _IterPriv;
+
+static void *_next(Iter *itr, List *self)
+{
+    ListNode *node = ((_IterPriv *)itr->priv)->next;
+    if (node != NULL) {
+        ((_IterPriv *)itr->priv)->idx++;
+        ((_IterPriv *)itr->priv)->next = node->next;
+        return node->obj;
+    }
+    return NULL;
+}
+
+static bool _is_last(Iter *itr, List *self)
+{
+    return ((_IterPriv *)itr->priv)->next == NULL;
+}
+
+static int _get_idx(Iter *itr, List *self)
+{
+    return ((_IterPriv *)itr->priv)->idx;
+}
+
+static void _iter_init(List *self, Iter *itr)
+{
+    itr->next = (iter_next_cb)_next;
+    itr->is_last = (iter_is_last_cb)_is_last;
+    itr->get_idx = (iter_get_idx_cb)_get_idx;
+    itr->priv = malloc(sizeof(_IterPriv));
+    ((_IterPriv *)itr->priv)->next = self->node;
+    ((_IterPriv *)itr->priv)->idx = -1;
+    itr->free_priv = free;
+}
+
+
 static Class _ListCls = {
     .name = "List",
     .size = sizeof(List),
@@ -291,6 +306,7 @@ static Class _ListCls = {
     .destroy = (destroy_cb)list_destroy,
     .repr = (repr_cb)list_to_cstr,
     .to_cstr = (to_cstr_cb)list_to_cstr,
+    .iter_init = (iter_init_cb)_iter_init,
 };
 
 const Class *ListCls = &_ListCls;

@@ -109,6 +109,7 @@ static Class _RegexCls = {
     .destroy = (destroy_cb)regex_destroy,
     .repr = (repr_cb)regex_to_cstr,
     .to_cstr = (to_cstr_cb)regex_to_cstr,
+    .iter_init = NULL,
 };
 
 const Class *RegexCls = &_RegexCls;
