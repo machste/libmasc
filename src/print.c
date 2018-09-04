@@ -142,6 +142,7 @@ size_t vformat(char *cstr, size_t size, const char *fmt, va_list va)
                     // unsigned int
                     va_arg(ap_q, unsigned int);
                 }
+                break;
             case 'h':
                 if (length[1] == 'h') {
                     // char (promoted to int)
