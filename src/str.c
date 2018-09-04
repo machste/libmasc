@@ -342,7 +342,7 @@ List *str_split(Str *self, const char *sep, int maxsplit)
     return l;
 }
 
-Str *str_join(List *iterable, const char *sep) {
+Str *str_join(void *iterable, const char *sep) {
     Iter *itr = new(Iter, iterable);
     Str *str = str_new_cstr("");
     for (void *obj = next(itr); obj != NULL; obj = next(itr)) {

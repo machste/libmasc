@@ -52,7 +52,10 @@ int main(int argc, char *argv[])
         delete(s);
     }
     delete(itr);
+    Str *joined = str_join(mixed, " <--> ");
+    print("joined: %O\n", joined);
     // Clean-up
+    delete(joined);
     delete(a1);
     delete(a2);
     delete(mixed);

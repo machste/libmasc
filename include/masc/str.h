@@ -62,7 +62,7 @@ Str *str_strip(Str *self);
 Str *str_slice(Str *self, size_t start, size_t end);
 
 List *str_split(Str *self, const char *sep, int maxsplit);
-Str *str_join(List *strs, const char *sep);
+Str *str_join(void *iterable, const char *sep);
 
 Str *to_str(const void *self);
 
