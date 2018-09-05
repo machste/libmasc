@@ -9,6 +9,7 @@
 typedef struct Iter Iter;
 
 typedef void *(*iter_next_cb)(Iter *self, void *iterable);
+typedef void (*iter_del_obj_cb)(Iter *self, void *iterable);
 typedef bool (*iter_is_last_cb)(Iter *self, void *iterable);
 typedef int (*iter_get_idx_cb)(Iter *self, void *iterable);
 typedef const char *(*iter_get_key_cb)(Iter *self, void *iterable);
@@ -20,6 +21,7 @@ struct Iter {
     void *iterable;
     void *priv;
     iter_next_cb next;
+    iter_del_obj_cb del_obj;
     iter_is_last_cb is_last;
     iter_get_idx_cb get_idx;
     iter_get_key_cb get_key;
@@ -32,6 +34,7 @@ extern const Class *IterCls;
 
 void *next(Iter *self);
 
+void iter_del_obj(Iter *self);
 bool iter_is_last(Iter *self);
 int iter_get_idx(Iter *self);
 const char *iter_get_key(Iter *self);

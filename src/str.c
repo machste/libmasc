@@ -146,6 +146,11 @@ size_t str_len(Str *self)
     return self->size > 0 ? self->size - 1 : 0;
 }
 
+bool str_is_empty(Str *self)
+{
+    return str_len(self) == 0;
+}
+
 char *str_cstr(Str *self)
 {
     return self->cstr;
@@ -163,16 +168,26 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size)
     return len;
 }
 
-char str_get_at(Str *self, size_t index)
+char str_get_at(Str *self, size_t idx)
 {
-    index = _fix_index(self, index);
-    return self->cstr[index];
+    idx = _fix_index(self, idx);
+    return self->cstr[idx];
 }
 
-void str_set_at(Str *self, size_t index, char c)
+void str_set_at(Str *self, size_t idx, char c)
 {
-    index = _fix_index(self, index);
-    self->cstr[index] = c;
+    idx = _fix_index(self, idx);
+    self->cstr[idx] = c;
+}
+
+void str_delete_at(Str *self, size_t idx)
+{
+    idx = _fix_index(self, idx);
+    if (str_len(self) > 0) {
+        cstr_ncopy(self->cstr + idx, self->cstr + idx + 1, self->size - idx);
+        self->size--;
+        self->cstr = realloc(self->cstr, self->size);
+    }
 }
 
 Str *str_copy(Str *self, const char *cstr)
@@ -370,7 +385,6 @@ Str *to_str(const void *self)
 
 
 typedef struct {
-    char *ptr;
     Char c;
     int idx;
 } _IterPriv;
@@ -383,6 +397,12 @@ static void *_next(Iter *itr, Str *self)
         return &((_IterPriv *)itr->priv)->c;
     }
     return NULL;
+}
+
+static void _del_obj(Iter *itr, Str *self)
+{
+    str_delete_at(self, ((_IterPriv *)itr->priv)->idx);
+    ((_IterPriv *)itr->priv)->idx--;
 }
 
 static bool _is_last(Iter *itr, Str *self)
@@ -398,10 +418,10 @@ static int _get_idx(Iter *itr, Str *self)
 static void _iter_init(Str *self, Iter *itr)
 {
     itr->next = (iter_next_cb)_next;
+    itr->del_obj = (iter_del_obj_cb)_del_obj;
     itr->is_last = (iter_is_last_cb)_is_last;
     itr->get_idx = (iter_get_idx_cb)_get_idx;
     itr->priv = malloc(sizeof(_IterPriv));
-    ((_IterPriv *)itr->priv)->ptr = self->cstr;
     char_init(&((_IterPriv *)itr->priv)->c, '\0');
     ((_IterPriv *)itr->priv)->idx = -1;
     itr->free_priv = free;

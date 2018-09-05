@@ -43,6 +43,13 @@ void *next(Iter *self)
     }
 }
 
+void iter_del_obj(Iter *self)
+{
+    if (self != NULL && self->del_obj != NULL) {
+        self->del_obj(self, self->iterable);
+    }   
+}
+
 bool iter_is_last(Iter *self)
 {
     if (self != NULL && self->is_last != NULL) {

@@ -1,6 +1,8 @@
 #ifndef _MASC_STR_H_
 #define _MASC_STR_H_
 
+#include <stdbool.h>
+
 #include <masc/object.h>
 #include <masc/list.h>
 
@@ -35,6 +37,7 @@ void str_destroy(Str *self);
 void str_delete(Str *self);
 
 size_t str_len(Str *self);
+bool str_is_empty(Str *self);
 
 char *str_cstr(Str *self);
 size_t str_repr(Str *self, char *cstr, size_t size);
@@ -42,6 +45,7 @@ size_t str_to_cstr(Str *self, char *cstr, size_t size);
 
 char str_get_at(Str *self, size_t index);
 void str_set_at(Str *self, size_t index, char c);
+void str_delete_at(Str *self, size_t index);
 
 Str *str_copy(Str *self, const char *cstr);
 Str *str_append(Str *self, const char *cstr);

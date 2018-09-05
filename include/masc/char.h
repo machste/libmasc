@@ -1,6 +1,8 @@
 #ifndef _MASC_CHAR_H_
 #define _MASC_CHAR_H_
 
+#include <stdbool.h>
+
 #include <masc/object.h>
 
 
@@ -21,6 +23,8 @@ void char_delete(Char *self);
 
 char char_get(Char *self);
 void char_set(Char *self, char c);
+
+bool char_is_alpha(Char *self);
 
 size_t char_repr(Char *self, char *cstr, size_t size);
 size_t char_to_cstr(Char *self, char *cstr, size_t size);

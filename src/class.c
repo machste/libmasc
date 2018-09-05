@@ -2,9 +2,10 @@
 
 #include <masc/class.h>
 #include <masc/object.h>
+#include <masc/iter.h>
 #include <masc/none.h>
 #include <masc/cstr.h>
-#include <masc/iter.h>
+
 
 
 const Class *class_of(const void *self)
@@ -98,4 +99,15 @@ size_t to_cstr(const void *self, char *cstr, size_t size)
     } else {
         return cstr_ncopy(cstr, none_cstr, size);
     }
+}
+
+void filter(void *iterable, filter_cb cb)
+{
+    Iter *itr = new(Iter, iterable);
+    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
+        if (!cb(obj)) {
+            iter_del_obj(itr);
+        }
+    }
+    delete(itr);    
 }

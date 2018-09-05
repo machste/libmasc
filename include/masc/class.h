@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #define new(cls, ...) __new__(cls##Cls, ##__VA_ARGS__)
 #define init(cls, ...) ({cls s; __init__(cls##Cls, &s, ##__VA_ARGS__);s;})
@@ -18,6 +19,8 @@ typedef size_t (*repr_cb)(const void *self, char *cstr, size_t size);
 typedef size_t (*to_cstr_cb)(const void *self, char *cstr, size_t size);
 
 typedef void (*iter_init_cb)(const void *self, Iter *itr);
+
+typedef bool (*filter_cb)(void *obj);
 
 typedef struct {
     const char *name;
@@ -42,6 +45,8 @@ void delete(void *self);
 
 size_t repr(const void *self, char *cstr, size_t size);
 size_t to_cstr(const void *self, char *cstr, size_t size);
+
+void filter(void *iterable, filter_cb cb);
 
 
 #endif /* _MASC_CLASS_H_ */

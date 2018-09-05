@@ -234,6 +234,7 @@ static const char *_get_key(Iter *itr, Map *self)
 static void _iter_init(Map *self, Iter *itr)
 {
     itr->next = (iter_next_cb)_next;
+    itr->del_obj = NULL;
     itr->is_last = (iter_is_last_cb)_is_last;
     itr->get_idx = (iter_get_idx_cb)_get_idx;
     itr->get_key = (iter_get_key_cb)_get_key;

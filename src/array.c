@@ -208,6 +208,7 @@ static int _get_idx(Iter *itr, Array *self)
 static void _iter_init(Array *self, Iter *itr)
 {
     itr->next = (iter_next_cb)_next;
+    itr->del_obj = NULL;
     itr->is_last = (iter_is_last_cb)_is_last;
     itr->get_idx = (iter_get_idx_cb)_get_idx;
     itr->priv = malloc(sizeof(_IterPriv));

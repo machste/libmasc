@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 
 #include <masc/char.h>
 
@@ -35,6 +36,10 @@ char char_get(Char *self)
 void char_set(Char *self, char c)
 {
     self->c = c;
+}
+
+bool char_is_alpha(Char *self) {
+    return (bool)isalpha(self->c);
 }
 
 size_t char_repr(Char *self, char *cstr, size_t size)
