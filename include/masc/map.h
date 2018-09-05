@@ -2,6 +2,7 @@
 #define _MASC_MAP_H_
 
 #include <masc/object.h>
+#include <masc/list.h>
 
 
 typedef struct MapNode MapNode;
@@ -28,6 +29,12 @@ size_t map_len(Map *self);
 
 void *map_get(Map *self, const char *key);
 void map_set(Map *self, const char *key, void *value);
+
+void *map_remove_key(Map *self, const char *key);
+bool map_delete_key(Map *self, const char *key);
+
+List *map_get_keys(Map *self);
+List *map_get_values(Map *self);
 
 void map_for_each(Map *self, void (*value_cb)(void *));
 void map_for_each_kv(Map *self, void (*kv_cb)(const char *, void *));

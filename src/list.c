@@ -64,9 +64,7 @@ static ListNode *listnode_new(void *obj) {
 }
 
 static void listnode_delete(ListNode *self) {
-    if (self->obj != NULL) {
-        delete(self->obj);
-    }
+    delete(self->obj);
     free(self);
 }
 
@@ -215,7 +213,7 @@ void *list_remove_at(List *self, int idx)
         rm_node->obj = NULL;
         listnode_delete(rm_node);
     }
-    return obj;    
+    return obj;
 }
 
 bool list_delete_at(List *self, int idx)
@@ -225,7 +223,7 @@ bool list_delete_at(List *self, int idx)
         listnode_delete(rm_node);
         return true;
     }
-    return false;    
+    return false;
 }
 
 void list_for_each(List *self, void (*obj_cb)(void *))

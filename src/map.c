@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <masc/map.h>
+#include <masc/str.h>
 #include <masc/iter.h>
 #include <masc/math.h>
 #include <masc/cstr.h>
@@ -65,9 +66,7 @@ static MapNode *mapnode_new(const char *key, void *value) {
 }
 
 static void mapnode_delete(MapNode *self) {
-    if (self->value != NULL && class_of(self->value) != NULL) {
-        delete(self->value);
-    }
+    delete(self->value);
     free(self->key);
     free(self);
 }
@@ -150,6 +149,71 @@ void map_set(Map *self, const char *key, void *value)
     }
 }
 
+
+static MapNode *_remove_node_by_key(Map *self, const char *key)
+{
+    MapNode *rm_node = self->node, *prev = NULL;
+    if (key != NULL) {
+        while (rm_node != NULL) {
+            if (strcmp(rm_node->key, key) == 0) {
+                if (prev == NULL) {
+                    self->node = rm_node->next;
+                } else {
+                    prev->next = rm_node->next;
+                }
+                return rm_node;
+            }
+            prev = rm_node;
+            rm_node = rm_node->next;
+        }
+    }
+    return NULL;
+}
+
+void *map_remove_key(Map *self, const char *key)
+{
+    void *value = NULL;
+    MapNode *rm_node = _remove_node_by_key(self, key);
+    if (rm_node != NULL) {
+        value = rm_node->value;
+        rm_node->value = NULL;
+        mapnode_delete(rm_node);
+    }
+    return value;
+}
+
+bool map_delete_key(Map *self, const char *key)
+{
+    MapNode *rm_node = _remove_node_by_key(self, key);
+    if (rm_node != NULL) {
+        mapnode_delete(rm_node);
+        return true;
+    }
+    return false;   
+}
+
+List *map_get_keys(Map *self)
+{
+    List *l = list_new();
+    MapNode *node = self->node;
+    while (node != NULL) {
+        list_append(l, str_new_cstr(node->key));
+        node = node->next;
+    }
+    return l;
+}
+
+List *map_get_values(Map *self)
+{
+    List *l = list_new();
+    MapNode *node = self->node;
+    while (node != NULL) {
+        list_append(l, new_copy(node->value));
+        node = node->next;
+    }
+    return l;
+}
+
 static void _for_each_node(Map *self, void (*node_cb)(MapNode *))
 {
     MapNode *node = self->node;
@@ -216,6 +280,12 @@ static void *_next(Iter *itr, Map *self)
 
 }
 
+static void _del_obj(Iter *itr, Map *self)
+{
+    map_delete_key(self, ((_IterPriv *)itr->priv)->key);
+    ((_IterPriv *)itr->priv)->idx--;
+}
+
 static bool _is_last(Iter *itr, Map *self)
 {
     return ((_IterPriv *)itr->priv)->next == NULL;
@@ -234,7 +304,7 @@ static const char *_get_key(Iter *itr, Map *self)
 static void _iter_init(Map *self, Iter *itr)
 {
     itr->next = (iter_next_cb)_next;
-    itr->del_obj = NULL;
+    itr->del_obj = (iter_del_obj_cb)_del_obj;
     itr->is_last = (iter_is_last_cb)_is_last;
     itr->get_idx = (iter_get_idx_cb)_get_idx;
     itr->get_key = (iter_get_key_cb)_get_key;
