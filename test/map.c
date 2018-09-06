@@ -4,6 +4,7 @@
 #include <masc/str.h>
 #include <masc/list.h>
 #include <masc/iter.h>
+#include <masc/macro.h>
 #include <masc/print.h>
 
 
@@ -39,10 +40,7 @@ int main(int argc, char *argv[])
     map_delete_key(m, "values");
     print("map: %O\n", m);
     // Filter map
-    bool is_not_num(void *obj) {
-        return !isinstance(obj, Num);
-    }
-    filter(m, is_not_num);
+    filter(m, LAMBDA(bool, (void *o){return !isinstance(o, Num);}));
     print("map: %O\n", m);
     delete(m);
     return 0;

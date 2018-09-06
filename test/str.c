@@ -1,6 +1,7 @@
 #include <masc/str.h>
 #include <masc/char.h>
 #include <masc/iter.h>
+#include <masc/macro.h>
 #include <masc/print.h>
 
 int main(int argc, char *argv[])
@@ -54,19 +55,13 @@ int main(int argc, char *argv[])
     List *splitted = str_split(split, sep, -1);
     print("splitted: %O\n", splitted);
     // Filter empty strings
-    bool is_not_empty(Str *s) {
-        return !str_is_empty(s);
-    }
-    filter(splitted, (filter_cb)is_not_empty);
+    filter(splitted, LAMBDA(bool, (void *s){return !str_is_empty((Str *)s);}));
     print("filtered: %O\n", splitted);
     // Join string again
     Str *joined = str_join(splitted, ", ");
     print("joined: %O\n", joined);
     // Filter all alpha
-    bool is_not_alpha(Char *c) {
-        return !char_is_alpha(c);
-    }
-    filter(joined, (filter_cb)is_not_alpha);
+    filter(joined, LAMBDA(bool, (void *c){return !char_is_alpha((Char *)c);}));
     print("filtered: %O\n", joined);
     // Clean-up
     delete(split);

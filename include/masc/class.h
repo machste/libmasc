@@ -7,6 +7,7 @@
 
 #define new(cls, ...) __new__(cls##Cls, ##__VA_ARGS__)
 #define init(cls, ...) ({cls s; __init__(cls##Cls, &s, ##__VA_ARGS__);s;})
+
 #define isinstance(obj, cls) (class_of(obj) == cls##Cls)
 
 
