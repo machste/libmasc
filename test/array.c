@@ -28,6 +28,11 @@ int main(int argc, char *argv[])
     s = array_get_at(a2, -1);
     str_fmt(s, "Array length: %i", array_len(a2));
     put(a2);
+    bool _filter_cb(Str *s) {
+        return str_len(s) < 10;
+    }
+    filter(a2, (filter_cb)_filter_cb);
+    put(a2);
     // Mixed array
     Array *mixed = new(Array, max(sizeof(Str), sizeof(Num)), 6);
     // Fill it with strings and nums

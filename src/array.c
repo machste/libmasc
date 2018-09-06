@@ -195,6 +195,11 @@ static void *_next(Iter *itr, Array *self)
     return obj;
 }
 
+static void _del_obj(Iter *itr, Array *self)
+{
+    array_destroy_at(self, ((_IterPriv *)itr->priv)->idx);
+}
+
 static bool _is_last(Iter *itr, Array *self)
 {
     return ((_IterPriv *)itr->priv)->idx == self->len - 1;
@@ -208,7 +213,7 @@ static int _get_idx(Iter *itr, Array *self)
 static void _iter_init(Array *self, Iter *itr)
 {
     itr->next = (iter_next_cb)_next;
-    itr->del_obj = NULL;
+    itr->del_obj = (iter_del_obj_cb)_del_obj;
     itr->is_last = (iter_is_last_cb)_is_last;
     itr->get_idx = (iter_get_idx_cb)_get_idx;
     itr->priv = malloc(sizeof(_IterPriv));
