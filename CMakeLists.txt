@@ -32,11 +32,24 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
+# Setup examples
+file(GLOB EXAMPLE_SRCS example/*.c)
+
+foreach(EXAMPLE_SRC ${EXAMPLE_SRCS})
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE_SRC} NAME_WE)
+
+    add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+
+    target_link_libraries(${EXAMPLE_NAME} ${PROJECT_NAME})
+
+    set_target_properties(${EXAMPLE_NAME} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/example_bin)
+endforeach(EXAMPLE_SRC)
 
 # Setup testing
 enable_testing()
 
-file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.c)
+file(GLOB TEST_SRCS test/*.c)
 
 find_program(VALGRIND valgrind)
 
