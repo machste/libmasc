@@ -7,7 +7,9 @@ int main(int argc, char *argv[])
     put(n);
     num_set(n, 10.0 / 3);
     put(n);
-    Num *n1 = num_new(1000);
+    num_set_cstr(n, "0.345");
+    put(n);
+    Num *n1 = num_new_cstr("0xff");
     put(n1);
     Num *n2 = new_copy(n1);
     Num *n3 = num_add(n2, n);

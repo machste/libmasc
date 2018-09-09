@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 #include <masc/num.h>
@@ -22,6 +23,19 @@ static void _vinit(Num *self, va_list va)
     num_init(self, val);
 }
 
+Num *num_new_cstr(const char *cstr)
+{
+    Num *self = malloc(sizeof(Num));
+    num_init_cstr(self, cstr);
+    return self;
+}
+
+void num_init_cstr(Num *self, const char *cstr)
+{
+    object_init(&self->obj, NumCls);
+    num_set_cstr(self, cstr);
+}
+
 void num_delete(Num *self)
 {
     free(self);
@@ -35,6 +49,17 @@ double num_get(Num *self)
 void num_set(Num *self, double value)
 {
     self->val = value;
+}
+
+bool num_set_cstr(Num *self, const char *cstr)
+{
+    char *endptr;
+    double value = strtod(cstr, &endptr);
+    if (endptr != cstr) {
+        self->val = value;
+        return true;
+    }
+    return false;
 }
 
 double num_iadd(Num *self, Num *other)
