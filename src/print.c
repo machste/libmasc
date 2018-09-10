@@ -60,7 +60,7 @@ size_t format(char *cstr, size_t size, const char *fmt, ...)
 
 size_t vformat(char *cstr, size_t size, const char *fmt, va_list va)
 {
-    size_t len = 0;
+    long len = 0;
     char const *p = fmt, *end = p + strlen(fmt), *fmt_p = fmt, *fmt_q = fmt;
     va_list ap_p, ap_q;
     va_copy(ap_p, va);

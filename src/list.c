@@ -239,7 +239,7 @@ void list_for_each(List *self, void (*obj_cb)(void *))
 
 size_t list_to_cstr(List *self, char *cstr, size_t size)
 {
-    int len = 0;
+    long len = 0;
     len += cstr_ncopy(cstr, "[", size);
     ListNode *node = self->node;
     while (node != NULL) {

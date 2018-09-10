@@ -241,7 +241,7 @@ void map_for_each_kv(Map *self, void (*kv_cb)(const char *, void *))
 
 size_t map_to_cstr(Map *self, char *cstr, size_t size)
 {
-    int len = 0;
+    long len = 0;
     len += cstr_ncopy(cstr, "{", size);
     MapNode *node = self->node;
     while (node != NULL) {

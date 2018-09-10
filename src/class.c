@@ -109,5 +109,5 @@ void filter(void *iterable, filter_cb cb)
             iter_del_obj(itr);
         }
     }
-    delete(itr);    
+    delete(itr);
 }

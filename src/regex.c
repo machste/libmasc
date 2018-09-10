@@ -89,7 +89,7 @@ Array *regex_search(Regex *self, const char *cstr)
 
 size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
 {
-    int len = 0;
+    long len = 0;
     len += snprintf(cstr, size, "/%s/", self->regex);
     if (self->err != 0) {
         len += snprintf(cstr + len, max(0, size - len), " (Error %i: ",
