@@ -158,7 +158,11 @@ char *str_cstr(Str *self)
 
 size_t str_repr(Str *self, char *cstr, size_t size)
 {
-    return snprintf(cstr, size, "\"%s\"", self->cstr);
+    long len;
+    len = cstr_putc(cstr, '\"', size);
+    len += cstr_escape(cstr + len, self->cstr, self->size - 1, size);
+    len += cstr_putc(cstr + len, '\"', max(0, size - len));
+    return len;
 }
 
 size_t str_to_cstr(Str *self, char *cstr, size_t size)
@@ -266,6 +270,26 @@ Str *str_swapcase(Str *self)
             self->cstr[i] = self->cstr[i];
         }
     }
+    return self;
+}
+
+Str *str_escape(Str *self)
+{
+    size_t new_size = cstr_escape(NULL, self->cstr, self->size - 1, 0) + 1;
+    char *new_cstr = malloc(new_size);
+    cstr_escape(new_cstr, self->cstr, self->size - 1, new_size);
+    free(self->cstr);
+    self->size = new_size;
+    self->cstr = new_cstr;
+    return self;
+}
+
+Str *str_unescape(Str *self)
+{
+    char *tmp_str = strdup(self->cstr);
+    self->size = cstr_unescape(self->cstr, tmp_str, self->size) + 1;
+    free(tmp_str);
+    self->cstr = realloc(self->cstr, self->size);
     return self;
 }
 

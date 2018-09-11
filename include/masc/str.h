@@ -57,6 +57,9 @@ Str *str_lower(Str *self);
 Str *str_upper(Str *self);
 Str *str_swapcase(Str *self);
 
+Str *str_escape(Str *self);
+Str *str_unescape(Str *self);
+
 Str *str_reverse(Str *self);
 
 Str *str_lstrip(Str *self);

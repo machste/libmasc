@@ -15,6 +15,11 @@ int main(int argc, char *argv[])
     print("lower: %s\n", str_lower(s)->cstr);
     print("upper: %O\n", str_upper(s));
     print("reverse: %O\n", str_reverse(s));
+    // Escape string und unescape
+    str_copy(s, "Hallo\nWelt!\t\"Foo\"\xff\"");
+    print("String with special chars:\n%O\n---\n", s);
+    print("escape: '%O'\n", str_escape(s));
+    print("unescape:\n%s\n---\n", str_unescape(s)->cstr);
     // Set other string
     str_copy(s, "   Hallo Welt   ");
     print("lstrip: '%O'\n", str_lstrip(s));
