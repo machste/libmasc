@@ -3,6 +3,8 @@
 #include <sys/stat.h>
 
 #include <masc/file.h>
+#include <masc/iter.h>
+#include <masc/print.h>
 
 
 #define FILE_READLINE_BUFFER 128
@@ -58,11 +60,28 @@ size_t file_size(File *self)
     struct stat file_stats;
     if (self->file != NULL) {
         int fd = fileno(self->file);
-        if (fd == 0 && fstat(fd, &file_stats) == 0) {
+        if (fd >= 0 && fstat(fd, &file_stats) == 0) {
             return file_stats.st_size;
         }
     }
     return 0;
+}
+
+Str *file_read(File *self, long len) {
+    if (self->file == NULL) {
+        return NULL;
+    }
+    if (len < 0) {
+        len = file_size(self) - ftell(self->file);
+    }
+    Str *s = str_new_ncopy(NULL, len);
+    long read_len = fread(s->cstr, 1, len, self->file);
+    if (read_len < len) {
+        s->size = read_len + 1;
+        s->cstr = realloc(s->cstr, s->size);
+    }
+    s->cstr[read_len] = '\0';
+    return s;
 }
 
 Str *file_readline(File *self)
@@ -102,6 +121,73 @@ Str *file_readline(File *self)
         }
     }
     return line;
+}
+
+List *file_readlines(File *self)
+{
+    List *l = new(List);
+    Str *line;
+    for (int i = 0; (line = file_readline(self)) != NULL; i++) {
+        list_append(l, line);
+    }
+    return l;
+}
+
+long file_write(File *self, const char *cstr)
+{
+    if (self->file == NULL) {
+        return -1;
+    }
+    return fwrite(cstr, 1, strlen(cstr), self->file);
+}
+
+long file_write_fmt(File *self, const char *fmt, ...)
+{
+    if (self->file == NULL) {
+        return -1;
+    }
+    va_list va;
+    va_start(va, fmt);
+    long len = vfprint(self->file, fmt, va);
+    va_end(va);
+    return len;
+}
+
+long file_put(File *self, void *obj)
+{
+    Str *s = new(Str, "%O\n", obj);
+    long len = file_write(self, str_cstr(s));
+    delete(s);
+    return len;
+}
+
+long file_writelines(File *self, void *iterable)
+{
+    long len = 0;
+    Iter *itr = new(Iter, iterable);
+    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
+        long line_len;
+        if (isinstance(obj, Str)) {
+            line_len = file_write(self, ((Str *)obj)->cstr);
+        } else {
+            line_len = file_put(self, obj);
+        }
+        if (line_len >= 0) {
+            len += line_len;
+        } else {
+            len = -1;
+            break;
+        } 
+    }
+    delete(itr);
+    return len;
+}
+
+void file_rewind(File *self)
+{
+    if (self->file != NULL) {
+        rewind(self->file);
+    }
 }
 
 int file_close(File *self)

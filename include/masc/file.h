@@ -6,6 +6,7 @@
 
 #include <masc/object.h>
 #include <masc/str.h>
+#include <masc/list.h>
 
 
 typedef struct {
@@ -29,7 +30,16 @@ void file_delete(File *self);
 bool file_is_open(File *self);
 size_t file_size(File *self);
 
+Str *file_read(File *self, long len);
 Str *file_readline(File *self);
+List *file_readlines(File *self);
+
+long file_write(File *self, const char *cstr);
+long file_write_fmt(File *self, const char *fmt, ...);
+long file_put(File *self, void *obj);
+long file_writelines(File *self, void *iterable);
+
+void file_rewind(File *self);
 
 int file_close(File *self);
 
