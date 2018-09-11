@@ -319,10 +319,11 @@ Str *str_lstrip(Str *self)
 
 Str *str_rstrip(Str *self)
 {
-    size_t i, j;
+    ssize_t i;
     for (i = self->size - 2; i >= 0 && isspace(self->cstr[i]); i--);
     self->size = i + 2;
     self->cstr = realloc(self->cstr, self->size);
+    size_t j;
     for (j = 0; j < i + 1; j++) {
         self->cstr[j] = self->cstr[j];
     }
@@ -332,11 +333,11 @@ Str *str_rstrip(Str *self)
 
 Str *str_strip(Str *self)
 {
-    size_t l, r, i;
+    size_t l, i;
     for (l = 0; l < self->size && isspace(self->cstr[l]); l++);
+    ssize_t r;
     for (r = self->size - 2; r >= 0 && isspace(self->cstr[r]); r--);
     self->size = r - l + 2;
-    
     for (i = 0; i < self->size - 1; i++) {
         self->cstr[i] = self->cstr[l++];
     }
