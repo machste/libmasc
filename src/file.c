@@ -50,9 +50,19 @@ void file_delete(File *self)
     free(self);
 }
 
+const char *file_path(File *self)
+{
+    return self->path;
+}
+
 bool file_is_open(File *self)
 {
     return self->file != NULL;
+}
+
+char *file_err_msg(File *self)
+{
+    return strerror(self->errnum);
 }
 
 size_t file_size(File *self)
@@ -187,6 +197,21 @@ void file_rewind(File *self)
 {
     if (self->file != NULL) {
         rewind(self->file);
+    }
+}
+
+bool file_reopen(File *self, const char *mode)
+{
+    if (self->file != NULL) {
+        fclose(self->file);
+    }
+    self->file = fopen(self->path, mode);
+    if (self->file == NULL) {
+        self->errnum = errno;
+        return false;
+    } else {
+        self->errnum = 0;
+        return true;
     }
 }
 

@@ -49,6 +49,11 @@ void regex_delete(Regex *self)
     free(self);
 }
 
+bool regex_is_valid(Regex *self)
+{
+    return self->err == 0;
+}
+
 size_t regex_get_nsub(Regex *self)
 {
     if (self->err == 0) {
@@ -56,6 +61,14 @@ size_t regex_get_nsub(Regex *self)
     } else {
         return 0;
     }
+}
+
+bool regex_is_match(Regex *self, const char *cstr)
+{
+    if(self->err == 0) {
+        return regexec(&self->re, cstr, 0, NULL, 0) == 0;
+    }
+    return false;
 }
 
 Str *regex_find(Regex *self, const char *cstr)

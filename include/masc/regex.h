@@ -2,6 +2,7 @@
 #define _MASC_REGEX_H_
 
 #include <regex.h>
+#include <stdbool.h>
 
 #include <masc/object.h>
 #include <masc/str.h>
@@ -28,8 +29,11 @@ void regex_init_copy(Regex *self, Regex *other);
 void regex_destroy(Regex *self);
 void regex_delete(Regex *self);
 
+bool regex_is_valid(Regex *self);
+
 size_t regex_get_nsub(Regex *self);
 
+bool regex_is_match(Regex *self, const char *cstr);
 Str *regex_find(Regex *self, const char *cstr);
 Array *regex_search(Regex *self, const char *cstr);
 

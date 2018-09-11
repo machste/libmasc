@@ -1,4 +1,5 @@
 #include <masc/regex.h>
+#include <masc/bool.h>
 #include <masc/macro.h>
 #include <masc/print.h>
 
@@ -10,8 +11,12 @@ int main(int argc, char *argv[])
     print("nsub: %zu\n", regex_get_nsub(re_err));
     delete(re_err);
     Regex *re = new(Regex, "[0-9]+(\\.[0-9]+)?");
-    char *cstrs[] = {"42", "--.23--", "float: 2.34", "ABC2x5", "V1.2-beta"};
+    char *cstrs[] = {"42", "--.23--", "float: 2.34", "A2x5", "A", "V1.2-beta"};
     print("Regex: %O\n", re);
+    Bool b = init(Bool, regex_is_match(re, cstrs[1]));
+    print("Matches: %s -> %O\n", cstrs[1], &b);
+    b = init(Bool, regex_is_match(re, cstrs[4]));
+    print("Matches: %s -> %O\n", cstrs[4], &b);
     for (int i = 0; i < ARRAY_LEN(cstrs); i++) {
         Str *match = regex_find(re, cstrs[i]);
         print("cstr: '%s' -> '%O'\n", cstrs[i], match);

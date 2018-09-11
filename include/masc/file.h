@@ -27,7 +27,11 @@ void file_init(File *self, const char *path, const char *mode);
 void file_destroy(File *self);
 void file_delete(File *self);
 
+const char *file_path(File *self);
+
 bool file_is_open(File *self);
+char *file_err_msg(File *self);
+
 size_t file_size(File *self);
 
 Str *file_read(File *self, long len);
@@ -41,6 +45,7 @@ long file_writelines(File *self, void *iterable);
 
 void file_rewind(File *self);
 
+bool file_reopen(File *self, const char *mode);
 int file_close(File *self);
 
 size_t file_to_cstr(File *self, char *cstr, size_t size);
