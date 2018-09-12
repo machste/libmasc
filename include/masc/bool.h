@@ -11,7 +11,8 @@ typedef struct {
     bool b;
 } Bool;
 
-
+extern const char *const bool_true_cstr;
+extern const char *const bool_false_cstr;
 extern const void *BoolCls;
 
 

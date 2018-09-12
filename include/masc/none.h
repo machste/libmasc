@@ -13,9 +13,8 @@ typedef struct {
 } None;
 
 
-const char *const none_cstr;
-const char *const none_repr;
-
+extern const char *const none_cstr;
+extern const char *const none_repr;
 extern const Class *NoneCls;
 
 

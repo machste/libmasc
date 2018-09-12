@@ -2,6 +2,10 @@
 #include <masc/cstr.h>
 
 
+const char *const bool_true_cstr = "true";
+const char *const bool_false_cstr = "false";
+
+
 Bool *bool_new(bool b)
 {
     Bool *self = malloc(sizeof(Bool));
