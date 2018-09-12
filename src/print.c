@@ -10,11 +10,20 @@
 #include <masc/math.h>
 
 
-void put(const void *self)
+void put(const void *obj)
 {
-    Str *s = to_str(self);
+    Str *s = to_str(obj);
     puts(str_cstr(s));
     delete(s);
+}
+
+void put_repr(const void *obj)
+{
+    size_t size = repr(obj, NULL, 0) + 1;
+    char *cstr = malloc(size);
+    repr(obj, cstr, size);
+    puts(cstr);
+    free(cstr);
 }
 
 size_t print(const char *fmt, ...)

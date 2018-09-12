@@ -6,7 +6,8 @@
 #include <stdio.h>
 
 
-void put(const void *self);
+void put(const void *obj);
+void put_repr(const void *obj);
 
 size_t print(const char *fmt, ...);
 size_t fprint(FILE *stream, const char *fmt, ...);
