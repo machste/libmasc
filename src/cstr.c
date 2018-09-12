@@ -101,3 +101,16 @@ size_t cstr_unescape(char *dest, const char *src, size_t size)
     }
     return len;
 }
+
+size_t cstr_startswith(const char *cstr, const char *start)
+{
+    size_t pos = 0;
+    while(start[pos] != '\0') {
+        if (cstr[pos] != start[pos]) {
+            pos = 0;
+            break;
+        }
+        pos++;
+    }
+    return pos;
+}
