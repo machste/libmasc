@@ -55,6 +55,18 @@ const char *file_path(File *self)
     return self->path;
 }
 
+const char *file_basename(File *self)
+{
+    // TODO: This function should be part of the path module
+    const char *basename = strrchr(self->path, '/');
+    if (basename != NULL) {
+        basename++;
+    } else {
+        basename = self->path;
+    }
+    return basename;
+}
+
 bool file_is_open(File *self)
 {
     return self->file != NULL;

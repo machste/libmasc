@@ -28,6 +28,7 @@ void file_destroy(File *self);
 void file_delete(File *self);
 
 const char *file_path(File *self);
+const char *file_basename(File *self);
 
 bool file_is_open(File *self);
 char *file_err_msg(File *self);
