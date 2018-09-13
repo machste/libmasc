@@ -92,6 +92,9 @@ Array *regex_search(Regex *self, const char *cstr)
         if (regexec(&self->re, cstr, n, p, 0) == 0) {
             result = array_new(sizeof(Str), n);
             for (int i = 0; i < n; i++) {
+                if (p[i].rm_so == p[i].rm_eo) {
+                    continue;
+                }
                 Str *s = array_get_at(result, i);
                 str_init_ncopy(s, cstr + p[i].rm_so, p[i].rm_eo - p[i].rm_so);
             }
