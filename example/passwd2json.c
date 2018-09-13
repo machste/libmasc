@@ -2,6 +2,7 @@
 #include <masc/list.h>
 #include <masc/map.h>
 #include <masc/num.h>
+#include <masc/json.h>
 #include <masc/print.h>
 
 
@@ -34,7 +35,9 @@ int main(int argc, char *argv[])
         }
         file_close(f);
     }
-    put(users);
+    Json *js = new(Json, users);
+    json_pretty_print(js);
+    delete(js);
     delete(f);
     delete(users);
     return 0;
