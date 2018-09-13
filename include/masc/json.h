@@ -1,6 +1,8 @@
 #ifndef _MASC_JSON_H_
 #define _MASC_JSON_H_
 
+#include <stdbool.h>
+
 #include <masc/object.h>
 
 
@@ -39,8 +41,14 @@ void json_init_copy(Json *self, const Json *other);
 void json_destroy(Json *self);
 void json_delete(Json *self);
 
-JsonError json_parse(void **root, const char *cstr);
+bool json_is_valid(Json *self);
+const char *json_err_msg(Json *self);
+
+size_t json_pretty_cstr(Json *self, char *cstr, size_t size);
+void json_pretty_print(Json *self);
 
 size_t json_to_cstr(Json *self, char *cstr, size_t size);
+
+JsonError json_parse(void **root, const char *cstr);
 
 #endif /* _MASC_JSON_H_ */

@@ -1,6 +1,5 @@
-#include <stdbool.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <string.h>
 
 #include <masc/json.h>
 #include <masc/map.h>
@@ -10,19 +9,10 @@
 #include <masc/bool.h>
 #include <masc/none.h>
 #include <masc/cstr.h>
+#include <masc/iter.h>
+#include <masc/math.h>
 #include <masc/macro.h>
 
-
-typedef enum {
-    EXPECT_VALUE, EXPECT_END, EXPECT_COLON, EXPECT_COMMA
-} expect_t;
-
-static JsonError expect2err[] = {
-    [EXPECT_VALUE] = JSON_ERROR_EXPECT_VALUE,
-    [EXPECT_END] = JSON_ERROR_EXTRA_DATA,
-    [EXPECT_COLON] = JSON_ERROR_COLON,
-    [EXPECT_COMMA] = JSON_ERROR_COMMA
-};
 
 static char *err2str[] = {
     [JSON_SUCCESS] = "ok",
@@ -115,205 +105,101 @@ void json_delete(Json *self)
     free(self);
 }
 
-static Str *parse_string(const char *cstr, size_t *pos)
+bool json_is_valid(Json *self)
 {
-    Str *string = NULL;
-    bool unescape = false;
-    *pos = 1; // Skip starting quote
-    while (cstr[*pos] != '\"') {
-        if (cstr[*pos] == '\\') {
-            // Skip escape sequence
-            (*pos)++;
-            // Unescape string later
-            unescape = true;
-        } else if (cstr[*pos] == '\0') {
-            *pos = 0;
-            break;
+    return self->error == JSON_SUCCESS;
+}
+
+const char *json_err_msg(Json *self)
+{
+    return err2str[self->error];
+}
+
+static size_t indent_cstr(int level, char *cstr, size_t size)
+{
+    int len = level * 2;
+    if (level > 0 && size > len) {
+        memset(cstr, ' ', len);
+    }
+    return len;
+}
+
+static size_t obj_pretty_cstr(void *obj, bool last, int level, char *cstr,
+        size_t size)
+{
+    long len = 0;
+    if (isinstance(obj, Map)) {
+        len += cstr_ncopy(cstr + len, "{\n", max(0, size - len));
+        level++;
+        Iter *itr = new(Iter, obj);
+        for (void *o = next(itr); o != NULL; o = next(itr)) {
+            len += indent_cstr(level, cstr + len, max(0, size - len));
+            len += snprintf(cstr + len, max(0, size - len), "\"%s\": ",
+                    iter_get_key(itr));
+            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
+                    max(0, size - len));
         }
-        (*pos)++;
-    }
-    if (*pos > 0) {
-        string = str_new_ncopy(cstr + 1, *pos - 1);
-        if (unescape) {
-            str_unescape(string);
-        }
-        // Skip ending quote
-        (*pos)++;
-    }
-    return string;
-}
-
-static Num *parse_number(const char *cstr, size_t *pos)
-{
-    Num *num = NULL;
-    char *endptr;
-    double value = strtod(cstr, &endptr);
-    if (endptr != cstr) {
-        num = new(Num, value);
-        *pos = endptr - cstr;
-    }
-    return num;
-}
-
-static Bool *parse_bool(const char *cstr, size_t *pos)
-{
-    Bool *b = NULL;
-    if ((*pos = cstr_startswith(cstr, bool_true_cstr)) > 0) {
-        b = new(Bool, true);
-    } else if ((*pos = cstr_startswith(cstr, bool_false_cstr)) > 0) {
-        b = new(Bool, false);
-    }
-    return b;
-}
-
-static None *parse_null(const char *cstr, size_t *pos)
-{
-    if ((*pos = cstr_startswith(cstr, none_repr)) > 0) {
-        return new(None);
-    }
-    return NULL;
-}
-
-static JsonError append_to_parent(List *stack, void *obj) {
-    JsonError err = JSON_SUCCESS;
-    void *parent = list_get_at(stack, -1);
-    if (parent == NULL) {
-        // We got a primitive as first object, put it to the stack.
-        list_append(stack, obj);
-    } else if (isinstance(parent, List)) {
-        list_append(parent, obj);
-    } else if (isinstance(parent, Str)) {
-        Str *label = list_remove_at(stack, -1);
-        parent = list_get_at(stack, -1);
-        if (isinstance(parent, Map)) {
-            map_set(parent, str_cstr(label), obj);
-        } else if (parent == NULL) {
-            err = JSON_ERROR_EXTRA_DATA;
+        if (last) {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "}\n", max(0, size - len));
         } else {
-            err = JSON_ERROR_FATAL;
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "},\n", max(0, size - len));
+
         }
-        delete(label);
+        delete(itr);
+    } else if (isinstance(obj, List)) {
+        len += cstr_ncopy(cstr + len, "[\n", max(0, size - len));
+        level++;
+        Iter *itr = new(Iter, obj);
+        for (void *o = next(itr); o != NULL; o = next(itr)) {
+            len += indent_cstr(level, cstr + len, max(0, size - len));
+            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
+                    max(0, size - len));
+        }
+        if (last) {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "]\n", max(0, size - len));
+        } else {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "],\n", max(0, size - len));
+        }
+        delete(itr);
     } else {
-        err = JSON_ERROR_EXTRA_DATA;
+        len += repr(obj, cstr + len, max(0, size - len));
+        if (last) {
+            len += cstr_ncopy(cstr + len, "\n", max(0, size - len));
+        } else {
+            len += cstr_ncopy(cstr + len, ",\n", max(0, size - len));
+        }
     }
-    return err;
+    if (level == 0) {
+        // Remove trailing newline
+        len--;
+        if (max(0, size - len) > 0) {
+            cstr[len] = '\0';
+        }
+    }
+    return len;
 }
 
-JsonError json_parse(void **root, const char *cstr)
+size_t json_pretty_cstr(Json *self, char *cstr, size_t size)
 {
-    JsonError err = JSON_SUCCESS;
-    size_t pos = 0;
-    List *stack = new(List);
-    expect_t expect = EXPECT_VALUE;
-    // Set root object to NULL
-    *root = NULL;
-    // Parse JSON string
-    while (err == JSON_SUCCESS && cstr[pos] != '\0') {
-        if (isspace(cstr[pos])) {
-            // Skip spaces
-            pos++;
-        } else if (cstr[pos] == '{' || cstr[pos] == '[') {
-            // Beginn list or map
-            if (expect == EXPECT_VALUE) {
-                void *obj;
-                if (cstr[pos] == '{') {
-                    obj = new(Map);
-                } else {
-                    obj = new(List);
-                }
-                list_append(stack, obj);
-            } else {
-                err = expect2err[expect];
-            }
-            pos++;
-        } else if (cstr[pos] == '}' || cstr[pos] == ']') {
-            // End of list or map
-            size_t stack_len = list_len(stack);
-            if (stack_len > 1) {
-                void *obj = list_remove_at(stack, -1);
-                if ((cstr[pos] == '}' && isinstance(obj, Map)) ||
-                        (cstr[pos] == ']' && isinstance(obj, List))) {
-                    err = append_to_parent(stack, obj);
-                } else {
-                    err = JSON_ERROR_MISSMATCH;
-                }
-                expect = EXPECT_COMMA;
-            } else if (stack_len == 1) {
-                expect = EXPECT_END;
-            } else {
-                err = JSON_ERROR_INVAL;
-            }
-            pos++;
-        } else if (cstr[pos] == '\"') {
-            // Start string or label
-            if (expect == EXPECT_VALUE) {
-                size_t offset;
-                Str *s = parse_string(cstr + pos, &offset);
-                if (s != NULL) {
-                    void *parent = list_get_at(stack, -1);
-                    if (isinstance(parent, Map)) {
-                        // Use string as label
-                        list_append(stack, s);
-                        expect = EXPECT_COLON;
-                    } else {
-                        err = append_to_parent(stack, s);
-                        expect = EXPECT_COMMA;
-                    }
-                    pos += offset;
-                } else {
-                    err = JSON_ERROR_INVAL;
-                }
-            } else {
-                err = expect2err[expect];
-            }
-        } else if (cstr[pos] == ':') {
-            // Label - value seperator
-            if (expect == EXPECT_COLON) {
-                expect = EXPECT_VALUE;
-            } else {
-                err = expect2err[expect];
-            }
-            pos++;
-        } else if (cstr[pos] == ',') {
-            // Comma
-            if (expect == EXPECT_COMMA) {
-                expect = EXPECT_VALUE;
-            } else {
-                err = expect2err[expect];
-            }
-            pos++;
-        } else if (expect == EXPECT_VALUE) {
-            void *primitive = NULL;
-            size_t offset;
-            if (isdigit(cstr[pos]) || cstr[pos] == '-') {
-                // Number
-                primitive = parse_number(cstr + pos, &offset);
-            } else if (cstr[pos] == 't' || cstr[pos] == 'f') {
-                // Bool
-                primitive = parse_bool(cstr + pos, &offset);
-            } else if (cstr[pos] == 'n') {
-                // None
-                primitive = parse_null(cstr + pos, &offset);
-            } else {
-                err = JSON_ERROR_INVAL;
-            }
-            if (primitive != NULL) {
-                err = append_to_parent(stack, primitive);
-                expect = EXPECT_COMMA;
-                pos += offset;
-            } else {
-                err = JSON_ERROR_INVAL;
-            }
-        } else {
-            err = expect2err[expect];
-        }         
+    if (is_valid_root(self->root)) {
+        return obj_pretty_cstr(self->root, true, 0, cstr, size);
+    } else {
+        self->error = JSON_ERROR_ROOT;
+        return 0;
     }
-    // There should be one object in the stack left, the root object!
-    if (err == JSON_SUCCESS) {
-        *root = list_remove_at(stack, 0);
-    }
-    delete(stack);
-    return err;
+}
+
+void json_pretty_print(Json *self)
+{
+    size_t size = json_pretty_cstr(self, NULL, 0) + 1;
+    char *cstr = malloc(size);
+    json_pretty_cstr(self, cstr, size);
+    puts(cstr);
+    free(cstr);
 }
 
 size_t json_repr(Json *self, char *cstr, size_t size)
