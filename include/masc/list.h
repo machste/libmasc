@@ -27,6 +27,7 @@ void list_destroy(List *self);
 void list_delete(List *self);
 
 size_t list_len(List *self);
+bool list_is_empty(List *self);
 
 void *list_get_at(List *self, int idx);
 void list_set_at(List *self, int idx, void *obj);

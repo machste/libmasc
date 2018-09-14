@@ -93,6 +93,11 @@ size_t list_len(List *self)
     return len;
 }
 
+bool list_is_empty(List *self)
+{
+    return self->node == NULL;
+}
+
 static int _fix_index(List *self, int idx)
 {
     size_t len = list_len(self);
@@ -148,7 +153,7 @@ void list_set_at(List *self, int idx, void *obj)
 void list_insert_at(List *self, int idx, void *obj)
 {
     int i = _fix_index(self, idx);
-    if (i == 0) {
+    if (i == 0 || (self->node == NULL && (idx == 0 || idx == -1))) {
         ListNode *tmp_node = self->node;
         self->node = listnode_new(obj);
         self->node->next = tmp_node;
