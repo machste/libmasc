@@ -15,7 +15,7 @@ static Map *uci_parse(File *uci_file)
 {
     Map *uci = new(Map);
     Map *sections = new(Map);
-    Map *options = NULL;
+    Map *section = NULL;
     Regex *re_cfg = new(Regex, "^config\\s+(\\w+)(\\s+'(\\w+)')?");
     Regex *re_opt = new(Regex, "^\\s*option\\s+(\\w+)\\s+'(\\w+)'");
     // Add sections map to uci map use the file name
@@ -25,33 +25,33 @@ static Map *uci_parse(File *uci_file)
     for (int i = 0; (line = file_readline(uci_file)) != NULL; i++) {
         Array *match = NULL;
         if ((match = regex_search(re_cfg, str_cstr(line))) != NULL) {
+            // Found new section definition
             Str *type = array_get_at(match, 1);
             Str *name = array_get_at(match, 3);
             if (is_none(name)) {
+                // Handle anonymous section (@type)
                 name = new(Str, "@%O", type);
                 List *anon_list = map_get(sections, str_cstr(name));
                 if (anon_list == NULL) {
                     anon_list = new(List);
                     map_set(sections, str_cstr(name), anon_list);
                 }
-                Map *sec = new(Map);
-                map_set(sec, "type", new_copy(type));
-                options = new(Map);
-                map_set(sec, "options", options);
-                list_append(anon_list, sec);
+                section = new(Map);
+                map_set(section, "__sec_type__", new_copy(type));
+                list_append(anon_list, section);
                 delete(name);
             } else {
-                Map *sec = new(Map);
-                map_set(sec, "type", new_copy(type));
-                options = new(Map);
-                map_set(sec, "options", options);
-                map_set(sections, str_cstr(name), sec);
+                // Handle named section
+                section = new(Map);
+                map_set(section, "__sec_type__", new_copy(type));
+                map_set(sections, str_cstr(name), section);
             }
         } else if ((match = regex_search(re_opt, str_cstr(line))) != NULL) {
-            if (options != NULL) {
+            // Add option to current section
+            if (section != NULL) {
                 Str *name = array_get_at(match, 1);
                 Str *value = array_get_at(match, 2);
-                map_set(options, str_cstr(name), new_copy(value));
+                map_set(section, str_cstr(name), new_copy(value));
             }
         }
         delete(match);
