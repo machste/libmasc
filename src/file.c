@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 
 #include <masc/file.h>
+#include <masc/path.h>
 #include <masc/iter.h>
 #include <masc/print.h>
 
@@ -22,6 +23,7 @@ void file_init(File *self, const char *path, const char *mode)
     object_init(&self->obj, FileCls);
     self->path = strdup(path);
     self->mode = strdup(mode);
+    // TODO: Check if path is a directory!
     self->file = fopen(path, mode);
     if (self->file == NULL) {
         self->errnum = errno;
@@ -57,14 +59,7 @@ const char *file_path(File *self)
 
 const char *file_basename(File *self)
 {
-    // TODO: This function should be part of the path module
-    const char *basename = strrchr(self->path, '/');
-    if (basename != NULL) {
-        basename++;
-    } else {
-        basename = self->path;
-    }
-    return basename;
+    return path_basename(self->path);
 }
 
 bool file_is_open(File *self)
