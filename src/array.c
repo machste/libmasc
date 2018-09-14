@@ -132,13 +132,29 @@ bool array_copy_at(Array *self, int idx, void *obj)
     return false;
 }
 
+void *array_remove_at(Array *self, int idx)
+{
+    void *obj = NULL;
+    if ((idx = _fix_index(self, idx)) >= 0) {
+        void *dest = self->data + self->obj_size * idx;
+        if (!is_none(dest)) {
+            obj = new_copy(dest);
+            destroy(dest);
+            *(None *)dest = init(None);
+        }
+    }
+    return obj;
+}
+
 bool array_destroy_at(Array *self, int idx)
 {
     if ((idx = _fix_index(self, idx)) >= 0) {
         void *dest = self->data + self->obj_size * idx;
-        destroy(dest);
-        *(None *)dest = init(None);
-        return true;
+        if (!is_none(dest)) {
+            destroy(dest);
+            *(None *)dest = init(None);
+            return true;
+        }
     }
     return false;
 }

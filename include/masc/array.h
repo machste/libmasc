@@ -34,6 +34,7 @@ size_t array_size(Array *self);
 void *array_get_at(Array *self, int idx);
 bool array_set_at(Array *self, int idx, void *obj);
 bool array_copy_at(Array *self, int idx, void *obj);
+void *array_remove_at(Array *self, int idx);
 bool array_destroy_at(Array *self, int idx);
 
 void array_for_each(Array *self, void (*obj_cb)(void *));
