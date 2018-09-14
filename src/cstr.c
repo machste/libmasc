@@ -107,6 +107,11 @@ bool cstr_is_empty(const char *cstr)
     return cstr[0] == '\0';
 }
 
+bool cstr_eq(const char *cstr, const char *other)
+{
+    return strcmp(cstr, other) == 0;
+}
+
 size_t cstr_startswith(const char *cstr, const char *start)
 {
     size_t pos = 0;

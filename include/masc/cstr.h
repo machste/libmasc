@@ -13,6 +13,8 @@ size_t cstr_unescape(char *dest, const char *src, size_t size);
 
 bool cstr_is_empty(const char *cstr);
 
+bool cstr_eq(const char *cstr, const char *other);
+
 size_t cstr_startswith(const char *cstr, const char *start);
 size_t cstr_endswith(const char *cstr, const char *end);
 
