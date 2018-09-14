@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
     print("rstrip: '%O'\n", str_rstrip(s));
     str_copy(s, "   Hallo Welt!   ");
     print("strip:  '%O'\n", str_strip(s));
+    print("startswith(\"Ha\": %d\n", str_startswith(s, "Ha"));
+    print("endswith(\"lt!\": %d\n", str_endswith(s, "lt!"));
     str_delete_at(s, 0);
     print("delete_at(s, 0): %s\n", s->cstr);
     str_delete_at(s, -1);

@@ -148,7 +148,7 @@ size_t str_len(Str *self)
 
 bool str_is_empty(Str *self)
 {
-    return str_len(self) == 0;
+    return cstr_is_empty(self->cstr);
 }
 
 char *str_cstr(Str *self)
@@ -156,20 +156,22 @@ char *str_cstr(Str *self)
     return self->cstr;
 }
 
-size_t str_repr(Str *self, char *cstr, size_t size)
+bool str_startswith(Str *self, const char *start)
 {
-    long len;
-    len = cstr_putc(cstr, '\"', size);
-    len += cstr_escape(cstr + len, self->cstr, self->size - 1, size);
-    len += cstr_putc(cstr + len, '\"', max(0, size - len));
-    return len;
+    if (cstr_is_empty(start)) {
+        return true;
+    } else {
+        return cstr_startswith(self->cstr, start) > 0;
+    }
 }
 
-size_t str_to_cstr(Str *self, char *cstr, size_t size)
+bool str_endswith(Str *self, const char *end)
 {
-    size_t len = str_len(self);
-    cstr_ncopy(cstr, self->cstr, size);
-    return len;
+    if (cstr_is_empty(end)) {
+        return true;
+    } else {
+        return cstr_endswith(self->cstr, end) > 0;
+    }
 }
 
 char str_get_at(Str *self, size_t idx)
@@ -406,14 +408,30 @@ Num *str_to_num(Str *self)
     return num;
 }
 
-Str *to_str(const void *self)
+size_t str_repr(Str *self, char *cstr, size_t size)
 {
-    if (class_of(self) == StrCls) {
-        return str_new_copy(self);
+    long len;
+    len = cstr_putc(cstr, '\"', size);
+    len += cstr_escape(cstr + len, self->cstr, self->size - 1, size);
+    len += cstr_putc(cstr + len, '\"', max(0, size - len));
+    return len;
+}
+
+size_t str_to_cstr(Str *self, char *cstr, size_t size)
+{
+    size_t len = str_len(self);
+    cstr_ncopy(cstr, self->cstr, size);
+    return len;
+}
+
+Str *to_str(const void *obj)
+{
+    if (class_of(obj) == StrCls) {
+        return str_new_copy(obj);
     } else {
-        size_t len = to_cstr(self, NULL, 0);
+        size_t len = to_cstr(obj, NULL, 0);
         Str *s = str_new_ncopy(NULL, len);
-        to_cstr(self, s->cstr, s->size);
+        to_cstr(obj, s->cstr, s->size);
         return s;
     }
 }

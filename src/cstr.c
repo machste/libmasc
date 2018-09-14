@@ -102,6 +102,11 @@ size_t cstr_unescape(char *dest, const char *src, size_t size)
     return len;
 }
 
+bool cstr_is_empty(const char *cstr)
+{
+    return cstr[0] == '\0';
+}
+
 size_t cstr_startswith(const char *cstr, const char *start)
 {
     size_t pos = 0;
@@ -113,4 +118,19 @@ size_t cstr_startswith(const char *cstr, const char *start)
         pos++;
     }
     return pos;
+}
+
+size_t cstr_endswith(const char *cstr, const char *end)
+{
+    size_t len = 0;
+    const char *cstrptr = cstr + strlen(cstr);
+    const char *endptr = end + strlen(end);
+    while(--endptr >= end) {
+        if (--cstrptr < cstr || *cstrptr != *endptr) {
+            len = 0;
+            break;
+        }
+        len++;
+    }
+    return len;
 }

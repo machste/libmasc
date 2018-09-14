@@ -41,8 +41,9 @@ size_t str_len(Str *self);
 bool str_is_empty(Str *self);
 
 char *str_cstr(Str *self);
-size_t str_repr(Str *self, char *cstr, size_t size);
-size_t str_to_cstr(Str *self, char *cstr, size_t size);
+
+bool str_startswith(Str *self, const char *start);
+bool str_endswith(Str *self, const char *end);
 
 char str_get_at(Str *self, size_t index);
 void str_set_at(Str *self, size_t index, char c);
@@ -73,6 +74,9 @@ List *str_split(Str *self, const char *sep, int maxsplit);
 Str *str_join(void *iterable, const char *sep);
 
 Num *str_to_num(Str *self);
+
+size_t str_repr(Str *self, char *cstr, size_t size);
+size_t str_to_cstr(Str *self, char *cstr, size_t size);
 
 Str *to_str(const void *self);
 
