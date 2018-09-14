@@ -396,6 +396,16 @@ Str *str_join(void *iterable, const char *sep) {
     return str;
 }
 
+Num *str_to_num(Str *self)
+{
+    Num *num = new(Num, 0);
+    if (!num_set_cstr(num, self->cstr)) {
+        delete(num);
+        num = NULL;
+    }
+    return num;
+}
+
 Str *to_str(const void *self)
 {
     if (class_of(self) == StrCls) {
