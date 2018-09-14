@@ -156,6 +156,21 @@ char *str_cstr(Str *self)
     return self->cstr;
 }
 
+bool str_eq(Str *self, Str *other)
+{
+    return strcmp(self->cstr, other->cstr) == 0;
+}
+
+bool str_eq_cstr(Str *self, const char *other)
+{
+    return strcmp(self->cstr, other) == 0;
+}
+
+int str_cmp(Str *self, Str *other)
+{
+    return strcmp(self->cstr, other->cstr);
+}
+
 bool str_startswith(Str *self, const char *start)
 {
     if (cstr_is_empty(start)) {
@@ -205,14 +220,43 @@ Str *str_copy(Str *self, const char *cstr)
     return self;
 }
 
+Str *str_prepend(Str *self, const char *cstr)
+{
+    size_t len = strlen(cstr);
+    if (len > 0) {
+        // Calculate new size
+        self->size += len;
+        self->cstr = realloc(self->cstr, self->size);
+        for (long i = self->size - 1; i >= len; i--) {
+            self->cstr[i] = self->cstr[i - len];
+        }
+        strncpy(self->cstr, cstr, len);
+    }
+    return self;
+}
+
+Str *str_prepend_fmt(Str *self, const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    Str new;
+    str_vinit(&new, fmt, va);
+    va_end(va);
+    str_prepend(self, new.cstr);
+    str_destroy(&new);
+    return self;
+}
+
 Str *str_append(Str *self, const char *cstr)
 {
     size_t len = strlen(cstr);
-    size_t self_len = str_len(self);
-    // Calculate new size
-    self->size += len;
-    self->cstr = realloc(self->cstr, self->size);
-    strcpy(self->cstr + self_len, cstr);
+    if (len > 0) {
+        // Calculate new size
+        size_t self_len = str_len(self);
+        self->size += len;
+        self->cstr = realloc(self->cstr, self->size);
+        strcpy(self->cstr + self_len, cstr);
+    }
     return self;
 }
 

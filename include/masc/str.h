@@ -42,6 +42,10 @@ bool str_is_empty(Str *self);
 
 char *str_cstr(Str *self);
 
+bool str_eq(Str *self, Str *other);
+bool str_eq_cstr(Str *self, const char *other);
+int str_cmp(Str *self, Str *other);
+
 bool str_startswith(Str *self, const char *start);
 bool str_endswith(Str *self, const char *end);
 
@@ -50,6 +54,8 @@ void str_set_at(Str *self, size_t index, char c);
 void str_delete_at(Str *self, size_t index);
 
 Str *str_copy(Str *self, const char *cstr);
+Str *str_prepend(Str *self, const char *cstr);
+Str *str_prepend_fmt(Str *self, const char *fmt, ...);
 Str *str_append(Str *self, const char *cstr);
 Str *str_append_fmt(Str *self, const char *fmt, ...);
 

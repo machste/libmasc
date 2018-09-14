@@ -52,10 +52,11 @@ int main(int argc, char *argv[])
         }
     }
     delete(itr);
-    // Append
+    // Append / Prepend
     Str *split = new(Str, ";;token1;;");
     str_append(split, "token2;;");
     str_append_fmt(split, "token%i;;;;", 3);
+    str_prepend_fmt(split, ";token%i", 0);
     // Split string
     char sep[] = ";;";
     print("split: '%O' with '%s'\n", split, sep);
