@@ -38,6 +38,10 @@ int main(int argc, char *argv[])
     print("is_file: %s\n", path_is_file(path) ? "true" : "false");
     print("is_dir: %s\n", path_is_dir(path) ? "true" : "false");
     print("is_link: %s\n", path_is_link(path) ? "true" : "false");
+    // Test readlink
+    Str *link = path_readlink(path);
+    print("readlink: %s -> %O\n", path, link);
+    delete(link);
     // Test list
     List *list = path_list(path);
     print("list: %O\n", list);

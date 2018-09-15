@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <string.h>
@@ -57,6 +58,32 @@ bool path_is_link(const char *path)
         return S_ISLNK(lst.st_mode);
     }
     return false;
+}
+
+PathType path_type(const char *path)
+{
+    struct stat lst;
+    if (lstat(path, &lst) == 0) {
+        if (S_ISREG(lst.st_mode)) {
+            return PATH_FILE;
+        } else if (S_ISDIR(lst.st_mode)) {
+            return PATH_DIR;
+        } else if (S_ISLNK(lst.st_mode)) {
+            return PATH_LINK;
+        } else {
+            return PATH_OTHER;
+        }
+    }
+    return PATH_ERROR;
+}
+
+ssize_t path_getsize(const char *path)
+{
+    struct stat st;
+    if (stat(path, &st) == 0) {
+        return st.st_size;
+    }
+    return -1;
 }
 
 Str *path_join(const char *path, const char *other)
@@ -158,4 +185,17 @@ List *path_list(const char *path)
         }
     }
     return list;
+}
+
+Str *path_readlink(const char *path)
+{
+    Str *link = NULL;
+    struct stat lst;
+    if (lstat(path, &lst) == 0 && S_ISLNK(lst.st_mode)) {
+        link = str_new_ncopy(NULL, lst.st_size);
+        // TODO: Here we have a possible race, when link size changes.
+        readlink(path, link->cstr, link->size);
+        link->cstr[lst.st_size] = '\0'; // readlink does not terminate cstr!
+    }
+    return link;
 }
