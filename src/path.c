@@ -183,6 +183,7 @@ List *path_list(const char *path)
             }
             list_append(list, str_new_cstr(name));
         }
+        closedir(dir);
     }
     return list;
 }
