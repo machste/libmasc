@@ -1,6 +1,7 @@
 #ifndef _MASC_PATH_H_
 #define _MASC_PATH_H_
 
+#include <unistd.h>
 #include <stdbool.h>
 
 #include <masc/str.h>
