@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <masc/list.h>
 #include <masc/iter.h>
 #include <masc/none.h>
@@ -229,6 +231,32 @@ bool list_delete_at(List *self, int idx)
         return true;
     }
     return false;
+}
+
+void list_sort(List *self, cmp_cb cb)
+{
+    size_t len = list_len(self);
+    if (len == 0) {
+        return;
+    }
+    ListNode **sort_arr = malloc(sizeof(ListNode *) * len);
+    size_t i = 0;
+    ListNode *node = self->node;
+    while (node != NULL) {
+        sort_arr[i++] = node;
+        node = node->next;
+    }
+    // Sort
+    int compar(const void *node_a, const void *node_b) {
+        return cb((*(ListNode **)node_a)->obj, (*(ListNode **)node_b)->obj);
+    }
+    qsort(sort_arr, len, sizeof(ListNode **), compar);
+    self->node = sort_arr[0];
+    for (i = 0; i < len - 1; i++) {
+        sort_arr[i]->next = sort_arr[i + 1];
+    }
+    sort_arr[i]->next = NULL;
+    free(sort_arr);
 }
 
 void list_for_each(List *self, void (*obj_cb)(void *))

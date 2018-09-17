@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     init_copy(&l2, l1);
     list_append(&l2, new(Str, "foobar"));
     list_append(&l2, NULL);
+    list_append(&l2, new(Str, "abc64"));
     list_append(&l2, new(Bool, false));
     list_set_at(&l2, 4, new(Char, '4'));
     print("l2: %O\n", &l2);
@@ -41,6 +42,19 @@ int main(int argc, char *argv[])
         print("%s: %O\n", name_of(obj), obj);
     }
     list_for_each(&l2, item_cb);
+    // Sort list
+    list_sort(&l2, cmp);
+    print("sorted l2: %O\n", &l2);
+    List *l3 = new(List);
+    list_append(l3, new(Str, "Mouse"));
+    list_append(l3, new(Str, "Cat"));
+    list_append(l3, new(Str, "Bison"));
+    list_append(l3, new(Str, "Rat"));
+    print("l3: %O\n", l3);
+    list_sort(l3, cmp);
+    print("sorted l3: %O\n", l3);
+    delete(l3);
+    // Remove item
     void *obj = list_remove_at(l1, 5);
     print("list_remove_at(l1, 5): %s: %O\n", name_of(obj), obj);
     delete(obj);

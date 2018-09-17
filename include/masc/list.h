@@ -39,6 +39,8 @@ void list_append(List *self, void *obj);
 void *list_remove_at(List *self, int idx);
 bool list_delete_at(List *self, int idx);
 
+void list_sort(List *self, cmp_cb cb);
+
 void list_for_each(List *self, void (*obj_cb)(void *));
 
 size_t list_to_cstr(List *self, char *cstr, size_t size);

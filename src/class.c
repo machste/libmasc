@@ -100,7 +100,7 @@ int cmp(const void *self, const void *other)
     } else if (!is_none(self) && is_none(other)) {
         return 1;
     } else if (class_of(self) != class_of(other)) {
-        return class_of(self) - class_of(other);
+        return strcmp(name_of(self), name_of(other));
     } else {
         return class_of(self)->cmp(self, other);
     }
