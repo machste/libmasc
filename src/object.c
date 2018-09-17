@@ -25,6 +25,16 @@ void object_destroy(Object *self)
 {
 }
 
+size_t object_len(const Object *self)
+{
+    return 0;
+}
+
+int object_cmp(const Object *self, const Object *other)
+{
+    return memcmp(self, other, class_of(self)->size);
+}
+
 size_t object_to_cstr(Object *self, char *cstr, size_t size)
 {
     return snprintf(cstr, size, "<%s at %p>", name_of(self), self);
@@ -37,6 +47,8 @@ static Class _ObjectCls = {
     .vinit = _vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
+    .len = (len_cb)object_len,
+    .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)object_to_cstr,
     .to_cstr = (to_cstr_cb)object_to_cstr,
     .iter_init = NULL,

@@ -235,6 +235,11 @@ int file_close(File *self)
     return ret;
 }
 
+int file_cmp(const File *self, const File *other)
+{
+    return strcmp(self->path, other->path);
+}
+
 size_t file_to_cstr(File *self, char *cstr, size_t size)
 {
     char *state;
@@ -256,6 +261,8 @@ static Class _FileCls = {
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)file_destroy,
+    .len = (len_cb)file_size,
+    .cmp = (cmp_cb)file_cmp,
     .repr = (repr_cb)file_to_cstr,
     .to_cstr = (to_cstr_cb)file_to_cstr,
     .iter_init = NULL,

@@ -18,7 +18,7 @@ extern const char *const none_repr;
 extern const Class *NoneCls;
 
 
-bool is_none(void *obj);
+bool is_none(const void *obj);
 
 
 #endif /* _MASC_NONE_H_ */

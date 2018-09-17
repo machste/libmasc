@@ -6,7 +6,7 @@ const char *const none_cstr = "None";
 const char *const none_repr = "null";
 
 
-bool is_none(void *obj)
+bool is_none(const void *obj)
 {
     if (obj == NULL || class_of(obj) == NULL || class_of(obj) == NoneCls) {
         return true;
@@ -37,6 +37,8 @@ static Class _NoneCls = {
     .vinit = _vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
+    .len = (len_cb)object_len,
+    .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)_repr,
     .to_cstr = (to_cstr_cb)_to_cstr,
     .iter_init = NULL,

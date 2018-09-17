@@ -246,6 +246,8 @@ static Class _ArrayCls = {
     .init_copy = (init_copy_cb)array_init_copy,
     .destroy = (destroy_cb)array_destroy,
     .repr = (repr_cb)array_to_cstr,
+    .len = (len_cb)array_len,
+    .cmp = (cmp_cb)object_cmp,
     .to_cstr = (to_cstr_cb)array_to_cstr,
     .iter_init = (iter_init_cb)_iter_init,
 };

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
         Num *n = new(Num, d);
         list_append(l1, n);
     }
-    print("l1: %O (len: %zu)\n", l1, list_len(l1));
+    print("l1: %O (len: %zu)\n", l1, len(l1));
     print("get_at(-3): %O, get_at(4): %O\n", list_get_at(l1, -3),
             list_get_at(l1, 4));
     // Iterate over list

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     str_delete_at(s, 5);
     print("delete_at(s, 5): %s\n", s->cstr);
     str_copy(s, "0123456789");
-    print("s: %O\n", s);
+    print("s: %O, len: %zu\n", s, len(s));
     print("reverse: %O\n", str_reverse(s));
     print("slice(2, 7): '%O'\n", str_slice(s, 2, 7));
     // Iterate over string

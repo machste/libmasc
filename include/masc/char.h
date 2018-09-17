@@ -26,6 +26,8 @@ void char_set(Char *self, char c);
 
 bool char_is_alpha(Char *self);
 
+int char_cmp(const Char *self, const Char *other);
+
 size_t char_repr(Char *self, char *cstr, size_t size);
 size_t char_to_cstr(Char *self, char *cstr, size_t size);
 

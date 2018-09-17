@@ -42,6 +42,11 @@ bool char_is_alpha(Char *self) {
     return (bool)isalpha(self->c);
 }
 
+int char_cmp(const Char *self, const Char *other)
+{
+    return self->c - other->c;
+}
+
 size_t char_repr(Char *self, char *cstr, size_t size)
 {
     return snprintf(cstr, size, "\"%c\"", self->c);
@@ -64,6 +69,8 @@ static Class _CharCls = {
     .vinit = (vinit_cb)char_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
+    .len = (len_cb)object_len,
+    .cmp = (cmp_cb)char_cmp,
     .repr = (repr_cb)char_repr,
     .to_cstr = (to_cstr_cb)char_to_cstr,
     .iter_init = NULL,

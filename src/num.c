@@ -72,6 +72,17 @@ Num *num_add(Num *self, Num *other)
     return num_new(self->val + other->val);
 }
 
+int num_cmp(const Num *self, const Num *other)
+{
+    if (self->val > other->val) {
+        return 1;
+    } else if (self->val < other->val) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
 size_t num_to_cstr(Num *self, char *cstr, size_t size)
 {
     return snprintf(cstr, size, "%g", self->val);
@@ -84,6 +95,8 @@ static Class _NumCls = {
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
+    .len = (len_cb)object_len,
+    .cmp = (cmp_cb)num_cmp,
     .repr = (repr_cb)num_to_cstr,
     .to_cstr = (to_cstr_cb)num_to_cstr,
     .iter_init = NULL,

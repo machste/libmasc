@@ -49,6 +49,8 @@ void file_rewind(File *self);
 bool file_reopen(File *self, const char *mode);
 int file_close(File *self);
 
+int file_cmp(const File *self, const File *other);
+
 size_t file_to_cstr(File *self, char *cstr, size_t size);
 
 #endif /* _MASC_FILE_H_ */

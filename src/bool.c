@@ -46,12 +46,23 @@ bool bool_toggle(Bool *self)
     return self->b;
 }
 
+int bool_cmp(const Bool *self, const Bool *other)
+{
+    if (self->b == other->b) {
+        return 0;
+    } else if (self->b) {
+        return 1;
+    } else {
+        return -1;
+    }
+}
+
 size_t bool_to_cstr(Bool *self, char *cstr, size_t size)
 {
     if (self->b) {
-        return cstr_ncopy(cstr, "true", size);
+        return cstr_ncopy(cstr, bool_true_cstr, size);
     } else {
-        return cstr_ncopy(cstr, "false", size);
+        return cstr_ncopy(cstr, bool_false_cstr, size);
     }
 }
 
@@ -62,6 +73,8 @@ static Class _BoolCls = {
     .vinit = (vinit_cb)bool_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
+    .len = (len_cb)object_len,
+    .cmp = (cmp_cb)bool_cmp,
     .repr = (repr_cb)bool_to_cstr,
     .to_cstr = (to_cstr_cb)bool_to_cstr,
     .iter_init = NULL,

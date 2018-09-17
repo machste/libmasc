@@ -29,6 +29,8 @@ bool num_set_cstr(Num *self, const char *cstr);
 double num_iadd(Num *self, Num *other);
 Num *num_add(Num *self, Num *other);
 
+int num_cmp(const Num *self, const Num *other);
+
 size_t num_to_cstr(Num *self, char *cstr, size_t size);
 
 #endif /* _MASC_NUM_H_ */

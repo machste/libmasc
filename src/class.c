@@ -83,6 +83,29 @@ void delete(void *self)
     free(self);
 }
 
+size_t len(const void *self)
+{
+    if (self == NULL || class_of(self) == NULL) {
+        return 0;
+    }
+    return class_of(self)->len(self);
+}
+
+int cmp(const void *self, const void *other)
+{
+    if (self == other) {
+        return 0;
+    } else if (is_none(self) && !is_none(other)) {
+        return -1;
+    } else if (!is_none(self) && is_none(other)) {
+        return 1;
+    } else if (class_of(self) != class_of(other)) {
+        return class_of(self) - class_of(other);
+    } else {
+        return class_of(self)->cmp(self, other);
+    }
+}
+
 size_t repr(const void *self, char *cstr, size_t size)
 {
     if (self != NULL && class_of(self) != NULL) {
