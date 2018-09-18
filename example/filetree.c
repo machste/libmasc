@@ -15,6 +15,7 @@ Map *path_tree(Map *tree, const char *dir)
         tree = new(Map);
     }
     List *items = path_list(dir);
+    list_sort(items, cmp);
     Iter *itr = new(Iter, items);
     for (Str *item = next(itr); item != NULL; item = next(itr)) {
         Str *path = path_join(dir, str_cstr(item));
