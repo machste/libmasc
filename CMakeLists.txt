@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 set(CMAKE_C_FLAGS "-O0 -g -std=gnu99 -Wall -Werror")
 
 file(GLOB HEADERS include/masc/*.h)
-file(GLOB SOURCES src/*.c)
+file(GLOB_RECURSE SOURCES src/*.c)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 

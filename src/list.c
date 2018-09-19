@@ -4,6 +4,7 @@
 #include <masc/iter.h>
 #include <masc/none.h>
 #include <masc/math.h>
+#include <masc/utils.h>
 #include <masc/cstr.h>
 
 
@@ -233,6 +234,12 @@ bool list_delete_at(List *self, int idx)
     return false;
 }
 
+static int _qs_cmp(const void *node_a, const void *node_b, void *arg)
+{
+    cmp_cb cb = (cmp_cb)arg;
+    return cb((*(ListNode **)node_a)->obj, (*(ListNode **)node_b)->obj);
+}
+
 void list_sort(List *self, cmp_cb cb)
 {
     size_t len = list_len(self);
@@ -246,11 +253,7 @@ void list_sort(List *self, cmp_cb cb)
         sort_arr[i++] = node;
         node = node->next;
     }
-    // Sort
-    int compar(const void *node_a, const void *node_b) {
-        return cb((*(ListNode **)node_a)->obj, (*(ListNode **)node_b)->obj);
-    }
-    qsort(sort_arr, len, sizeof(ListNode **), compar);
+    quicksort(sort_arr, len, sizeof(ListNode **), _qs_cmp, cb);
     self->node = sort_arr[0];
     for (i = 0; i < len - 1; i++) {
         sort_arr[i]->next = sort_arr[i + 1];
