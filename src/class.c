@@ -7,6 +7,8 @@
 #include <masc/cstr.h>
 
 
+static const char *const null_cstr = "NULL";
+
 
 const Class *class_of(const void *self)
 {
@@ -22,7 +24,7 @@ const char *name_of(const void *self)
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->name;
     } else {
-        return none_cstr;
+        return null_cstr;
     }
 }
 
@@ -120,7 +122,7 @@ size_t to_cstr(const void *self, char *cstr, size_t size)
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->to_cstr(self, cstr, size);
     } else {
-        return cstr_ncopy(cstr, none_cstr, size);
+        return cstr_ncopy(cstr, null_cstr, size);
     }
 }
 
