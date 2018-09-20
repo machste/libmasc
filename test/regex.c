@@ -34,4 +34,11 @@ int main(int argc, char *argv[])
         delete(match);
     }
     delete(re);
+    char *to_be_splitted = "Well, these are some words.";
+    re = new(Regex, "\\W+");
+    print("Split '%s' by %O\n", to_be_splitted, re);
+    List *parts = regex_split(re, to_be_splitted, -1);
+    print("parts: %O\n", parts);
+    delete(parts);
+    delete(re);
 }

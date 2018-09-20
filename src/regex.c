@@ -103,6 +103,28 @@ Array *regex_search(Regex *self, const char *cstr)
     return result;
 }
 
+List *regex_split(Regex *self, const char *cstr, int maxsplit)
+{
+    List *parts = NULL;
+    if(self->err == 0) {
+        size_t pos = 0;
+        size_t split = 0;
+        regmatch_t p;
+        parts = new(List);
+        while(maxsplit < 0 || split < maxsplit) {
+            if (regexec(&self->re, cstr + pos, 1, &p, 0) == 0) {
+                list_append(parts, str_new_ncopy(cstr + pos, p.rm_so));
+                pos += p.rm_eo;
+            } else {
+                break;
+            }
+            split++;
+        }
+        list_append(parts, str_new_cstr(cstr + pos));
+    }
+    return parts;
+}
+
 size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
 {
     long len = 0;

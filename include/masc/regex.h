@@ -7,6 +7,7 @@
 #include <masc/object.h>
 #include <masc/str.h>
 #include <masc/array.h>
+#include <masc/list.h>
 
 
 typedef struct {
@@ -36,6 +37,8 @@ size_t regex_get_nsub(Regex *self);
 bool regex_is_match(Regex *self, const char *cstr);
 Str *regex_find(Regex *self, const char *cstr);
 Array *regex_search(Regex *self, const char *cstr);
+
+List *regex_split(Regex *self, const char *cstr, int maxsplit);
 
 size_t regex_to_cstr(Regex *self, char *cstr, size_t size);
 
