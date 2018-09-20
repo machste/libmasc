@@ -11,6 +11,7 @@
 #include <masc/cstr.h>
 #include <masc/iter.h>
 #include <masc/math.h>
+#include <masc/regex.h>
 #include <masc/macro.h>
 
 
@@ -75,7 +76,7 @@ Json *json_new_cstr(const char *cstr)
 void json_init_cstr(Json *self, const char *cstr)
 {
     object_init(&self->obj, JsonCls);
-    self->error = json_parse(&self->root, cstr);
+    self->error = json_parse_to_obj(&self->root, cstr);
 }
 
 Json *json_new_copy(const Json *other)
@@ -113,6 +114,48 @@ bool json_is_valid(Json *self)
 const char *json_err_msg(Json *self)
 {
     return err2str[self->error];
+}
+
+JsonError json_parse(Json *self, const char *cstr)
+{
+    if(self->root != NULL) {
+        delete(self->root);
+    }
+    return (self->error = json_parse_to_obj(&self->root, cstr));
+}
+
+void *json_get_node(Json *self, const char *key)
+{
+    void *node = self->root;
+    Regex re = init(Regex, "[\\.\\[]");
+    List *tokens = regex_split(&re, key, -1);
+    destroy(&re);
+    Iter *itr = new(Iter, tokens);
+    for (Str *tok = next(itr); tok != NULL && node != NULL; tok = next(itr)) {
+        int idx = iter_get_idx(itr);
+        if (str_is_empty(tok)) {
+            if (idx == 0) {
+                continue;
+            } else {
+                node = NULL;
+            }
+        } else if (str_get_at(tok, -1) == ']' && isinstance(node, List)) {
+            char *endptr;
+            long list_idx = strtol(tok->cstr, &endptr, 10);
+            if (*endptr == ']') {
+                node = list_get_at(node, list_idx);
+            } else {
+                node = NULL;
+            }
+        } else if (isinstance(node, Map)) {
+            node = map_get(node, tok->cstr);
+        } else {
+            node = NULL;
+        }
+    }
+    delete(itr);
+    list_delete(tokens);
+    return node;
 }
 
 static size_t indent_cstr(int level, char *cstr, size_t size)

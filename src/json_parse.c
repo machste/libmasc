@@ -106,7 +106,7 @@ static JsonError append_to_parent(List *stack, void *obj) {
     return err;
 }
 
-JsonError json_parse(void **root, const char *cstr)
+JsonError json_parse_to_obj(void **root, const char *cstr)
 {
     JsonError err = JSON_SUCCESS;
     size_t pos = 0;
