@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
             if (key != NULL) {
                 void *node = json_get_node(js, key);
                 if (node != NULL) {
-                    put(node);
+                    pretty_print(node);
                 } else {
                     fprint(stderr, "Error: No such key '%s'!\n", key);
                 }
