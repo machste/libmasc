@@ -191,12 +191,28 @@ List *path_list(const char *path)
 Str *path_readlink(const char *path)
 {
     Str *link = NULL;
+    int retries = 3;
     struct stat lst;
-    if (lstat(path, &lst) == 0 && S_ISLNK(lst.st_mode)) {
-        link = str_new_ncopy(NULL, lst.st_size);
-        // TODO: Here we have a possible race, when link size changes.
-        readlink(path, link->cstr, link->size);
-        link->cstr[lst.st_size] = '\0'; // readlink does not terminate cstr!
+    ssize_t link_len;
+    while (retries-- > 0) {
+        if (lstat(path, &lst) == 0 && S_ISLNK(lst.st_mode)) {
+            link = str_new_ncopy(NULL, lst.st_size);
+            link_len = readlink(path, link->cstr, link->size);
+            if (link_len < 0) {
+                delete(link);
+                link = NULL;
+                break;
+            } else if (link_len == lst.st_size) {
+                link->cstr[lst.st_size] = '\0';
+                break;
+            } else {
+                // Link increased in size, try again
+                delete(link);
+                link = NULL;
+            }
+        } else {
+            break;
+        }
     }
     return link;
 }
