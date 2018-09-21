@@ -189,7 +189,7 @@ JsonError json_parse_to_obj(void **root, const char *cstr)
             pos++;
         } else if (expect == EXPECT_VALUE) {
             void *primitive = NULL;
-            size_t offset;
+            size_t offset = 0;
             if (isdigit(cstr[pos]) || cstr[pos] == '-') {
                 // Number
                 primitive = parse_number(cstr + pos, &offset);
