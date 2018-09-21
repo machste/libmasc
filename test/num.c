@@ -1,5 +1,7 @@
 #include <masc/num.h>
 #include <masc/int.h>
+#include <masc/math.h>
+#include <masc/macro.h>
 #include <masc/print.h>
 
 int main(int argc, char *argv[])
@@ -27,5 +29,14 @@ int main(int argc, char *argv[])
     delete(n2);
     delete(n3);
     delete(i1);
+    char *cstr_nums[] = {"42", "0.12", "0xef", "0xf.dx", "gugus", "1A", "0.1B"};
+    for (int i = 0; i < ARRAY_LEN(cstr_nums); i++) {
+        void *num = cstr_to_number(cstr_nums[i], false, NULL);
+        void *num_strict = cstr_to_number(cstr_nums[i], true, NULL);
+        print("%s: %O (%s), strict: %O (%s)\n", cstr_nums[i], num, name_of(num),
+                num_strict, name_of(num_strict));
+        delete(num);
+        delete(num_strict);
+    }
     return 0;
 }

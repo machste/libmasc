@@ -52,7 +52,7 @@ static Map *uci_parse(File *uci_file)
                 Str *name = array_get_at(match, 1);
                 Str *value = array_get_at(match, 2);
                 // Try to convert value to number
-                Num *num = str_to_num(value);
+                void *num = str_to_number(value, true);
                 if (num != NULL) {
                     map_set(section, str_cstr(name), num);
                 } else {

@@ -5,7 +5,6 @@
 
 #include <masc/object.h>
 #include <masc/list.h>
-#include <masc/num.h>
 
 
 typedef struct {
@@ -79,7 +78,7 @@ Str *str_slice(Str *self, size_t start, size_t end);
 List *str_split(Str *self, const char *sep, int maxsplit);
 Str *str_join(void *iterable, const char *sep);
 
-Num *str_to_num(Str *self);
+void *str_to_number(Str *self, bool strict);
 
 size_t str_repr(Str *self, char *cstr, size_t size);
 size_t str_to_cstr(Str *self, char *cstr, size_t size);

@@ -1,5 +1,6 @@
 #include <masc/path.h>
 #include <masc/iter.h>
+#include <masc/int.h>
 #include <masc/json.h>
 #include <masc/print.h>
 
@@ -28,7 +29,7 @@ Map *path_tree(Map *tree, const char *dir)
             Str *link = path_readlink(str_cstr(path));
             map_set(tree, str_cstr(item), link);
         } else { 
-            Num *fsize = new(Num, (double)path_getsize(str_cstr(path)));
+            Int *fsize = new(Int, path_getsize(str_cstr(path)));
             map_set(tree, str_cstr(item), fsize);
         }
         delete(path);

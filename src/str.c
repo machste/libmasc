@@ -442,14 +442,9 @@ Str *str_join(void *iterable, const char *sep) {
     return str;
 }
 
-Num *str_to_num(Str *self)
+void *str_to_number(Str *self, bool strict)
 {
-    Num *num = new(Num, 0);
-    if (!num_set_cstr(num, self->cstr)) {
-        delete(num);
-        num = NULL;
-    }
-    return num;
+    return cstr_to_number(self->cstr, strict, NULL);
 }
 
 size_t str_repr(Str *self, char *cstr, size_t size)

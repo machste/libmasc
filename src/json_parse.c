@@ -4,10 +4,10 @@
 #include <masc/map.h>
 #include <masc/list.h>
 #include <masc/str.h>
-#include <masc/num.h>
 #include <masc/bool.h>
 #include <masc/none.h>
 #include <masc/cstr.h>
+#include <masc/math.h>
 
 
 typedef enum {
@@ -50,13 +50,11 @@ static Str *parse_string(const char *cstr, size_t *pos)
     return string;
 }
 
-static Num *parse_number(const char *cstr, size_t *pos)
+static void *parse_number(const char *cstr, size_t *pos)
 {
-    Num *num = NULL;
     char *endptr;
-    double value = strtod(cstr, &endptr);
+    void *num = cstr_to_number(cstr, false, &endptr);
     if (endptr != cstr) {
-        num = new(Num, value);
         *pos = endptr - cstr;
     }
     return num;
