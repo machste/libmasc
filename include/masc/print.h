@@ -16,6 +16,9 @@ size_t vfprint(FILE *stream, const char *fmt, va_list va);
 size_t format(char *cstr, size_t size, const char *fmt, ...);
 size_t vformat(char *cstr, size_t size, const char *fmt, va_list va);
 
-void hexdump(const void *data, size_t size);
+size_t pretty_cstr(const void *obj, char *cstr, size_t size);
+
+size_t pretty_print(const void *obj);
+
 
 #endif /* _MASC_PRINT_H_ */

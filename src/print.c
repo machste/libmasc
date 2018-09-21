@@ -1,12 +1,15 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 
 #include <masc/print.h>
+#include <masc/map.h>
+#include <masc/list.h>
+#include <masc/iter.h>
 #include <masc/str.h>
+#include <masc/cstr.h>
 #include <masc/math.h>
 
 
@@ -262,35 +265,85 @@ size_t vformat(char *cstr, size_t size, const char *fmt, va_list va)
     return len;
 }
 
-void hexdump(const void *data, size_t size) {
-    char ascii[17];
-    size_t i, j;
-    ascii[16] = '\0';
-    for (i = 0; i < size; i++) {
-        uint8_t c = ((uint8_t *)data)[i];
-        if (i % 16 == 0) {
-            printf("%p: ", data + i);
+static size_t indent_cstr(int level, char *cstr, size_t size)
+{
+    int len = level * 2;
+    if (level > 0 && size > len) {
+        memset(cstr, ' ', len);
+    }
+    return len;
+}
+
+static size_t obj_pretty_cstr(const void *obj, bool last, int level, char *cstr,
+        size_t size)
+{
+    long len = 0;
+    if (isinstance(obj, Map)) {
+        len += cstr_ncopy(cstr + len, "{\n", max(0, size - len));
+        level++;
+        Iter *itr = new(Iter, obj);
+        for (void *o = next(itr); o != NULL; o = next(itr)) {
+            len += indent_cstr(level, cstr + len, max(0, size - len));
+            len += snprintf(cstr + len, max(0, size - len), "\"%s\": ",
+                    iter_get_key(itr));
+            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
+                    max(0, size - len));
         }
-        printf("%02X ", c);
-        if (isprint(c)) {
-            ascii[i % 16] = c;
+        if (last) {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "}\n", max(0, size - len));
         } else {
-            ascii[i % 16] = '.';
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "},\n", max(0, size - len));
+
         }
-        if ((i + 1) % 8 == 0 || i + 1 == size) {
-            printf(" ");
-            if ((i + 1) % 16 == 0) {
-                printf("|  %s \n", ascii);
-            } else if (i + 1 == size) {
-                ascii[(i + 1) % 16] = '\0';
-                if ((i + 1) % 16 <= 8) {
-                    printf(" ");
-                }
-                for (j = (i + 1) % 16; j < 16; j++) {
-                    printf("   ");
-                }
-                printf("|  %s \n", ascii);
-            }
+        delete(itr);
+    } else if (isinstance(obj, List)) {
+        len += cstr_ncopy(cstr + len, "[\n", max(0, size - len));
+        level++;
+        Iter *itr = new(Iter, obj);
+        for (void *o = next(itr); o != NULL; o = next(itr)) {
+            len += indent_cstr(level, cstr + len, max(0, size - len));
+            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
+                    max(0, size - len));
+        }
+        if (last) {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "]\n", max(0, size - len));
+        } else {
+            len += indent_cstr(--level, cstr + len, max(0, size - len));
+            len += cstr_ncopy(cstr + len, "],\n", max(0, size - len));
+        }
+        delete(itr);
+    } else {
+        len += repr(obj, cstr + len, max(0, size - len));
+        if (last) {
+            len += cstr_ncopy(cstr + len, "\n", max(0, size - len));
+        } else {
+            len += cstr_ncopy(cstr + len, ",\n", max(0, size - len));
         }
     }
+    if (level == 0) {
+        // Remove trailing newline
+        len--;
+        if (max(0, size - len) > 0) {
+            cstr[len] = '\0';
+        }
+    }
+    return len;
+}
+
+size_t pretty_cstr(const void *obj, char *cstr, size_t size)
+{
+    return obj_pretty_cstr(obj, true, 0, cstr, size);
+}
+
+size_t pretty_print(const void *obj)
+{
+    size_t size = pretty_cstr(obj, NULL, 0) + 1;
+    char *cstr = malloc(size);
+    pretty_cstr(obj, cstr, size);
+    puts(cstr);
+    free(cstr);
+    return size - 1;
 }
