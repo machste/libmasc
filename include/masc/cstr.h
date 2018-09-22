@@ -18,4 +18,8 @@ bool cstr_eq(const char *cstr, const char *other);
 size_t cstr_startswith(const char *cstr, const char *start);
 size_t cstr_endswith(const char *cstr, const char *end);
 
+char *cstr_lower(char *cstr);
+char *cstr_upper(char *cstr);
+char *cstr_swapcase(char *cstr);
+
 #endif /* _MASC_CSTR_H_ */

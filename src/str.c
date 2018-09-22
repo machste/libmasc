@@ -291,31 +291,19 @@ Str *str_fmt(Str *self, const char *fmt, ...)
 
 Str *str_lower(Str *self)
 {
-    for (size_t i = 0; i < self->size - 1; i++) {
-        self->cstr[i] = tolower(self->cstr[i]);
-    }
+    cstr_lower(self->cstr);
     return self;
 }
 
 Str *str_upper(Str *self)
 {
-    for (size_t i = 0; i < self->size - 1; i++) {
-        self->cstr[i] = toupper(self->cstr[i]);
-    }
+    cstr_upper(self->cstr);
     return self;
 }
 
 Str *str_swapcase(Str *self)
 {
-    for (size_t i = 0; i < self->size - 1; i++) {
-        if (islower(self->cstr[i])) {
-            self->cstr[i] = toupper(self->cstr[i]);
-        } else if (isupper(self->cstr[i])) {
-            self->cstr[i] = tolower(self->cstr[i]);
-        } else {
-            self->cstr[i] = self->cstr[i];
-        }
-    }
+    cstr_swapcase(self->cstr);
     return self;
 }
 

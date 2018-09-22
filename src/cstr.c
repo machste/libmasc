@@ -139,3 +139,31 @@ size_t cstr_endswith(const char *cstr, const char *end)
     }
     return len;
 }
+
+char *cstr_lower(char *cstr)
+{
+    for (char *c = cstr; *c != '\0'; c++) {
+        *c = tolower(*c);
+    }
+    return cstr;
+}
+
+char *cstr_upper(char *cstr)
+{
+    for (char *c = cstr; *c != '\0'; c++) {
+        *c = toupper(*c);
+    }
+    return cstr;
+}
+
+char *cstr_swapcase(char *cstr)
+{
+    for (char *c = cstr; *c != '\0'; c++) {
+        if (islower(*c)) {
+            *c = toupper(*c);
+        } else if (isupper(*c)) {
+            *c = tolower(*c);
+        }
+    }
+    return cstr;
+}
