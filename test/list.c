@@ -53,14 +53,17 @@ int main(int argc, char *argv[])
     print("l3: %O\n", l3);
     list_sort(l3, cmp);
     print("sorted l3: %O\n", l3);
-    delete(l3);
     // Remove item
     void *obj = list_remove_at(l1, 5);
     print("list_remove_at(l1, 5): %s: %O\n", name_of(obj), obj);
     delete(obj);
     list_delete_at(l1, 0);
     list_delete_at(l1, -1);
-    put(l1);
+    print("l1: %O\n", l1);
+    // Copy l3 to l1
+    list_copy(l1, l3);
+    print("l1: %O\n", l1);
+    delete(l3);
     delete(l1);
     destroy(&l2);
     return 0;

@@ -39,15 +39,20 @@ List *list_new_copy(List *other)
     return self;
 }
 
-void list_init_copy(List *self, List *other)
+static void _copy(List *self, List *other)
 {
-    list_init(self);
     ListNode *node = other->node;
     while (node != NULL) {
         void *new_obj = new_copy(node->obj);
         list_append(self, new_obj);
         node = node->next;
     }
+}
+
+void list_init_copy(List *self, List *other)
+{
+    list_init(self);
+    _copy(self, other);
 }
 
 static void listnode_set_obj(ListNode *self, void *obj)
@@ -233,6 +238,19 @@ bool list_delete_at(List *self, int idx)
     }
     return false;
 }
+
+void list_delete_all(List *self)
+{
+    list_destroy(self);
+    self->node = NULL;
+}
+
+void list_copy(List *self, List *other)
+{
+    list_delete_all(self);
+    _copy(self, other);
+}
+
 
 static int _qs_cmp(const void *node_a, const void *node_b, void *arg)
 {

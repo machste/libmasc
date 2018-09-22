@@ -38,6 +38,9 @@ void list_append(List *self, void *obj);
 
 void *list_remove_at(List *self, int idx);
 bool list_delete_at(List *self, int idx);
+void list_delete_all(List *self);
+
+void list_copy(List *self, List *other);
 
 void list_sort(List *self, cmp_cb cb);
 
