@@ -23,17 +23,17 @@ static void _vinit(Int *self, va_list va)
     int_init(self, val);
 }
 
-Int *int_new_cstr(const char *cstr)
+Int *int_new_cstr(const char *cstr, bool strict)
 {
     Int *self = malloc(sizeof(Int));
-    int_init_cstr(self, cstr);
+    int_init_cstr(self, cstr, strict);
     return self;
 }
 
-void int_init_cstr(Int *self, const char *cstr)
+void int_init_cstr(Int *self, const char *cstr, bool strict)
 {
     object_init(&self->obj, IntCls);
-    int_set_cstr(self, cstr);
+    int_set_cstr(self, cstr, strict);
 }
 
 void int_delete(Int *self)
@@ -51,11 +51,11 @@ void int_set(Int *self, long value)
     self->val = value;
 }
 
-bool int_set_cstr(Int *self, const char *cstr)
+bool int_set_cstr(Int *self, const char *cstr, bool strict)
 {
     char *endptr;
     long value = strtol(cstr, &endptr, 0);
-    if (endptr != cstr) {
+    if ((!strict && endptr != cstr) || (strict && *endptr == '\0')) {
         self->val = value;
         return true;
     }

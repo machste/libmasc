@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
                 map_set(user, "Username", list_remove_at(user_data, 0));
                 map_set(user, "Password", list_remove_at(user_data, 0));
                 Str *s = list_get_at(user_data, 0);
-                Num *id = num_new_cstr(s->cstr);
+                Num *id = num_new_cstr(s->cstr, true);
                 map_set(user, "UID", id);
                 s = list_get_at(user_data, 1);
-                id = num_new_cstr(s->cstr);
+                id = num_new_cstr(s->cstr, true);
                 map_set(user, "GID", id);
                 map_set(user, "User ID Info", list_remove_at(user_data, 2));
                 map_set(user, "Home", list_remove_at(user_data, 2));

@@ -23,17 +23,17 @@ static void _vinit(Num *self, va_list va)
     num_init(self, val);
 }
 
-Num *num_new_cstr(const char *cstr)
+Num *num_new_cstr(const char *cstr, bool strict)
 {
     Num *self = malloc(sizeof(Num));
-    num_init_cstr(self, cstr);
+    num_init_cstr(self, cstr, strict);
     return self;
 }
 
-void num_init_cstr(Num *self, const char *cstr)
+void num_init_cstr(Num *self, const char *cstr, bool strict)
 {
     object_init(&self->obj, NumCls);
-    num_set_cstr(self, cstr);
+    num_set_cstr(self, cstr, strict);
 }
 
 void num_delete(Num *self)
@@ -51,11 +51,11 @@ void num_set(Num *self, double value)
     self->val = value;
 }
 
-bool num_set_cstr(Num *self, const char *cstr)
+bool num_set_cstr(Num *self, const char *cstr, bool strict)
 {
     char *endptr;
     double value = strtod(cstr, &endptr);
-    if (endptr != cstr) {
+    if ((!strict && endptr != cstr) || (strict && *endptr == '\0')) {
         self->val = value;
         return true;
     }
