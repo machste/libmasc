@@ -1,4 +1,7 @@
 #include <masc/json.h>
+#include <masc/int.h>
+#include <masc/list.h>
+#include <masc/map.h>
 #include <masc/macro.h>
 #include <masc/print.h>
 
@@ -9,12 +12,42 @@ int main(int argc, char *argv[])
     put(js);
     json_parse(js, "{\"node\":{\"a\":[[null, -0.1, {\"foo\":\"bar\"}], 42]}}");
     json_pretty_print(js);
-    char *keys[] = {"node.a[0][0]", "node", "node.a[1]", "node.a[0][1]",
+    // Get node
+    char *get_keys[] = {"node.a[0][0]", "node", "node.a[1]", "node.a[0][1]",
         "node.a[0][2].foo", "gugus"
     };
-    for (int i = 0; i < ARRAY_LEN(keys); i++) {
-        void *node = json_get_node(js, keys[i]);
-        print("%s: %O (%s)\n", keys[i], node, name_of(node));
+    for (int i = 0; i < ARRAY_LEN(get_keys); i++) {
+        void *node = json_get_node(js, get_keys[i]);
+        print("get '%s': %O (%s)\n", get_keys[i], node, name_of(node));
     }
+    void *root_backup = new_copy(json_get_node(js, ""));
+    // Set node
+    char *set_keys[] = {"node.a[0][0]", "node.a[0][2].set", "gugus",
+        "node.a.bar"
+    };
+    for (int i = 0; i < ARRAY_LEN(set_keys); i++) {
+        Int *new_value = new(Int, i);
+        print("set '%s': ", set_keys[i]);
+        if (json_set_node(js, set_keys[i], new_value)) {
+            put(js);
+        } else {
+            puts("failed!");
+            delete(new_value);
+        }
+    }
+    json_set_node(js, "", root_backup);
+    print("restore root: %O\n", js);
+    // Remove and delete node
+    void *node = json_remove_node(js, "node.a[0][1]");
+    print("removed node.a[0][1]: %O (%s)\n", node, name_of(node));
+    delete(node);
+    put(js);
+    json_delete_node(js, "");
+    print("deleted root: %O\n", js);
+    json_set_root(js, new(Map));
+    json_set_node(js, "list", new(List));
+    json_set_node(js, "list[5]", new(Int, 5));
+    json_set_node(js, "list[3]", new(Int, 3));
+    put(js);
     delete(js);
 }

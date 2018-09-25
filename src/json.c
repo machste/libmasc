@@ -119,6 +119,24 @@ const char *json_err_msg(Json *self)
     return err2str[self->error];
 }
 
+void *json_get_root(Json *self)
+{
+    return self->root;
+}
+
+bool json_set_root(Json *self, void *root)
+{
+    if (is_valid_root(root)) {
+        if(self->root != NULL) {
+            delete(self->root);
+        }
+        self->root = root;
+        self->error = JSON_SUCCESS;
+        return true;
+    }
+    return false;
+}
+
 JsonError json_parse(Json *self, const char *cstr)
 {
     if(self->root != NULL) {
@@ -127,38 +145,135 @@ JsonError json_parse(Json *self, const char *cstr)
     return (self->error = json_parse_to_obj(&self->root, cstr));
 }
 
-void *json_get_node(Json *self, const char *key)
+static List *_key_to_tokens(const char *key)
 {
-    void *node = self->root;
     Regex re = init(Regex, "[\\.\\[]");
     List *tokens = regex_split(&re, key, -1);
     destroy(&re);
+    if (str_is_empty(list_get_at(tokens, 0))) {
+        list_delete_at(tokens, 0);
+    }
+    return tokens;    
+}
+
+static void *_get_node(void *node, List *tokens)
+{
     Iter *itr = new(Iter, tokens);
     for (Str *tok = next(itr); tok != NULL && node != NULL; tok = next(itr)) {
-        int idx = iter_get_idx(itr);
         if (str_is_empty(tok)) {
-            if (idx == 0) {
-                continue;
-            } else {
-                node = NULL;
-            }
-        } else if (str_get_at(tok, -1) == ']' && isinstance(node, List)) {
-            char *endptr;
-            long list_idx = strtol(tok->cstr, &endptr, 10);
-            if (*endptr == ']') {
-                node = list_get_at(node, list_idx);
-            } else {
-                node = NULL;
-            }
-        } else if (isinstance(node, Map)) {
-            node = map_get(node, tok->cstr);
-        } else {
             node = NULL;
+        } else {
+            if (str_get_at(tok, -1) == ']' && isinstance(node, List)) {
+                char *endptr;
+                long list_idx = strtol(tok->cstr, &endptr, 10);
+                if (*endptr == ']') {
+                    node = list_get_at(node, list_idx);
+                } else {
+                    node = NULL;
+                }
+            } else if (isinstance(node, Map)) {
+                node = map_get(node, tok->cstr);
+            } else {
+                node = NULL;
+            }
         }
     }
     delete(itr);
+    return node;
+}
+
+void *json_get_node(Json *self, const char *key)
+{
+    void *node;
+    List *tokens = _key_to_tokens(key);
+    if (!list_is_empty(tokens)) {
+        node = _get_node(self->root, tokens);
+    } else {
+        node = self->root;
+    }
     list_delete(tokens);
     return node;
+}
+
+bool json_set_node(Json *self, const char *key, void *obj)
+{
+    bool ret = true;
+    List *tokens = _key_to_tokens(key);
+    if (!list_is_empty(tokens)) {
+        Str *tok = list_remove_at(tokens, -1); 
+        void *prev = _get_node(self->root, tokens);
+        if (prev != NULL) {
+            if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
+                char *endptr;
+                long list_idx = strtol(tok->cstr, &endptr, 10);
+                if (*endptr == ']') {
+                    if (!list_set_at(prev, list_idx, obj)) {
+                        size_t len = list_len(prev);
+                        for (size_t i = len; i < list_idx; i++) {
+                            list_append(prev, NULL);
+                        }
+                        list_append(prev, obj);
+                    }
+                }
+            } else if (isinstance(prev, Map)) {
+                map_set(prev, tok->cstr, obj);
+            } else {
+                ret = false;
+            }
+        } else {
+            ret = false;
+        }
+        delete(tok);
+    } else {
+        if (self->root != NULL) {
+            delete(self->root);
+        }
+        self->root = obj;
+    }
+    delete(tokens);
+    return ret;
+}
+
+void *json_remove_node(Json *self, const char *key)
+{
+    void *node = self->root;
+    List *tokens = _key_to_tokens(key);
+    if (!list_is_empty(tokens)) {
+        Str *tok = list_remove_at(tokens, -1); 
+        void *prev = _get_node(node, tokens);
+        if (prev != NULL) {
+            if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
+                char *endptr;
+                long list_idx = strtol(tok->cstr, &endptr, 10);
+                if (*endptr == ']') {
+                    node = list_remove_at(prev, list_idx);
+                } else {
+                    node = NULL;
+                }
+            } else if (isinstance(prev, Map)) {
+                node = map_remove_key(prev, tok->cstr);
+            } else {
+                node = NULL;
+            }
+        } else {
+            node = NULL;
+        }
+        delete(tok);
+    } else {
+        self->root = NULL;
+    }
+    delete(tokens);
+    return node;
+}
+
+bool json_delete_node(Json *self, const char *key)
+{
+    void *node = json_remove_node(self, key);
+    if (node != NULL) {
+        delete(node);
+        return true;
+    }
+    return false;
 }
 
 static size_t indent_cstr(int level, char *cstr, size_t size)

@@ -46,7 +46,14 @@ const char *json_err_msg(Json *self);
 
 JsonError json_parse(Json *self, const char *cstr);
 
+void *json_get_root(Json *self);
+bool json_set_root(Json *self, void *root);
+
 void *json_get_node(Json *self, const char *key);
+bool json_set_node(Json *self, const char *key, void *obj);
+
+void *json_remove_node(Json *self, const char *key);
+bool json_delete_node(Json *self, const char *key);
 
 size_t json_pretty_cstr(Json *self, char *cstr, size_t size);
 void json_pretty_print(Json *self);
