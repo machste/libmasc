@@ -270,12 +270,6 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
         }
         delete(itr);
     }
-    // Check if there are still arguments left
-    if (!list_is_empty(&args)) {
-        Str *left_args = str_join(&args, " ");
-        err = str_new("too many arguments: %O", left_args);
-        delete(left_args);
-    }
     // If there occured an error, print usage, error and exit immediately.
     if (err != NULL) {
         argparse_print_usage(self);
@@ -284,6 +278,12 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
         delete(out_args);
         delete(self);
         exit(-1);
+    }
+    // Check if there are still arguments left
+    if (!list_is_empty(&args)) {
+        Str *left_args = str_join(&args, " ");
+        err = str_new("too many arguments: %O", left_args);
+        delete(left_args);
     }
     destroy(&args);
     return out_args;
