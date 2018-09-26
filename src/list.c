@@ -149,33 +149,38 @@ void *list_get_at(List *self, int idx)
     return obj;
 }
 
-void list_set_at(List *self, int idx, void *obj)
+bool list_set_at(List *self, int idx, void *obj)
 {
     ListNode *node = _get_node_at(self, idx);
     if (node != NULL) {
         delete(node->obj);
         listnode_set_obj(node, obj);
+        return true;
     }
+    return false;
 }
 
-void list_insert_at(List *self, int idx, void *obj)
+bool list_insert_at(List *self, int idx, void *obj)
 {
     int i = _fix_index(self, idx);
     if (i == 0 || (self->node == NULL && (idx == 0 || idx == -1))) {
         ListNode *tmp_node = self->node;
         self->node = listnode_new(obj);
         self->node->next = tmp_node;
+        return true;
     } else if (i > 0) {
         ListNode *prev_node = _get_node_at(self, idx - 1);
         if (prev_node != NULL) {
             ListNode *tmp_node = prev_node->next;
             prev_node->next = listnode_new(obj);
             prev_node->next->next = tmp_node;
+            return true;
         }
     }
+    return false;
 }
 
-void list_insert_after(List *self, int idx, void *obj)
+bool list_insert_after(List *self, int idx, void *obj)
 {
     ListNode *node = _get_node_at(self, idx);
     if (node != NULL) {
@@ -183,7 +188,9 @@ void list_insert_after(List *self, int idx, void *obj)
         ListNode *new_node = listnode_new(obj);
         node->next = new_node;
         new_node->next = next;
+        return true;
     }
+    return false;
 }
 
 void list_append(List *self, void *obj)

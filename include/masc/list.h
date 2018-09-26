@@ -30,9 +30,9 @@ size_t list_len(List *self);
 bool list_is_empty(List *self);
 
 void *list_get_at(List *self, int idx);
-void list_set_at(List *self, int idx, void *obj);
-void list_insert_at(List *self, int idx, void *obj);
-void list_insert_after(List *self, int idx, void *obj);
+bool list_set_at(List *self, int idx, void *obj);
+bool list_insert_at(List *self, int idx, void *obj);
+bool list_insert_after(List *self, int idx, void *obj);
 
 void list_append(List *self, void *obj);
 
