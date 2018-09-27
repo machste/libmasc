@@ -14,6 +14,7 @@
 #include <masc/math.h>
 #include <masc/regex.h>
 #include <masc/macro.h>
+#include <masc/print.h>
 
 
 static char *err2str[] = {
@@ -276,91 +277,22 @@ bool json_delete_node(Json *self, const char *key)
     return false;
 }
 
-static size_t indent_cstr(int level, char *cstr, size_t size)
-{
-    int len = level * 2;
-    if (level > 0 && size > len) {
-        memset(cstr, ' ', len);
-    }
-    return len;
-}
-
-static size_t obj_pretty_cstr(void *obj, bool last, int level, char *cstr,
-        size_t size)
-{
-    long len = 0;
-    if (isinstance(obj, Map)) {
-        len += cstr_ncopy(cstr + len, "{\n", max(0, size - len));
-        level++;
-        Iter *itr = new(Iter, obj);
-        for (void *o = next(itr); o != NULL; o = next(itr)) {
-            len += indent_cstr(level, cstr + len, max(0, size - len));
-            len += snprintf(cstr + len, max(0, size - len), "\"%s\": ",
-                    iter_get_key(itr));
-            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
-                    max(0, size - len));
-        }
-        if (last) {
-            len += indent_cstr(--level, cstr + len, max(0, size - len));
-            len += cstr_ncopy(cstr + len, "}\n", max(0, size - len));
-        } else {
-            len += indent_cstr(--level, cstr + len, max(0, size - len));
-            len += cstr_ncopy(cstr + len, "},\n", max(0, size - len));
-
-        }
-        delete(itr);
-    } else if (isinstance(obj, List)) {
-        len += cstr_ncopy(cstr + len, "[\n", max(0, size - len));
-        level++;
-        Iter *itr = new(Iter, obj);
-        for (void *o = next(itr); o != NULL; o = next(itr)) {
-            len += indent_cstr(level, cstr + len, max(0, size - len));
-            len += obj_pretty_cstr(o, iter_is_last(itr), level, cstr + len,
-                    max(0, size - len));
-        }
-        if (last) {
-            len += indent_cstr(--level, cstr + len, max(0, size - len));
-            len += cstr_ncopy(cstr + len, "]\n", max(0, size - len));
-        } else {
-            len += indent_cstr(--level, cstr + len, max(0, size - len));
-            len += cstr_ncopy(cstr + len, "],\n", max(0, size - len));
-        }
-        delete(itr);
-    } else {
-        len += repr(obj, cstr + len, max(0, size - len));
-        if (last) {
-            len += cstr_ncopy(cstr + len, "\n", max(0, size - len));
-        } else {
-            len += cstr_ncopy(cstr + len, ",\n", max(0, size - len));
-        }
-    }
-    if (level == 0) {
-        // Remove trailing newline
-        len--;
-        if (max(0, size - len) > 0) {
-            cstr[len] = '\0';
-        }
-    }
-    return len;
-}
-
 size_t json_pretty_cstr(Json *self, char *cstr, size_t size)
 {
-    if (is_valid_root(self->root)) {
-        return obj_pretty_cstr(self->root, true, 0, cstr, size);
-    } else {
-        self->error = JSON_ERROR_ROOT;
-        return 0;
-    }
+    return pretty_cstr(self->root, cstr, size);
+}
+
+Str *json_pretty_str(Json *self)
+{
+    size_t len = pretty_cstr(self->root, NULL, 0);
+    Str *str = str_new_ncopy(NULL, len);
+    pretty_cstr(self->root, str->cstr, len + 1);
+    return str;
 }
 
 void json_pretty_print(Json *self)
 {
-    size_t size = json_pretty_cstr(self, NULL, 0) + 1;
-    char *cstr = malloc(size);
-    json_pretty_cstr(self, cstr, size);
-    puts(cstr);
-    free(cstr);
+    pretty_print(self->root);
 }
 
 size_t json_repr(Json *self, char *cstr, size_t size)

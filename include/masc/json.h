@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <masc/object.h>
+#include <masc/str.h>
 
 
 typedef enum {
@@ -56,6 +57,7 @@ void *json_remove_node(Json *self, const char *key);
 bool json_delete_node(Json *self, const char *key);
 
 size_t json_pretty_cstr(Json *self, char *cstr, size_t size);
+Str *json_pretty_str(Json *self);
 void json_pretty_print(Json *self);
 
 size_t json_to_cstr(Json *self, char *cstr, size_t size);
