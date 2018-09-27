@@ -5,7 +5,7 @@
 #include <masc/print.h>
 
 
-void *cmd_check(Str *cmd, Str **err_msg)
+static void *cmd_check(Str *cmd, Str **err_msg)
 {
     static char *valid_cmds[] = {"get", "set"};
     for (int i = 0; i < ARRAY_LEN(valid_cmds); i++) {

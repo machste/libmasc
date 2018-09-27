@@ -233,7 +233,13 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
                     }
                 }
             } else if (pa->n == 1 && !pa->required) {
-                map_set(out_args, aparg_dest(pa), list_remove_at(&args, 0));
+                Str *raw_val = list_remove_at(&args, 0);
+                void *val = raw_val;
+                if (raw_val != NULL && pa->type_cb != NULL) {
+                    val = pa->type_cb(raw_val, &err);
+                    delete(raw_val);
+                }
+                map_set(out_args, aparg_dest(pa), val);
             } else {
                 List *vals = new(List);
                 for (int i = 0; i < pa->n; i++) {
