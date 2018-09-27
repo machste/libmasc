@@ -7,6 +7,7 @@
 #include <masc/iter.h>
 #include <masc/cstr.h>
 #include <masc/math.h>
+#include <masc/regex.h>
 #include <masc/print.h>
 
 
@@ -433,6 +434,18 @@ Str *str_join(void *iterable, const char *sep) {
 void *str_to_number(Str *self, bool strict)
 {
     return cstr_to_number(self->cstr, strict, NULL);
+}
+
+bool str_is_match(Str *self, const char *regex)
+{
+    bool ret = false;
+    Regex re;
+    regex_init(&re, regex);
+    if (regex_is_valid(&re)) {
+        ret = regex_is_match(&re, self->cstr);
+    }
+    regex_destroy(&re);
+    return ret;
 }
 
 size_t str_repr(Str *self, char *cstr, size_t size)

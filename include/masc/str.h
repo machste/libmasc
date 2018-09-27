@@ -80,6 +80,8 @@ Str *str_join(void *iterable, const char *sep);
 
 void *str_to_number(Str *self, bool strict);
 
+bool str_is_match(Str *self, const char *regex);
+
 size_t str_repr(Str *self, char *cstr, size_t size);
 size_t str_to_cstr(Str *self, char *cstr, size_t size);
 
