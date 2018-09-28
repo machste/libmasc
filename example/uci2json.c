@@ -1,9 +1,4 @@
-#include <masc/file.h>
-#include <masc/map.h>
-#include <masc/regex.h>
-#include <masc/none.h>
-#include <masc/json.h>
-#include <masc/print.h>
+#include <masc.h>
 
 
 static void print_usage(void)

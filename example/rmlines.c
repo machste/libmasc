@@ -1,11 +1,4 @@
-#include <masc/argparse.h>
-#include <masc/path.h>
-#include <masc/bool.h>
-#include <masc/file.h>
-#include <masc/list.h>
-#include <masc/regex.h>
-#include <masc/print.h>
-
+#include <masc.h>
 
 static int rm_lines(Regex *re, File *f, bool invert)
 {

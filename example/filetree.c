@@ -1,8 +1,4 @@
-#include <masc/path.h>
-#include <masc/iter.h>
-#include <masc/int.h>
-#include <masc/json.h>
-#include <masc/print.h>
+#include <masc.h>
 
 
 static void print_usage(void)

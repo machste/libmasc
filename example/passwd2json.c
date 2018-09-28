@@ -1,9 +1,4 @@
-#include <masc/file.h>
-#include <masc/list.h>
-#include <masc/map.h>
-#include <masc/num.h>
-#include <masc/json.h>
-#include <masc/print.h>
+#include <masc.h>
 
 
 int main(int argc, char *argv[])

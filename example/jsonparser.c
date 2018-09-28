@@ -1,10 +1,4 @@
-#include <masc/argparse.h>
-#include <masc/path.h>
-#include <masc/file.h>
-#include <masc/bool.h>
-#include <masc/none.h>
-#include <masc/json.h>
-#include <masc/print.h>
+#include <masc.h>
 
 
 static void *value_check(Str *value, Str **err_msg)
