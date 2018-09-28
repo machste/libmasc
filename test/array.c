@@ -60,9 +60,6 @@ int main(int argc, char *argv[])
     Str *joined = str_join(mixed, " <--> ");
     print("joined: %O\n", joined);
     // Clean-up
-    delete(joined);
-    delete(a1);
-    delete(a2);
-    delete(mixed);
+    delete_objs(joined, a1, a2, mixed);
     return 0;
 }

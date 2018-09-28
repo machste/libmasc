@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
         args = argparse_parse(ap, argc, argv);
     }
     put(args);
-    delete(args);
-    delete(ap);
+    delete_objs(args, ap);
     return 0;
 }

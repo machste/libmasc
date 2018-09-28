@@ -128,8 +128,6 @@ int main(int argc, char *argv[])
     if (js != NULL) {
         delete(js);
     }
-    delete(key);
-    delete(value);
-    delete(path);
+    delete_objs(key, value, path);
     return ret;
 }

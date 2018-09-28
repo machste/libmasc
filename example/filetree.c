@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
     Map *tree = path_tree(NULL, path);
     Json *js = new(Json, tree);
     json_pretty_print(js);
-    delete(js);
-    delete(tree);
+    delete_objs(js, tree);
     return ret;
 }

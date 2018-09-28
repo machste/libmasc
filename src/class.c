@@ -85,6 +85,17 @@ void delete(void *self)
     free(self);
 }
 
+void __delete_objs__(void *self, ...)
+{
+    va_list va;
+    va_start(va, self);
+    while (self != NULL) {
+        delete(self);
+        self = va_arg(va, void *);
+    }
+    va_end(va);
+}
+
 size_t len(const void *self)
 {
     if (self == NULL || class_of(self) == NULL) {

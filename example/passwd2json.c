@@ -37,8 +37,6 @@ int main(int argc, char *argv[])
     }
     Json *js = new(Json, users);
     json_pretty_print(js);
-    delete(js);
-    delete(f);
-    delete(users);
+    delete_objs(js, f, users);
     return 0;
 }

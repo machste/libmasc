@@ -60,8 +60,7 @@ static Map *uci_parse(File *uci_file)
                 }
             }
         }
-        delete(match);
-        delete(line);
+        delete_objs(match, line);
     }
     return uci;
 }

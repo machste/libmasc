@@ -8,6 +8,8 @@
 #define new(cls, ...) __new__(cls##Cls, ##__VA_ARGS__)
 #define init(cls, ...) ({cls s; __init__(cls##Cls, &s, ##__VA_ARGS__);s;})
 
+#define delete_objs(obj, ...) __delete_objs__(obj, ##__VA_ARGS__, NULL)
+
 #define isinstance(obj, cls) (class_of(obj) == cls##Cls)
 
 
@@ -48,6 +50,8 @@ void *new_copy(const void *other);
 void init_copy(void *self, const void *other);
 void destroy(void *self);
 void delete(void *self);
+void __delete_objs__(void *self, ...);
+
 
 size_t len(const void *self);
 int cmp(const void *self, const void *other);
