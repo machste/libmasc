@@ -28,7 +28,7 @@ static void *value_check(Str *value, Str **err_msg)
 
 static int get_action(Json *js, Str *key, bool compact)
 {
-    if (!is_none(key)) {
+    if (key != NULL) {
         // Get node by key
         void *node = json_get_node(js, str_cstr(key));
         if (node != NULL) {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     delete(js_file);
     // Perform get or set action
     if (ret == 0) {
-        if (is_none(value)) {
+        if (value == NULL) {
             ret = get_action(js, key, compact);
         } else {
             ret = set_action(js, path, key, value, compact);
@@ -128,6 +128,6 @@ int main(int argc, char *argv[])
     if (js != NULL) {
         delete(js);
     }
-    delete_objs(key, value, path);
+    delete_objs(path, key, value);
     return ret;
 }
