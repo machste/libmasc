@@ -127,15 +127,15 @@ List *regex_split(Regex *self, const char *cstr, int maxsplit)
 
 size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
 {
-    long len = 0;
-    len += snprintf(cstr, size, "/%s/", self->regex);
+    long l = 0;
+    l += snprintf(cstr, size, "/%s/", self->regex);
     if (self->err != 0) {
-        len += snprintf(cstr + len, max(0, size - len), " (Error %i: ",
+        l += snprintf(cstr + l, max(0, size - l), " (Error %i: ",
                 self->err);
-        len += regerror(self->err, &self->re, cstr + len, max(0, size - len));
-        len += cstr_ncopy(cstr + len, ")", max(0, size - len));
+        l += regerror(self->err, &self->re, cstr + l, max(0, size - l)) - 1;
+        l += cstr_ncopy(cstr + l, ")", max(0, size - l));
     }
-    return len;
+    return l;
 }
 
 
