@@ -43,6 +43,7 @@ void list_delete_all(List *self);
 void list_copy(List *self, List *other);
 
 void list_sort(List *self, cmp_cb cb);
+void list_sort_in(List *self, void *obj, cmp_cb cb);
 
 void list_for_each(List *self, void (*obj_cb)(void *));
 

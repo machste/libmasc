@@ -273,11 +273,10 @@ void list_sort(List *self, cmp_cb cb)
     }
     ListNode **sort_arr = malloc(sizeof(ListNode *) * len);
     size_t i = 0;
-    ListNode *node = self->node;
-    while (node != NULL) {
+    for (ListNode *node = self->node; node != NULL; node = node->next) {
         sort_arr[i++] = node;
-        node = node->next;
     }
+    cb = cb == NULL ? cmp : cb;
     quicksort(sort_arr, len, sizeof(ListNode **), _qs_cmp, cb);
     self->node = sort_arr[0];
     for (i = 0; i < len - 1; i++) {
@@ -287,14 +286,36 @@ void list_sort(List *self, cmp_cb cb)
     free(sort_arr);
 }
 
+void list_sort_in(List *self, void *obj, cmp_cb cb)
+{
+    cb = cb == NULL ? cmp : cb;
+    // Search right position to insert the new object
+    ListNode *prev = NULL;
+    for (ListNode *node = self->node; node != NULL; node = node->next) {
+        if (cb(node->obj, obj) >= 0) {
+            break;
+        }
+        prev = node;
+    }
+    // Insert before current node
+    ListNode *new_node = listnode_new(obj);
+    ListNode *tmp_node;
+    if (prev != NULL) {
+        tmp_node = prev->next;
+        prev->next = new_node;
+    } else {
+        tmp_node = self->node;
+        self->node = new_node;
+    }
+    new_node->next = tmp_node;
+}
+
 void list_for_each(List *self, void (*obj_cb)(void *))
 {
-    ListNode *node = self->node;
-    while (node != NULL) {
+    for (ListNode *node = self->node; node != NULL; node = node->next) {
         if (node->obj != NULL && class_of(node->obj) != NULL) {
             obj_cb(node->obj);
         } 
-        node = node->next;
     }
 }
 
@@ -302,8 +323,7 @@ size_t list_to_cstr(List *self, char *cstr, size_t size)
 {
     long len = 0;
     len += cstr_ncopy(cstr, "[", size);
-    ListNode *node = self->node;
-    while (node != NULL) {
+    for (ListNode *node = self->node; node != NULL; node = node->next) {
         if (node->obj != NULL && class_of(node->obj) != NULL) {
             len += repr(node->obj, cstr + len, max(0, size - len));
         } else {
@@ -312,7 +332,6 @@ size_t list_to_cstr(List *self, char *cstr, size_t size)
         if (node->next != NULL) {
             len += cstr_ncopy(cstr + len, ", ", max(0, size - len));
         }
-        node = node->next;
     }
     len += cstr_ncopy(cstr + len, "]", max(0, size - len));
     return len;

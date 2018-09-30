@@ -51,8 +51,10 @@ int main(int argc, char *argv[])
     list_append(l3, new(Str, "Bison"));
     list_append(l3, new(Str, "Rat"));
     print("l3: %O\n", l3);
-    list_sort(l3, cmp);
+    list_sort(l3, NULL);
     print("sorted l3: %O\n", l3);
+    list_sort_in(l3, new(Str, "Hound"), NULL);
+    print("sort 'Hound' into l3: %O\n", l3);
     // Remove item
     void *obj = list_remove_at(l1, 5);
     print("list_remove_at(l1, 5): %s: %O\n", name_of(obj), obj);
