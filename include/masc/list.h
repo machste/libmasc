@@ -29,6 +29,8 @@ void list_delete(List *self);
 size_t list_len(List *self);
 bool list_is_empty(List *self);
 
+bool list_is_in(List *self, void *obj);
+
 void *list_get_at(List *self, int idx);
 bool list_set_at(List *self, int idx, void *obj);
 bool list_insert_at(List *self, int idx, void *obj);
@@ -36,7 +38,9 @@ bool list_insert_after(List *self, int idx, void *obj);
 
 void list_append(List *self, void *obj);
 
+bool list_remove(List *self, void *obj);
 void *list_remove_at(List *self, int idx);
+bool list_delete_obj(List *self, void *obj);
 bool list_delete_at(List *self, int idx);
 void list_delete_all(List *self);
 

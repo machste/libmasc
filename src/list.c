@@ -106,6 +106,16 @@ bool list_is_empty(List *self)
     return self->node == NULL;
 }
 
+bool list_is_in(List *self, void *obj)
+{
+    for (ListNode *node = self->node; node != NULL; node = node->next) {
+        if (obj == node->obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static int _fix_index(List *self, int idx)
 {
     size_t len = list_len(self);
@@ -207,6 +217,34 @@ void list_append(List *self, void *obj)
     }
 }
 
+static ListNode *_remove_node(List *self, void *obj)
+{
+    ListNode *node, *prev = NULL;
+    for (node = self->node; node != NULL; node = node->next) {
+        if (obj == node->obj) {
+            if (prev == NULL) {
+                self->node = node->next;
+            } else {
+                prev->next = node->next;
+            }
+            break;
+        }
+        prev = node;
+    }
+    return node;
+}
+
+bool list_remove(List *self, void *obj)
+{
+    ListNode *rm_node = _remove_node(self, obj);
+    if (rm_node != NULL) {
+        rm_node->obj = NULL;
+        listnode_delete(rm_node);
+        return true;
+    }
+    return false;
+}
+
 static ListNode *_remove_node_at(List *self, int idx)
 {
     ListNode *rm_node = NULL;
@@ -234,6 +272,16 @@ void *list_remove_at(List *self, int idx)
         listnode_delete(rm_node);
     }
     return obj;
+}
+
+bool list_delete_obj(List *self, void *obj)
+{
+    ListNode *rm_node = _remove_node(self, obj);
+    if (rm_node != NULL) {
+        listnode_delete(rm_node);
+        return true;
+    }
+    return false;
 }
 
 bool list_delete_at(List *self, int idx)

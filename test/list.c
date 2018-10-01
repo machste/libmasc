@@ -53,9 +53,16 @@ int main(int argc, char *argv[])
     print("l3: %O\n", l3);
     list_sort(l3, NULL);
     print("sorted l3: %O\n", l3);
-    list_sort_in(l3, new(Str, "Hound"), NULL);
+    // Sort in
+    Str *hound = new(Str, "Hound");
+    print("is 'Hound' in list: %s\n", list_is_in(l3, hound) ? "true" : "false");
+    list_sort_in(l3, hound, NULL);
     print("sort 'Hound' into l3: %O\n", l3);
-    // Remove item
+    print("is 'Hound' in list: %s\n", list_is_in(l3, hound) ? "true" : "false");
+    // Delete object from list
+    list_delete_obj(l3, hound);
+    print("delete 'Hound' from l3: %O\n", l3);
+    // Remove at index
     void *obj = list_remove_at(l1, 5);
     print("list_remove_at(l1, 5): %s: %O\n", name_of(obj), obj);
     delete(obj);
