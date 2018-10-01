@@ -32,7 +32,13 @@ size_t object_len(const Object *self)
 
 int object_cmp(const Object *self, const Object *other)
 {
-    return memcmp(self, other, class_of(self)->size);
+    if (self == other) {
+        return 0;
+    } else if (self > other) {
+        return 1;
+    } else {
+        return -1;
+    }
 }
 
 size_t object_to_cstr(Object *self, char *cstr, size_t size)
