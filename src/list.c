@@ -292,7 +292,7 @@ void list_sort_in(List *self, void *obj, cmp_cb cb)
     // Search right position to insert the new object
     ListNode *prev = NULL;
     for (ListNode *node = self->node; node != NULL; node = node->next) {
-        if (cb(node->obj, obj) >= 0) {
+        if (cb(node->obj, obj) > 0) {
             break;
         }
         prev = node;
