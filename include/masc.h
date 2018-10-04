@@ -23,5 +23,8 @@
 #include <masc/bool.h>
 #include <masc/object.h>
 #include <masc/math.h>
+#include <masc/tcpserver.h>
+#include <masc/mloop.h>
+
 
 #endif /* _MASC_H_ */
