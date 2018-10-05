@@ -79,7 +79,8 @@ void str_init_ncopy(Str *self, const char* cstr, size_t len)
     self->size = len + 1;
     self->cstr = malloc(self->size);
     if (cstr != NULL) {
-        cstr_ncopy(self->cstr, cstr, self->size);
+        memcpy(self->cstr, cstr, self->size);
+        self->cstr[len] = '\0';
     } else {
         self->cstr[0] = '\0';
     }
