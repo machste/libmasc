@@ -23,6 +23,7 @@
 #include <masc/bool.h>
 #include <masc/object.h>
 #include <masc/math.h>
+#include <masc/random.h>
 #include <masc/tcpserver.h>
 #include <masc/mloop.h>
 

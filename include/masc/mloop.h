@@ -8,6 +8,7 @@
 #ifndef _MASC_MLOOP_H_
 #define _MASC_MLOOP_H_
 
+#include <unistd.h>
 #include <stdbool.h>
 
 
@@ -21,9 +22,12 @@ typedef enum {
 typedef unsigned long ml_time_t;
 
 typedef struct MlTimer MlTimer;
+typedef struct MlProc MlProc;
 typedef struct MlFd MlFd;
 
 typedef void (*ml_timer_cb)(MlTimer *self, void *arg);
+typedef int (*ml_proc_cb)(void *arg);
+typedef void (*ml_proc_done_cb)(MlProc *self, int ret, void *arg);
 typedef void (*ml_fd_cb)(MlFd *self, int fd, ml_fd_flag_t events, void *arg);
 
 
@@ -99,6 +103,45 @@ int mloop_timer_msec(MlTimer *self);
  * @brief Remaining Time of the Timer
  */
 int mloop_timer_remaining(MlTimer *self);
+
+/**
+ * @brief Add and Run a Process
+ *
+ * @return the added MlProc object otherwise NULL
+ */
+MlProc *mloop_proc_new(ml_proc_cb run_cb, ml_proc_done_cb done_cb, void *arg);
+
+/**
+ * @brief Check if Process is Running
+ */
+bool mloop_proc_is_running(MlProc *self);
+
+/**
+ * @brief Get PID of the Process
+ */
+pid_t mloop_proc_pid(MlProc *self);
+
+/**
+ * @brief Check if Process Terminated by signal
+ *
+ * @return the signal number otherwise -1
+ */
+int mloop_proc_signaled(MlProc *self);
+
+/**
+ * @brief Run an Existing Process Again
+ */
+bool mloop_proc_rerun(MlProc *self);
+
+/**
+ * @brief Cancle Process
+ */
+bool mloop_proc_cancle(MlProc *self);
+
+/**
+ * @brief Delete Process
+ */
+void mloop_proc_delete(MlProc *self);
 
 /**
  * @brief Add a File Descriptor
