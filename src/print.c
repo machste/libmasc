@@ -1,8 +1,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <masc/print.h>
 #include <masc/map.h>
@@ -49,13 +50,31 @@ size_t fprint(FILE *stream, const char *fmt, ...)
 
 size_t vfprint(FILE *stream, const char *fmt, va_list va)
 {
+    int fd = fileno(stream);
+    if (fd >= 0) {
+        return vdprint(fd, fmt, va);
+    }
+    return 0;
+}
+
+size_t dprint(int fd, const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    size_t len = vdprint(fd, fmt, va);
+    va_end(va);
+    return len;
+}
+
+size_t vdprint(int fd, const char *fmt, va_list va)
+{
     va_list va2;
     // Make a copy of va to use it twice
     va_copy(va2, va);
     size_t len = vformat(NULL, 0, fmt, va);
     char *cstr = malloc(len + 1);
     vformat(cstr, len + 1, fmt, va2);
-    fwrite(cstr, 1, len, stream);
+    write(fd, cstr, len);
     free(cstr);
     va_end(va2);
     return len;
