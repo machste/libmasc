@@ -370,9 +370,9 @@ Str *str_rstrip(Str *self)
 Str *str_strip(Str *self)
 {
     size_t l, i;
-    for (l = 0; l < self->size && isspace(self->cstr[l]); l++);
+    for (l = 0; l < self->size - 1 && isspace(self->cstr[l]); l++);
     ssize_t r;
-    for (r = self->size - 2; r >= 0 && isspace(self->cstr[r]); r--);
+    for (r = self->size - 2; r > l && isspace(self->cstr[r]); r--);
     self->size = r - l + 2;
     for (i = 0; i < self->size - 1; i++) {
         self->cstr[i] = self->cstr[l++];
