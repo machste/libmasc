@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <arpa/inet.h>
 
 #include <masc/argparse.h>
 #include <masc/cstr.h>
@@ -387,12 +388,23 @@ void *argparse_file(Str *path, Str **err_msg)
 {
     File *f = new(File, str_cstr(path), "r");
     if (!file_is_open(f)) {
-        *err_msg = str_new("file '%s': %s!\n", file_path(f), file_err_msg(f));
+        *err_msg = str_new("file '%s': %s!", file_path(f), file_err_msg(f));
         delete(f);
         f = NULL;
     }
     return f;
 }
+
+void *argparse_ip(Str *ip, Str **err_msg)
+{
+    struct in_addr addr;
+    if (!inet_aton(str_cstr(ip), &addr)) {
+        *err_msg = str_new("invalid IP: %O!", ip);
+        return NULL;
+    }
+    return new_copy(ip);
+}
+
 
 static Class _ArgparseCls = {
     .name = "Argparse",

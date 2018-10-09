@@ -52,5 +52,6 @@ size_t argparse_to_cstr(Argparse *self, char *cstr, size_t size);
 void *argparse_int(Str *integer, Str **err_msg);
 void *argparse_num(Str *num, Str **err_msg);
 void *argparse_file(Str *path, Str **err_msg);
+void *argparse_ip(Str *ip, Str **err_msg);
 
 #endif /* _MASC_ARGPARSE_H_ */
