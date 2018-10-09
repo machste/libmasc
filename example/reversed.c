@@ -36,10 +36,36 @@ static void cli_hup_cb(TcpServer *self, TcpServerCli *cli)
     print("hang-up: %O\n", cli);
 }
 
+static void *port_check(Str *port_str, Str **err_msg)
+{
+    Int *port = argparse_int(port_str, err_msg);
+    if (port != NULL) {
+        if (!int_in_range(port, 0, 65535)) {
+            *err_msg = str_new("invalid port number: %O!", port_str);
+            delete(port);
+            port = NULL;
+        }
+    }
+    return port;
+}
+
 int main(int argc, char *argv[])
 {
     int ret = 0;
-    TcpServer server = init(TcpServer, "0.0.0.0", 8080);
+    // Setup argument parser
+    Argparse *ap = new(Argparse, path_basename(argv[0]), "Reverse Daemon");
+    argparse_add_opt(ap, 0, "bind", "IP", "1", argparse_ip, "IP address");
+    argparse_set_default(ap, "bind", "0.0.0.0");
+    argparse_add_arg(ap, "port", "PORT", "?", port_check, "port (0 - 65535)");
+    argparse_set_default(ap, "port", "8080");
+    // Parse command line arguments
+    Map *args = argparse_parse(ap, argc, argv);
+    put(args);
+    delete(ap);
+    Str *ip = map_get(args, "bind");
+    int port = int_get(map_get(args, "port"));
+    TcpServer server = init(TcpServer, str_cstr(ip), port);
+    delete(args);
     server.accept_cb = accept_cb;
     server.cli_packet_cb = pkg_cb;
     server.cli_hup_cb = cli_hup_cb;
