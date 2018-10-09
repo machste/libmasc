@@ -1,6 +1,8 @@
 #ifndef _MASC_ARGPARSE_H_
 #define _MASC_ARGPARSE_H_
 
+#include <stdbool.h>
+
 #include <masc/object.h>
 #include <masc/list.h>
 #include <masc/map.h>
@@ -41,6 +43,8 @@ ArgparseError argparse_add_arg(Argparse *self, const char *name,
 ArgparseError argparse_add_opt(Argparse *self, char flag, const char *name,
         const char *metavar, const char *nargs, ap_type_cb type_cb,
         const char *help);
+
+bool argparse_set_default(Argparse *self, const char *name, const char *dfl);
 
 Map *argparse_parse(Argparse *self, int argc, char *argv[]);
 

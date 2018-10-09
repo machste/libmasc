@@ -113,6 +113,54 @@ ArgparseError argparse_add_opt(Argparse *self, char flag, const char *name,
     return err;
 }
 
+static ApArg *_arg_by_name(List *args, const char *name)
+{
+    ApArg *arg = NULL;
+    Iter i = init(Iter, args);
+    for (ApArg *a = next(&i); a != NULL; a = next(&i)) {
+        if (cstr_eq(aparg_dest(a), name)) {
+            arg = a;
+            break;
+        }
+    }
+    destroy(&i);
+    return arg;
+}
+
+
+bool argparse_set_default(Argparse *self, const char *name, const char *dfl)
+{
+    ApArg *arg = _arg_by_name(&self->opts, name);
+    if (arg == NULL) {
+        arg = _arg_by_name(&self->args, name);
+    }
+    if (arg != NULL) {
+        aparg_set_default(arg, dfl);
+    }
+    return arg != NULL;
+}
+
+static void _set_default(Map *out_args, ApArg *arg, Str **err)
+{
+    void *dfl;
+    if (arg->type == AP_TYPE_OPTION && arg->n == 0) {
+        dfl = new(Bool, false);
+    } else {
+        if (arg->n == 1 && arg->dfl != NULL) {
+            Str *raw_val = str_new_cstr(arg->dfl);
+            if (arg->type_cb != NULL) {
+                dfl = arg->type_cb(raw_val, err);
+                delete(raw_val);
+            } else {
+                dfl = raw_val;
+            }
+        } else {
+            dfl = new(None);
+        }
+    }
+    map_set(out_args, aparg_dest(arg), dfl);
+}
+
 Map *argparse_parse(Argparse *self, int argc, char *argv[])
 {
     Map *out_args = new(Map);
@@ -179,12 +227,7 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
                 }
             }
         } else {
-            // Option is not present in args, set default value
-            if (opt->n == 0) {
-                map_set(out_args, aparg_dest(opt), new(Bool, false));
-            } else {
-                map_set(out_args, aparg_dest(opt), new(None));
-            }
+            _set_default(out_args, opt, &err);
         }
     }
     delete(itr);
@@ -207,7 +250,7 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
             if (pa->n < 0) {
                 if (list_is_empty(&args)) {
                     if (!pa->required) {
-                        map_set(out_args, aparg_dest(pa), new(None));
+                        _set_default(out_args, pa, &err);
                     } else {
                         err = str_new("too few arguments!");
                     }
@@ -235,12 +278,16 @@ Map *argparse_parse(Argparse *self, int argc, char *argv[])
                 }
             } else if (pa->n == 1 && !pa->required) {
                 Str *raw_val = list_remove_at(&args, 0);
-                void *val = raw_val;
-                if (raw_val != NULL && pa->type_cb != NULL) {
-                    val = pa->type_cb(raw_val, &err);
-                    delete(raw_val);
+                if (raw_val != NULL) {
+                    void *val = raw_val;
+                    if (pa->type_cb != NULL) {
+                        val = pa->type_cb(raw_val, &err);
+                        delete(raw_val);
+                    }
+                    map_set(out_args, aparg_dest(pa), val);
+                } else {
+                    _set_default(out_args, pa, &err);
                 }
-                map_set(out_args, aparg_dest(pa), val);
             } else {
                 List *vals = new(List);
                 for (int i = 0; i < pa->n; i++) {

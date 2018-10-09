@@ -15,10 +15,10 @@ static void _vinit(ApArg *self, va_list va)
     self->name = NULL;
     self->flag.c = '\0';
     self->flag.cstr[sizeof(self->flag.cstr) - 1] = '\0';
-    self->dest = NULL;
     self->metavar = NULL;
     self->required = false;
     self->n = 1;
+    self->dfl = NULL;
     self->type_cb = NULL;
     self->help = NULL;
 }
@@ -31,7 +31,7 @@ static void _init_copy(ApArg *self, ApArg *other)
     self->metavar = other->metavar != NULL ? strdup(other->metavar) : NULL;
     self->required = other->required;
     self->n = other->n;
-    self->dest = other->dest != NULL ? strdup(other->dest) : NULL;
+    self->dfl = other->dfl != NULL ? strdup(other->dfl) : NULL;
     self->type_cb = other->type_cb;
     self->help = other->help != NULL ? strdup(other->help) : NULL;
 }
@@ -44,8 +44,8 @@ static void _destroy(ApArg *self)
     if (self->metavar != NULL) {
         free(self->metavar);
     }
-    if (self->dest != NULL) {
-        free(self->dest);
+    if (self->dfl != NULL) {
+        free(self->dfl);
     }
     if (self->help != NULL) {
         free(self->help);
@@ -86,6 +86,14 @@ const char *aparg_dest(ApArg *self)
     } else {
         return self->flag.cstr;
     }
+}
+
+void aparg_set_default(ApArg *self, const char *dfl)
+{
+    if (self->dfl != NULL) {
+        free(self->dfl);
+    }
+    self->dfl = dfl != NULL ? strdup(dfl) : NULL;
 }
 
 Str *aparg_usage(ApArg *self)

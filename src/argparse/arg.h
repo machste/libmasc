@@ -18,10 +18,10 @@ typedef struct ApArg {
         char c;
         char cstr[2];
     } flag;
-    char *dest;
     char *metavar;
     bool required;
     int n;
+    char *dfl;
     ap_type_cb type_cb;
     char *help;
 } ApArg;
@@ -32,6 +32,8 @@ extern const void *ApArgCls;
 ArgparseError aparg_parse_nargs(ApArg *self, const char *nargs);
 
 const char *aparg_dest(ApArg *self);
+
+void aparg_set_default(ApArg *self, const char *dfl);
 
 Str *aparg_usage(ApArg *self);
 Str *aparg_help(ApArg *self);
