@@ -29,6 +29,8 @@ bool int_set_cstr(Int *self, const char *cstr, bool strict);
 long int_iadd(Int *self, Int *other);
 Int *int_add(Int *self, Int *other);
 
+bool int_in_range(Int *self, long start, long stop);
+
 int int_cmp(const Int *self, const Int *other);
 
 size_t int_to_cstr(Int *self, char *cstr, size_t size);

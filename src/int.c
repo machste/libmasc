@@ -72,6 +72,11 @@ Int *int_add(Int *self, Int *other)
     return int_new(self->val + other->val);
 }
 
+bool int_in_range(Int *self, long start, long stop)
+{
+    return self->val >= start && self->val <= stop;
+}
+
 int int_cmp(const Int *self, const Int *other)
 {
     if (self->val > other->val) {
