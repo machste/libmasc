@@ -3,7 +3,7 @@
 
 static bool accept_cb(TcpServer *self, TcpServerCli *cli)
 {
-    print("new: %O\n", cli);
+    log_info("new: %O", cli);
     if (list_len(&self->clients) >= 2) {
         dprint(cli->fd, "Too many other clients, good bye!\n");
         print("%O: No new clients!\n", self);
@@ -17,7 +17,7 @@ static void pkg_cb(TcpServer *self, TcpServerCli *cli, void *data, size_t size)
 {
     Str *str = str_new_ncopy(data, size);
     str_strip(str);
-    print("data: %O: %O\n", cli, str);
+    log_debug("data: %O: %O", cli, str);
     if (cstr_eq(str_cstr(str), "quit")) {
         dprint(cli->fd, "Good bye!\n", str);
         tcpserver_cli_close(cli);
@@ -33,7 +33,20 @@ static void pkg_cb(TcpServer *self, TcpServerCli *cli, void *data, size_t size)
 
 static void cli_hup_cb(TcpServer *self, TcpServerCli *cli)
 {
-    print("hang-up: %O\n", cli);
+    log_info("hang-up: %O\n", cli);
+}
+
+static void *log_level_check(Str *log_level_str, Str **err_msg)
+{
+    Int *log_level = argparse_int(log_level_str, err_msg);
+    if (log_level != NULL) {
+        if (!int_in_range(log_level, 0, 7)) {
+            *err_msg = str_new("invalid log level: %O!", log_level_str);
+            delete(log_level);
+            log_level = NULL;
+        }
+    }
+    return log_level;
 }
 
 static void *port_check(Str *port_str, Str **err_msg)
@@ -54,32 +67,41 @@ int main(int argc, char *argv[])
     int ret = 0;
     // Setup argument parser
     Argparse *ap = new(Argparse, path_basename(argv[0]), "Reverse Daemon");
+    argparse_add_opt(ap, 'l', "log-level", "LEVEL", "1", log_level_check,
+            "log level (0 - 7)");
+    argparse_set_default(ap, "log-level", "6");
     argparse_add_opt(ap, 0, "bind", "IP", "1", argparse_ip, "IP address");
     argparse_set_default(ap, "bind", "0.0.0.0");
     argparse_add_arg(ap, "port", "PORT", "?", port_check, "port (0 - 65535)");
     argparse_set_default(ap, "port", "8080");
     // Parse command line arguments
     Map *args = argparse_parse(ap, argc, argv);
-    put(args);
     delete(ap);
-    Str *ip = map_get(args, "bind");
+    int log_level = int_get(map_get(args, "log-level"));
+    Str *ip = map_remove_key(args, "bind");
     int port = int_get(map_get(args, "port"));
-    TcpServer server = init(TcpServer, str_cstr(ip), port);
     delete(args);
+    // Setup logging
+    log_init(log_level);
+    log_add_stdout();
+    // Setup TCP server
+    TcpServer server = init(TcpServer, str_cstr(ip), port);
+    delete(ip);
     server.accept_cb = accept_cb;
     server.cli_packet_cb = pkg_cb;
     server.cli_hup_cb = cli_hup_cb;
     mloop_init();
     TcpServerError err = tcpserver_start(&server);
     if (err == TCPSERVER_SUCCESS) {
-        print("%O: waiting for connections ...\n", &server);
+        log_info("%O: waiting for connections ...", &server);
         mloop_run();
-        print("%O: shutdown\n", &server);
+        log_info("%O: shutdown", &server);
     } else {
-        fprint(stderr, "Error: unable to start reversed!\n");
+        log_error("unable to start reversed!");
         ret = -1;
     }
     destroy(&server);
     mloop_destroy();
+    log_destroy();
     return ret;
 }
