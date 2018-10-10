@@ -1,0 +1,8 @@
+#ifndef _MASC_CONFIG_H_
+#define _MASC_CONFIG_H_
+
+#define VERSION @PROJECT_VERSION@
+
+#cmakedefine LOG_ENABLED
+
+#endif /* _MASC_CONFIG_H_ */

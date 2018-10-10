@@ -26,6 +26,7 @@
 #include <masc/random.h>
 #include <masc/tcpserver.h>
 #include <masc/mloop.h>
+#include <masc/log.h>
 
 
 #endif /* _MASC_H_ */
