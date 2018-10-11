@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <masc.h>
 
 
@@ -65,11 +66,13 @@ static void *port_check(Str *port_str, Str **err_msg)
 int main(int argc, char *argv[])
 {
     int ret = 0;
+    const char *prog = path_basename(argv[0]);
     // Setup argument parser
-    Argparse *ap = new(Argparse, path_basename(argv[0]), "Reverse Daemon");
+    Argparse *ap = new(Argparse, prog, "Reverse Daemon");
     argparse_add_opt(ap, 'l', "log-level", "LEVEL", "1", log_level_check,
             "log level (0 - 7)");
     argparse_set_default(ap, "log-level", "6");
+    argparse_add_opt(ap, 'b', NULL, NULL, NULL, NULL, "run as daemon");
     argparse_add_opt(ap, 0, "bind", "IP", "1", argparse_ip, "IP address");
     argparse_set_default(ap, "bind", "0.0.0.0");
     argparse_add_arg(ap, "port", "PORT", "?", port_check, "port (0 - 65535)");
@@ -78,12 +81,17 @@ int main(int argc, char *argv[])
     Map *args = argparse_parse(ap, argc, argv);
     delete(ap);
     int log_level = int_get(map_get(args, "log-level"));
+    bool daemonize = bool_get(map_get(args, "b"));
     Str *ip = map_remove_key(args, "bind");
     int port = int_get(map_get(args, "port"));
     delete(args);
     // Setup logging
     log_init(log_level);
-    log_add_stdout();
+    if (daemonize) {
+        log_add_syslog(prog, 0, LOG_DAEMON);
+    } else {
+        log_add_stdout();
+    }
     // Setup TCP server
     TcpServer server = init(TcpServer, str_cstr(ip), port);
     delete(ip);
@@ -93,6 +101,9 @@ int main(int argc, char *argv[])
     mloop_init();
     TcpServerError err = tcpserver_start(&server);
     if (err == TCPSERVER_SUCCESS) {
+        if (daemonize) {
+            daemon(0, 0);
+        }
         log_info("%O: waiting for connections ...", &server);
         mloop_run();
         log_info("%O: shutdown", &server);
