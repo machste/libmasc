@@ -35,14 +35,19 @@ int mloop_proc_signaled(MlProc *self)
 
 int ml_proc_kill(MlProc *self)
 {
-    return kill(self->pid, SIGKILL);
+    int ret = -1;
+    if (self->running) {
+        ret = kill(self->pid, SIGKILL);
+        if (ret == 0) {
+            self->running = false;
+        }
+    }
+    return ret;
 }
 
 static void _destroy(MlProc *self)
 {
-    if (self->running) {
-        ml_proc_kill(self);
-    }
+    ml_proc_kill(self);
 }
 
 static size_t _to_cstr(MlProc *self, char *cstr, size_t size)

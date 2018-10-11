@@ -76,7 +76,7 @@ static int proc3_run(void *arg)
 static void proc3_done(MlProc *self, int ret, void *arg)
 {
     print("proc3: %i ms, %O\n", mloop_run_time(), self);
-    mloop_proc_delete(self);
+    // Since timer3 still uses the proc3 reference we do not delete it.
 }
 
 int main(int argc, char *argv[])
@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
     mloop_timer_new(50, timer4_cb, timer2);
     mloop_run();
     print("End: %i ms\n", mloop_run_time());
+    delete(proc3);
     mloop_destroy();
     return 0;
 }

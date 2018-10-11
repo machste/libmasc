@@ -176,6 +176,7 @@ bool mloop_proc_cancle(MlProc *self)
 void mloop_proc_delete(MlProc *self)
 {
     mloop_proc_cancle(self);
+    list_remove(&procs, self);
     delete(self);
 }
 
@@ -255,6 +256,8 @@ static int _next_timer(void)
     }
     return diff;
 }
+
+#include <masc/print.h>
 
 static void _handle_timers(void)
 {
