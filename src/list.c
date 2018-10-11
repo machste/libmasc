@@ -358,13 +358,13 @@ void list_sort_in(List *self, void *obj, cmp_cb cb)
     new_node->next = tmp_node;
 }
 
-void list_for_each(List *self, void (*obj_cb)(void *))
+void *list_for_each(List *self, list_obj_cb cb, void *arg)
 {
-    for (ListNode *node = self->node; node != NULL; node = node->next) {
-        if (node->obj != NULL && class_of(node->obj) != NULL) {
-            obj_cb(node->obj);
-        } 
+    void *ret = NULL;
+    for (ListNode *n = self->node; n != NULL && ret == NULL; n = n->next) {
+        ret = cb(n->obj, arg);
     }
+    return ret;
 }
 
 size_t list_to_cstr(List *self, char *cstr, size_t size)

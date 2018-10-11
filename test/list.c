@@ -38,10 +38,16 @@ int main(int argc, char *argv[])
     list_insert_at(&l2, 0, new(Num, 0.5));
     list_insert_at(&l2, -1, new(Bool, true));
     // For each item
-    void item_cb(void *obj) {
+    void *obj_cb(void *obj, double *min) {
         print("%s: %O\n", name_of(obj), obj);
+        if (isinstance(obj, Num) && num_get(obj) > *min) {
+            return obj;
+        } else {
+            return NULL;
+        }
     }
-    list_for_each(&l2, item_cb);
+    void *b = list_for_each(&l2, (list_obj_cb)obj_cb, &(double){ 7.5 });
+    print("Found number: %O\n", b);
     // Sort list
     list_sort(&l2, cmp);
     print("sorted l2: %O\n", &l2);

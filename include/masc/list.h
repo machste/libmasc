@@ -13,6 +13,7 @@ typedef struct {
     ListNode *node;
 } List;
 
+typedef void *(*list_obj_cb)(void *obj, void *arg);
 
 extern const Class *ListCls;
 
@@ -49,7 +50,7 @@ void list_copy(List *self, List *other);
 void list_sort(List *self, cmp_cb cb);
 void list_sort_in(List *self, void *obj, cmp_cb cb);
 
-void list_for_each(List *self, void (*obj_cb)(void *));
+void *list_for_each(List *self, list_obj_cb cb, void *arg);
 
 size_t list_to_cstr(List *self, char *cstr, size_t size);
 

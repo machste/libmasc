@@ -62,18 +62,28 @@ void log_destroy(void)
     list_destroy(&facilities);
 }
 
+struct log_msg {
+    int level;
+    Str msg;
+};
+
+static void *facility_cb(LogFacility *facilitiy, struct log_msg *lmsg)
+{
+    facilitiy->write_cb(facilitiy, lmsg->level, &lmsg->msg);
+    return NULL;
+}
+
+
 void log_msg(int level, const char *msg_fmt, ...)
 {
     if(log_level >= level && !list_is_empty(&facilities)) {
         va_list va;
         va_start(va, msg_fmt);
-        Str msg;
-        str_vinit(&msg, msg_fmt, va);
-        void facility_cb(LogFacility *f) {
-            f->write_cb(f, level, &msg);
-        }
-        list_for_each(&facilities, (void (*)(void *))facility_cb);
-        str_destroy(&msg);
+        struct log_msg lmsg;
+        lmsg.level = level;
+        str_vinit(&lmsg.msg, msg_fmt, va);
+        list_for_each(&facilities, (list_obj_cb)facility_cb, &lmsg);
+        str_destroy(&lmsg.msg);
         va_end(va);
     }
 }
