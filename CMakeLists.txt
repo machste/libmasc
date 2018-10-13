@@ -6,7 +6,7 @@ include(GNUInstallDirs)
 
 option(LOG_ENABLED "Use logging for more detailed information." ON)
 
-set(CMAKE_C_FLAGS "-O0 -g -std=gnu99 -Wall -Werror")
+set(CMAKE_C_FLAGS "-O0 -g -std=gnu99 -fplan9-extensions -Wall -Werror")
 
 file(GLOB HEADERS include/masc/*.h)
 file(GLOB_RECURSE SOURCES src/*.c)
