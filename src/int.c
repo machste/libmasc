@@ -13,7 +13,7 @@ Int *int_new(long val)
 
 void int_init(Int *self, long val)
 {
-    object_init(&self->obj, IntCls);
+    object_init(self, IntCls);
     self->val = val;
 }
 
@@ -32,7 +32,7 @@ Int *int_new_cstr(const char *cstr, bool strict)
 
 void int_init_cstr(Int *self, const char *cstr, bool strict)
 {
-    object_init(&self->obj, IntCls);
+    object_init(self, IntCls);
     int_set_cstr(self, cstr, strict);
 }
 
@@ -94,7 +94,7 @@ size_t int_to_cstr(Int *self, char *cstr, size_t size)
 }
 
 
-static Class _IntCls = {
+static class _IntCls = {
     .name = "Int",
     .size = sizeof(Int),
     .vinit = (vinit_cb)_vinit,
@@ -107,4 +107,4 @@ static Class _IntCls = {
     .iter_init = NULL,
 };
 
-const Class *IntCls = &_IntCls;
+const class *IntCls = &_IntCls;

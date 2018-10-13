@@ -13,7 +13,7 @@ Char *char_new(char c)
 
 void char_init(Char *self, char c)
 {
-    object_init(&self->obj, CharCls);
+    object_init(self, CharCls);
     self->c = c;
 }
 
@@ -63,7 +63,7 @@ size_t char_to_cstr(Char *self, char *cstr, size_t size)
 }
 
 
-static Class _CharCls = {
+static class _CharCls = {
     .name = "Char",
     .size = sizeof(Char),
     .vinit = (vinit_cb)char_vinit,
@@ -76,4 +76,4 @@ static Class _CharCls = {
     .iter_init = NULL,
 };
 
-const void *CharCls = &_CharCls;
+const class *CharCls = &_CharCls;

@@ -19,7 +19,7 @@ static void _dlf_data_cb(TcpServer *self, TcpServerCli *cli,
 
 void tcpserver_init(TcpServer *self, const char *ip, in_port_t port)
 {
-    object_init(&self->obj, TcpServerCls);
+    object_init(self, TcpServerCls);
     self->listen_backlog = 4;
     self->sentinel = '\n';
     self->accept_cb = NULL;
@@ -188,7 +188,7 @@ size_t tcpserver_to_cstr(TcpServer *self, char *cstr, size_t size)
 }
 
 
-static Class _TcpServerCls = {
+static class _TcpServerCls = {
     .name = "TcpServer",
     .size = sizeof(TcpServer),
     .vinit = (vinit_cb)_vinit,
@@ -206,7 +206,7 @@ const void *TcpServerCls = &_TcpServerCls;
 
 static void _cli_vinit(TcpServerCli *self, va_list va)
 {
-    object_init(&self->obj, TcpServerCliCls);
+    object_init(self, TcpServerCliCls);
     self->server = va_arg(va, TcpServer *);
     self->fd = va_arg(va, int);
     struct sockaddr_in *addr = va_arg(va, struct sockaddr_in *);
@@ -234,7 +234,7 @@ static size_t _cli_to_cstr(TcpServerCli *self, char *cstr, size_t size)
 }
 
 
-static Class _TcpServerCliCls = {
+static class _TcpServerCliCls = {
     .name = "TcpServerCli",
     .size = sizeof(TcpServerCli),
     .vinit = (vinit_cb)_cli_vinit,

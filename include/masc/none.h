@@ -9,16 +9,16 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
 } None;
 
 
 extern const char *const none_cstr;
 extern const char *const none_repr;
-extern const Class *NoneCls;
+extern const class *NoneCls;
 
 
-bool is_none(const void *obj);
+bool is_none(const Object *obj);
 
 
 #endif /* _MASC_NONE_H_ */

@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     map_delete_key(m, "values");
     print("map: %O\n", m);
     // Filter map
-    filter(m, LAMBDA(bool, (void *o){return !isinstance(o, Num);}));
+    filter(m, LAMBDA(bool, (Object *o){return !isinstance(o, Num);}));
     print("map: %O\n", m);
     delete(m);
     return 0;

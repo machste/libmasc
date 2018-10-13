@@ -5,7 +5,7 @@
 
 static void _vinit(MlTimer *self, va_list va)
 {
-    object_init(&self->obj, MlTimerCls);
+    object_init(self, MlTimerCls);
     self->pending = false;
     self->msec = 0;
     self->time = 0;
@@ -42,7 +42,7 @@ static size_t _to_cstr(MlTimer *self, char *cstr, size_t size)
 }
 
 
-static Class _MlTimerCls = {
+static class _MlTimerCls = {
     .name = "MlTimer",
     .size = sizeof(MlTimer),
     .vinit = (vinit_cb)_vinit,
@@ -55,4 +55,4 @@ static Class _MlTimerCls = {
     .iter_init = NULL,
 };
 
-const Class *MlTimerCls = &_MlTimerCls;
+const class *MlTimerCls = &_MlTimerCls;

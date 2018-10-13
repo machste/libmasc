@@ -6,7 +6,7 @@ const char *const none_cstr = "None";
 const char *const none_repr = "null";
 
 
-bool is_none(const void *obj)
+bool is_none(const Object *obj)
 {
     if (obj == NULL || class_of(obj) == NULL || class_of(obj) == NoneCls) {
         return true;
@@ -15,33 +15,33 @@ bool is_none(const void *obj)
     }
 }
 
-static void _vinit(void *self, va_list _)
+static void _vinit(Object *self, va_list _)
 {
     object_init(self, NoneCls);
 }
 
-static size_t _repr(Object *self, char *cstr, size_t size)
+static size_t _repr(const Object *self, char *cstr, size_t size)
 {
     return cstr_ncopy(cstr, none_repr, size);
 }
 
-static size_t _to_cstr(Object *self, char *cstr, size_t size)
+static size_t _to_cstr(const Object *self, char *cstr, size_t size)
 {
     return cstr_ncopy(cstr, none_cstr, size);
 }
 
 
-static Class _NoneCls = {
+static class _NoneCls = {
     .name = "None",
     .size = sizeof(Object),
     .vinit = _vinit,
-    .init_copy = (init_copy_cb)object_init_copy,
-    .destroy = (destroy_cb)object_destroy,
-    .len = (len_cb)object_len,
-    .cmp = (cmp_cb)object_cmp,
-    .repr = (repr_cb)_repr,
-    .to_cstr = (to_cstr_cb)_to_cstr,
+    .init_copy = object_init_copy,
+    .destroy = object_destroy,
+    .len = object_len,
+    .cmp = object_cmp,
+    .repr = _repr,
+    .to_cstr = _to_cstr,
     .iter_init = NULL,
 };
 
-const Class *NoneCls = &_NoneCls;
+const class *NoneCls = &_NoneCls;

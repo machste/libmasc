@@ -33,10 +33,10 @@ static char *err2str[] = {
 
 static bool is_valid_root(const void *root)
 {
-    const Class *rcls[] = {MapCls, ListCls, StrCls, NumCls, IntCls,
+    const class *rcls[] = {MapCls, ListCls, StrCls, NumCls, IntCls,
         BoolCls, NoneCls
     };
-    const Class *root_cls = class_of(root);
+    const class *root_cls = class_of(root);
     for (int i = 0; i < ARRAY_LEN(rcls); i++) {
         if (root_cls == rcls[i]) {
             return true;
@@ -54,7 +54,7 @@ Json *json_new(const void *root)
 
 void json_init(Json *self, const void *root)
 {
-    object_init(&self->obj, JsonCls);
+    object_init(self, JsonCls);
     if (is_valid_root(root)) {
         self->root = new_copy(root);
         self->error = JSON_SUCCESS;
@@ -79,7 +79,7 @@ Json *json_new_cstr(const char *cstr)
 
 void json_init_cstr(Json *self, const char *cstr)
 {
-    object_init(&self->obj, JsonCls);
+    object_init(self, JsonCls);
     self->error = json_parse_to_obj(&self->root, cstr);
 }
 
@@ -92,7 +92,7 @@ Json *json_new_copy(const Json *other)
 
 void json_init_copy(Json *self, const Json *other)
 {
-    object_init(&self->obj, JsonCls);
+    object_init(self, JsonCls);
     self->root = new_copy(other->root);
     self->error = other->error;
 }
@@ -306,7 +306,7 @@ size_t json_to_cstr(Json *self, char *cstr, size_t size)
     return to_cstr(self->root, cstr, size);
 }
 
-static Class _JsonCls = {
+static class _JsonCls = {
     .name = "Json",
     .size = sizeof(Json),
     .vinit = (vinit_cb)_vinit,
@@ -319,4 +319,4 @@ static Class _JsonCls = {
     .iter_init = NULL,
 };
 
-const void *JsonCls = &_JsonCls;
+const class *JsonCls = &_JsonCls;

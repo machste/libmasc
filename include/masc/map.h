@@ -8,12 +8,12 @@
 typedef struct MapNode MapNode;
 
 typedef struct {
-    Object obj;
+    Object;
     MapNode *node;
 } Map;
 
 
-extern const Class *MapCls;
+extern const class *MapCls;
 
 
 Map *map_new(void);

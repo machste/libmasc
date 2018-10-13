@@ -16,7 +16,7 @@ Regex *regex_new(const char *regex)
 
 void regex_init(Regex *self, const char *regex)
 {
-    object_init(&self->obj, RegexCls);
+    object_init(self, RegexCls);
     self->regex = strdup(regex);
     self->err = regcomp(&self->re, self->regex, REG_EXTENDED);
 }
@@ -139,7 +139,7 @@ size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
 }
 
 
-static Class _RegexCls = {
+static class _RegexCls = {
     .name = "Regex",
     .size = sizeof(Regex),
     .vinit = (vinit_cb)_vinit,
@@ -152,4 +152,4 @@ static Class _RegexCls = {
     .iter_init = NULL,
 };
 
-const Class *RegexCls = &_RegexCls;
+const class *RegexCls = &_RegexCls;

@@ -17,7 +17,7 @@ typedef enum {
 } ArgparseError;
 
 typedef struct {
-    Object obj;
+    Object;
     char *prog;
     char *help;
     List opts;
@@ -27,7 +27,7 @@ typedef struct {
 typedef void *(*ap_type_cb)(Str *, Str **);
 
 
-extern const void *ArgparseCls;
+extern const class *ArgparseCls;
 
 
 Argparse *argparse_new(const char *prog, const char *help);

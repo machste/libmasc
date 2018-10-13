@@ -21,7 +21,7 @@ typedef enum {
 typedef void (*log_write_cb)(LogFacility *self, int level, Str *msg);
 
 struct LogFacility {
-    Object obj;
+    Object;
     log_facility_t type;
     log_write_cb write_cb; 
     union {
@@ -33,7 +33,7 @@ struct LogFacility {
 };
 
 
-static const Class *LogFacilityCls;
+static const class *LogFacilityCls;
 
 static const char *level_to_cstr[] = {
     [LOG_EMERG] = "emerg",
@@ -134,7 +134,7 @@ void log_add_syslog(const char *ident, int option, int facility)
 
 static void _vinit(LogFacility *self, va_list va)
 {
-    object_init(&self->obj, LogFacilityCls);
+    object_init(self, LogFacilityCls);
     self->type = LOG_FACILITY_NONE;
 }
 
@@ -153,7 +153,7 @@ static void _destroy(LogFacility *self)
 }
 
 
-static Class _LogFacilityCls = {
+static class _LogFacilityCls = {
     .name = "LogFacility",
     .size = sizeof(LogFacility),
     .vinit = (vinit_cb)_vinit,
@@ -166,4 +166,4 @@ static Class _LogFacilityCls = {
     .iter_init = NULL,
 };
 
-static const Class *LogFacilityCls = &_LogFacilityCls;
+static const class *LogFacilityCls = &_LogFacilityCls;

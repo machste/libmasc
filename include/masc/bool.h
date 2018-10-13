@@ -7,13 +7,13 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     bool b;
 } Bool;
 
 extern const char *const bool_true_cstr;
 extern const char *const bool_false_cstr;
-extern const void *BoolCls;
+extern const class *BoolCls;
 
 
 Bool *bool_new(bool b);

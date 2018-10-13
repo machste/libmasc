@@ -11,14 +11,14 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     char *regex;
     regex_t re;
     int err;
 } Regex;
 
 
-extern const Class *RegexCls;
+extern const class *RegexCls;
 
 
 Regex *regex_new(const char *regex);

@@ -8,14 +8,14 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     size_t obj_size;
     size_t len;
     void *data;
 } Array;
 
 
-extern const Class *ArrayCls;
+extern const class *ArrayCls;
 
 
 Array *array_new(size_t obj_size, size_t len);
@@ -32,12 +32,12 @@ size_t array_len(Array *self);
 size_t array_size(Array *self);
 
 void *array_get_at(Array *self, int idx);
-bool array_set_at(Array *self, int idx, void *obj);
-bool array_copy_at(Array *self, int idx, void *obj);
+bool array_set_at(Array *self, int idx, Object *obj);
+bool array_copy_at(Array *self, int idx, Object *obj);
 void *array_remove_at(Array *self, int idx);
 bool array_destroy_at(Array *self, int idx);
 
-void array_for_each(Array *self, void (*obj_cb)(void *));
+void array_for_each(Array *self, void (*obj_cb)(Object *));
 
 size_t array_to_cstr(Array *self, char *cstr, size_t size);
 

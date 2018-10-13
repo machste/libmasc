@@ -7,12 +7,12 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     double val;
 } Num;
 
 
-extern const Class *NumCls;
+extern const class *NumCls;
 
 
 Num *num_new(double val);

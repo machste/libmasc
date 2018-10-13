@@ -20,7 +20,7 @@ typedef enum {
 typedef struct TcpServer TcpServer;
 
 typedef struct {
-    Object obj;
+    Object;
     TcpServer *server;
     int fd;
     struct sockaddr_in addr;
@@ -35,7 +35,7 @@ typedef void (*tcpserver_hup_cb)(TcpServer *self, TcpServerCli *cli);
 
 
 struct TcpServer {
-    Object obj;
+    Object;
     int listen_backlog;
     char sentinel;
     struct sockaddr_in addr;

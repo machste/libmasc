@@ -23,7 +23,7 @@ Argparse *argparse_new(const char *prog, const char *help)
 
 void argparse_init(Argparse *self, const char *prog, const char *help)
 {
-    object_init(&self->obj, ArgparseCls);
+    object_init(self, ArgparseCls);
     self->prog = strdup(prog);
     self->help = help != NULL ? strdup(help) : NULL;
     list_init(&self->opts);
@@ -453,7 +453,7 @@ void *argparse_ip(Str *ip, Str **err_msg)
 }
 
 
-static Class _ArgparseCls = {
+static class _ArgparseCls = {
     .name = "Argparse",
     .size = sizeof(Argparse),
     .vinit = (vinit_cb)argparse_vinit,
@@ -466,4 +466,4 @@ static Class _ArgparseCls = {
     .iter_init = NULL,
 };
 
-const void *ArgparseCls = &_ArgparseCls;
+const class *ArgparseCls = &_ArgparseCls;

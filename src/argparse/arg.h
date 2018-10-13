@@ -11,7 +11,7 @@ typedef enum  {
 } ApType;
 
 typedef struct ApArg {
-    Object obj;
+    Object;
     ApType type;
     char *name;
     union {
@@ -27,7 +27,7 @@ typedef struct ApArg {
 } ApArg;
 
 
-extern const void *ApArgCls;
+extern const class *ApArgCls;
 
 ArgparseError aparg_parse_nargs(ApArg *self, const char *nargs);
 

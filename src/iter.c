@@ -3,7 +3,7 @@
 
 void iter_init(Iter *self, void *iterable)
 {
-    object_init(&self->obj, IterCls);
+    object_init(self, IterCls);
     self->iterable = iterable;
     if (iterable != NULL && class_of(iterable) != NULL
             && class_of(iterable)->iter_init != NULL) {
@@ -78,7 +78,7 @@ const char *iter_get_key(Iter *self)
 }
 
 
-static Class _IterCls = {
+static class _IterCls = {
     .name = "Iter",
     .size = sizeof(Iter),
     .vinit = (vinit_cb)_vinit,
@@ -89,4 +89,4 @@ static Class _IterCls = {
     .iter_init = NULL,
 };
 
-const Class *IterCls = &_IterCls;
+const class *IterCls = &_IterCls;

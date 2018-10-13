@@ -10,7 +10,7 @@
 static const char *const null_cstr = "NULL";
 
 
-const Class *class_of(const void *self)
+const class *class_of(const Object *self)
 {
     if (self != NULL) {
         return ((Object *)self)->cls;
@@ -19,7 +19,7 @@ const Class *class_of(const void *self)
     }
 }
 
-const char *name_of(const void *self)
+const char *name_of(const Object *self)
 {
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->name;
@@ -28,17 +28,17 @@ const char *name_of(const void *self)
     }
 }
 
-void *__new__(const Class *cls, ...)
+void *__new__(const class *cls, ...)
 {
     va_list va;
-    void *self = malloc(cls->size);
+    Object *self = malloc(cls->size);
     va_start(va, cls);
     cls->vinit(self, va);
     va_end(va);
     return self;
 }
 
-void __init__(const Class *cls, void *self, ...)
+void __init__(const class *cls, Object *self, ...)
 {
     va_list va;
     va_start(va, self);
@@ -46,28 +46,28 @@ void __init__(const Class *cls, void *self, ...)
     va_end(va);
 }
 
-void *new_copy(const void *other)
+void *new_copy(const Object *other)
 {
     if (other == NULL || class_of(other) == NULL) {
         return NULL;
     }
-    const Class *cls = class_of(other);
-    void *self = malloc(cls->size);
+    const class *cls = class_of(other);
+    Object *self = malloc(cls->size);
     cls->init_copy(self, other);
     return self;
 }
 
-void init_copy(void *self, const void *other)
+void init_copy(Object *self, const Object *other)
 {
     if (other == NULL || class_of(other) == NULL) {
         *(None *)self = init(None);
     } else {
-        const Class *cls = class_of(other);
+        const class *cls = class_of(other);
         cls->init_copy(self, other);
     }
 }
 
-void destroy(void *self)
+void destroy(Object *self)
 {
     if (self == NULL || class_of(self) == NULL) {
         return;
@@ -76,7 +76,7 @@ void destroy(void *self)
     
 }
 
-void delete(void *self)
+void delete(Object *self)
 {
     if (self == NULL || class_of(self) == NULL) {
         return;
@@ -85,18 +85,18 @@ void delete(void *self)
     free(self);
 }
 
-void __delete_objs__(void *self, ...)
+void __delete_objs__(Object *self, ...)
 {
     va_list va;
     va_start(va, self);
     while (self != NULL) {
         delete(self);
-        self = va_arg(va, void *);
+        self = va_arg(va, Object *);
     }
     va_end(va);
 }
 
-size_t len(const void *self)
+size_t len(const Object *self)
 {
     if (self == NULL || class_of(self) == NULL) {
         return 0;
@@ -104,7 +104,7 @@ size_t len(const void *self)
     return class_of(self)->len(self);
 }
 
-int cmp(const void *self, const void *other)
+int cmp(const Object *self, const Object *other)
 {
     if (self == other) {
         return 0;
@@ -119,7 +119,7 @@ int cmp(const void *self, const void *other)
     }
 }
 
-size_t repr(const void *self, char *cstr, size_t size)
+size_t repr(const Object *self, char *cstr, size_t size)
 {
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->repr(self, cstr, size);
@@ -128,7 +128,7 @@ size_t repr(const void *self, char *cstr, size_t size)
     }
 }
 
-size_t to_cstr(const void *self, char *cstr, size_t size)
+size_t to_cstr(const Object *self, char *cstr, size_t size)
 {
     if (self != NULL && class_of(self) != NULL) {
         return class_of(self)->to_cstr(self, cstr, size);

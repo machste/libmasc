@@ -6,7 +6,7 @@
 
 static void _vinit(MlProc *self, va_list va)
 {
-    object_init(&self->obj, MlProcCls);
+    object_init(self, MlProcCls);
     self->run_cb = va_arg(va, ml_proc_cb);
     self->done_cb = va_arg(va, ml_proc_done_cb);
     self->arg = va_arg(va, void *);
@@ -67,7 +67,7 @@ static size_t _to_cstr(MlProc *self, char *cstr, size_t size)
 }
 
 
-static Class _MlProcCls = {
+static class _MlProcCls = {
     .name = "MlProc",
     .size = sizeof(MlProc),
     .vinit = (vinit_cb)_vinit,
@@ -80,4 +80,4 @@ static Class _MlProcCls = {
     .iter_init = NULL,
 };
 
-const Class *MlProcCls = &_MlProcCls;
+const class *MlProcCls = &_MlProcCls;

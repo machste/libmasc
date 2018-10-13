@@ -7,12 +7,12 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     long val;
 } Int;
 
 
-extern const Class *IntCls;
+extern const class *IntCls;
 
 
 Int *int_new(long val);

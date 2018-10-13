@@ -15,7 +15,7 @@ Bool *bool_new(bool b)
 
 void bool_init(Bool *self, bool b)
 {
-    object_init(&self->obj, BoolCls);
+    object_init(self, BoolCls);
     self->b = b;
 }
 
@@ -67,7 +67,7 @@ size_t bool_to_cstr(Bool *self, char *cstr, size_t size)
 }
 
 
-static Class _BoolCls = {
+static class _BoolCls = {
     .name = "Bool",
     .size = sizeof(Bool),
     .vinit = (vinit_cb)bool_vinit,
@@ -80,4 +80,4 @@ static Class _BoolCls = {
     .iter_init = NULL,
 };
 
-const void *BoolCls = &_BoolCls;
+const class *BoolCls = &_BoolCls;

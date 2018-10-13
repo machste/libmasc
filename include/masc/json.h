@@ -21,13 +21,13 @@ typedef enum {
 } JsonError;
 
 typedef struct {
-    Object obj;
+    Object;
     void *root;
     JsonError error;
 } Json;
 
 
-extern const void *JsonCls;
+extern const class *JsonCls;
 
 
 Json *json_new(const void *root);

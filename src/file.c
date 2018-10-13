@@ -20,7 +20,7 @@ File *file_new(const char *path, const char *mode)
 
 void file_init(File *self, const char *path, const char *mode)
 {
-    object_init(&self->obj, FileCls);
+    object_init(self, FileCls);
     self->path = strdup(path);
     self->mode = strdup(mode);
     // TODO: Check if path is a directory!
@@ -255,7 +255,7 @@ size_t file_to_cstr(File *self, char *cstr, size_t size)
 }
 
 
-static Class _FileCls = {
+static class _FileCls = {
     .name = "File",
     .size = sizeof(File),
     .vinit = (vinit_cb)_vinit,
@@ -268,4 +268,4 @@ static Class _FileCls = {
     .iter_init = NULL,
 };
 
-const void *FileCls = &_FileCls;
+const class *FileCls = &_FileCls;

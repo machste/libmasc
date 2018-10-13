@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include <masc/object.h>
+
 
 typedef enum {
     ML_FD_READ = 1,
@@ -29,6 +31,33 @@ typedef void (*ml_timer_cb)(MlTimer *self, void *arg);
 typedef int (*ml_proc_cb)(void *arg);
 typedef void (*ml_proc_done_cb)(MlProc *self, int ret, void *arg);
 typedef void (*ml_fd_cb)(MlFd *self, int fd, ml_fd_flag_t events, void *arg);
+
+struct MlTimer {
+    Object;
+    int msec;
+    ml_time_t time;
+    bool pending;
+    ml_timer_cb cb;
+    void *arg;
+};
+
+struct MlProc {
+    Object;
+    pid_t pid;
+    int status;
+    bool running;
+    ml_proc_cb run_cb;
+    ml_proc_done_cb done_cb;
+    void *arg;
+};
+
+struct MlFd {
+    Object;
+    int fd;
+    ml_fd_flag_t flags;
+    ml_fd_cb cb;
+    void *arg;
+};
 
 
 /**

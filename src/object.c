@@ -6,12 +6,12 @@
 #include <masc/cstr.h>
 
 
-void object_init(Object *self, const Class *cls)
+void object_init(Object *self, const class *cls)
 {
     self->cls = cls;
 }
 
-static void _vinit(void *self, va_list _)
+static void _vinit(Object *self, va_list _)
 {
     object_init(self, ObjectCls);
 }
@@ -41,23 +41,23 @@ int object_cmp(const Object *self, const Object *other)
     }
 }
 
-size_t object_to_cstr(Object *self, char *cstr, size_t size)
+size_t object_to_cstr(const Object *self, char *cstr, size_t size)
 {
     return snprintf(cstr, size, "<%s at %p>", name_of(self), self);
 }
 
 
-static Class _ObjectCls = {
+static class _ObjectCls = {
     .name = "Object",
     .size = sizeof(Object),
     .vinit = _vinit,
-    .init_copy = (init_copy_cb)object_init_copy,
-    .destroy = (destroy_cb)object_destroy,
-    .len = (len_cb)object_len,
-    .cmp = (cmp_cb)object_cmp,
-    .repr = (repr_cb)object_to_cstr,
-    .to_cstr = (to_cstr_cb)object_to_cstr,
+    .init_copy = object_init_copy,
+    .destroy = object_destroy,
+    .len = object_len,
+    .cmp = object_cmp,
+    .repr = object_to_cstr,
+    .to_cstr = object_to_cstr,
     .iter_init = NULL,
 };
 
-const Class *ObjectCls = &_ObjectCls;
+const class *ObjectCls = &_ObjectCls;

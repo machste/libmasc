@@ -17,7 +17,7 @@ typedef const char *(*iter_get_key_cb)(Iter *self, void *iterable);
 typedef void (*iter_free_priv_cb)(void *priv);
 
 struct Iter {
-    Object obj;
+    Object;
     void *iterable;
     void *priv;
     iter_next_cb next;
@@ -29,7 +29,7 @@ struct Iter {
 };
 
 
-extern const Class *IterCls;
+extern const class *IterCls;
 
 
 void *next(Iter *self);

@@ -33,7 +33,7 @@ void str_vinit(Str *self, const char *fmt, va_list va)
 {
     int len;
     va_list va2;
-    object_init(&self->obj, StrCls);
+    object_init(self, StrCls);
     // Make a copy of va to use it twice
     va_copy(va2, va);
     // Calculate length of the formatted string
@@ -60,7 +60,7 @@ Str *str_new_cstr(const char *cstr)
 
 void str_init_cstr(Str *self, const char *cstr)
 {
-    object_init(&self->obj, StrCls);
+    object_init(self, StrCls);
     self->size = strlen(cstr) + 1;
     self->cstr = malloc(self->size);
     strcpy(self->cstr, cstr);
@@ -75,7 +75,7 @@ Str *str_new_ncopy(const char* cstr, size_t len)
 
 void str_init_ncopy(Str *self, const char* cstr, size_t len)
 {
-    object_init(&self->obj, StrCls);
+    object_init(self, StrCls);
     self->size = len + 1;
     self->cstr = malloc(self->size);
     if (cstr != NULL) {
@@ -523,7 +523,7 @@ static void _iter_init(Str *self, Iter *itr)
 
 
 
-static Class _StrCls = {
+static class _StrCls = {
     .name = "Str",
     .size = sizeof(Str),
     .vinit = (vinit_cb)_vinit,
@@ -536,4 +536,4 @@ static Class _StrCls = {
     .iter_init = (iter_init_cb)_iter_init,
 };
 
-const Class *StrCls = &_StrCls;
+const class *StrCls = &_StrCls;

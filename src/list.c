@@ -10,7 +10,7 @@
 
 struct ListNode {
     ListNode *next;
-    void *obj;
+    Object *obj;
 };
 
 
@@ -23,7 +23,7 @@ List *list_new(void)
 
 void list_init(List *self)
 {
-    object_init(&self->obj, ListCls);
+    object_init(self, ListCls);
     self->node = NULL;
 }
 
@@ -43,7 +43,7 @@ static void _copy(List *self, List *other)
 {
     ListNode *node = other->node;
     while (node != NULL) {
-        void *new_obj = new_copy(node->obj);
+        Object *new_obj = new_copy(node->obj);
         list_append(self, new_obj);
         node = node->next;
     }
@@ -55,7 +55,7 @@ void list_init_copy(List *self, List *other)
     _copy(self, other);
 }
 
-static void listnode_set_obj(ListNode *self, void *obj)
+static void listnode_set_obj(ListNode *self, Object *obj)
 {
     if (obj == NULL) {
         self->obj = new(None);
@@ -64,7 +64,7 @@ static void listnode_set_obj(ListNode *self, void *obj)
     }
 }
 
-static ListNode *listnode_new(void *obj) {
+static ListNode *listnode_new(Object *obj) {
     ListNode *self = malloc(sizeof(ListNode));
     listnode_set_obj(self, obj);
     self->next = NULL;
@@ -106,7 +106,7 @@ bool list_is_empty(List *self)
     return self->node == NULL;
 }
 
-bool list_is_in(List *self, void *obj)
+bool list_is_in(List *self, Object *obj)
 {
     for (ListNode *node = self->node; node != NULL; node = node->next) {
         if (obj == node->obj) {
@@ -159,7 +159,7 @@ void *list_get_at(List *self, int idx)
     return obj;
 }
 
-bool list_set_at(List *self, int idx, void *obj)
+bool list_set_at(List *self, int idx, Object *obj)
 {
     ListNode *node = _get_node_at(self, idx);
     if (node != NULL) {
@@ -170,7 +170,7 @@ bool list_set_at(List *self, int idx, void *obj)
     return false;
 }
 
-bool list_insert_at(List *self, int idx, void *obj)
+bool list_insert_at(List *self, int idx, Object *obj)
 {
     int i = _fix_index(self, idx);
     if (i == 0 || (self->node == NULL && (idx == 0 || idx == -1))) {
@@ -190,7 +190,7 @@ bool list_insert_at(List *self, int idx, void *obj)
     return false;
 }
 
-bool list_insert_after(List *self, int idx, void *obj)
+bool list_insert_after(List *self, int idx, Object *obj)
 {
     ListNode *node = _get_node_at(self, idx);
     if (node != NULL) {
@@ -203,7 +203,7 @@ bool list_insert_after(List *self, int idx, void *obj)
     return false;
 }
 
-void list_append(List *self, void *obj)
+void list_append(List *self, Object *obj)
 {
     ListNode *new_node = listnode_new(obj);
     ListNode *node = self->node;
@@ -217,7 +217,7 @@ void list_append(List *self, void *obj)
     }
 }
 
-static ListNode *_remove_node(List *self, void *obj)
+static ListNode *_remove_node(List *self, Object *obj)
 {
     ListNode *node, *prev = NULL;
     for (node = self->node; node != NULL; node = node->next) {
@@ -234,7 +234,7 @@ static ListNode *_remove_node(List *self, void *obj)
     return node;
 }
 
-bool list_remove(List *self, void *obj)
+bool list_remove(List *self, Object *obj)
 {
     ListNode *rm_node = _remove_node(self, obj);
     if (rm_node != NULL) {
@@ -274,7 +274,7 @@ void *list_remove_at(List *self, int idx)
     return obj;
 }
 
-bool list_delete_obj(List *self, void *obj)
+bool list_delete_obj(List *self, Object *obj)
 {
     ListNode *rm_node = _remove_node(self, obj);
     if (rm_node != NULL) {
@@ -334,7 +334,7 @@ void list_sort(List *self, cmp_cb cb)
     free(sort_arr);
 }
 
-void list_sort_in(List *self, void *obj, cmp_cb cb)
+void list_sort_in(List *self, Object *obj, cmp_cb cb)
 {
     cb = cb == NULL ? cmp : cb;
     // Search right position to insert the new object
@@ -431,7 +431,7 @@ static void _iter_init(List *self, Iter *itr)
 }
 
 
-static Class _ListCls = {
+static class _ListCls = {
     .name = "List",
     .size = sizeof(List),
     .vinit = (vinit_cb)_vinit,
@@ -444,4 +444,4 @@ static Class _ListCls = {
     .iter_init = (iter_init_cb)_iter_init,
 };
 
-const Class *ListCls = &_ListCls;
+const class *ListCls = &_ListCls;

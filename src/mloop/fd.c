@@ -5,7 +5,7 @@
 
 static void _vinit(MlFd *self, va_list va)
 {
-    object_init(&self->obj, MlFdCls);
+    object_init(self, MlFdCls);
     self->fd = va_arg(va, int);
     self->flags = va_arg(va, ml_fd_flag_t);
     self->cb = va_arg(va, ml_fd_cb);
@@ -13,7 +13,7 @@ static void _vinit(MlFd *self, va_list va)
 }
 
 
-static Class _MlFdCls = {
+static class _MlFdCls = {
     .name = "MlFd",
     .size = sizeof(MlFd),
     .vinit = (vinit_cb)_vinit,
@@ -26,4 +26,4 @@ static Class _MlFdCls = {
     .iter_init = NULL,
 };
 
-const Class *MlFdCls = &_MlFdCls;
+const class *MlFdCls = &_MlFdCls;

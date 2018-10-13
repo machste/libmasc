@@ -7,12 +7,12 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     char c;
 } Char;
 
 
-extern const void *CharCls;
+extern const class *CharCls;
 
 
 Char *char_new(char c);

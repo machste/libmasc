@@ -10,7 +10,7 @@
 
 static void _vinit(ApArg *self, va_list va)
 {
-    object_init(&self->obj, ApArgCls);
+    object_init(self, ApArgCls);
     self->type = va_arg(va, ApType);
     self->name = NULL;
     self->flag.c = '\0';
@@ -181,7 +181,7 @@ Str *aparg_help(ApArg *self)
 }
 
 
-static Class _ApArgCls = {
+static class _ApArgCls = {
     .name = "ApArg",
     .size = sizeof(ApArg),
     .vinit = (vinit_cb)_vinit,
@@ -194,4 +194,4 @@ static Class _ApArgCls = {
     .iter_init = NULL,
 };
 
-const void *ApArgCls = &_ApArgCls;
+const class *ApArgCls = &_ApArgCls;

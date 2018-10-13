@@ -24,7 +24,7 @@ Map *map_new(void)
 
 void map_init(Map *self)
 {
-    object_init(&self->obj, MapCls);
+    object_init(self, MapCls);
     self->node = NULL;
 }
 
@@ -316,7 +316,7 @@ static void _iter_init(Map *self, Iter *itr)
 }
 
 
-static Class _MapCls = {
+static class _MapCls = {
     .name = "Map",
     .size = sizeof(Map),
     .vinit = (vinit_cb)_vinit,
@@ -329,4 +329,4 @@ static Class _MapCls = {
     .iter_init = (iter_init_cb)_iter_init,
 };
 
-const Class *MapCls = &_MapCls;
+const class *MapCls = &_MapCls;

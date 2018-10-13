@@ -6,15 +6,15 @@
 #include <masc/class.h>
 
 
-typedef struct {
-    const Class *cls;
+typedef struct Object {
+    const class *cls;
 } Object;
 
 
-extern const Class *ObjectCls;
+extern const class *ObjectCls;
 
 
-void object_init(Object *self, const Class *cls);
+void object_init(Object *self, const class *cls);
 
 void object_init_copy(Object *self, const Object *other);
 
@@ -24,7 +24,7 @@ size_t object_len(const Object *self);
 
 int object_cmp(const Object *self, const Object *other);
 
-size_t object_to_cstr(Object *self, char *cstr, size_t size);
+size_t object_to_cstr(const Object *self, char *cstr, size_t size);
 
 
 #endif /* _MASC_OBJECT_H_ */

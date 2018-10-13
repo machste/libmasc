@@ -16,7 +16,7 @@ Array *array_new(size_t obj_size, size_t len)
 
 void array_init(Array *self, size_t obj_size, size_t len)
 {
-    object_init(&self->obj, ArrayCls);
+    object_init(self, ArrayCls);
     self->obj_size = obj_size;
     self->len = len;
     self->data = calloc(len, obj_size);
@@ -38,7 +38,7 @@ Array *array_new_copy(Array *other)
 
 void array_init_copy(Array *self, Array *other)
 {
-    object_init(&self->obj, ArrayCls);
+    object_init(self, ArrayCls);
     self->obj_size = other->obj_size;
     self->len = other->len;
     size_t size = array_size(other);
@@ -104,10 +104,10 @@ void *array_get_at(Array *self, int idx)
     return NULL;
 }
 
-bool array_set_at(Array *self, int idx, void *obj)
+bool array_set_at(Array *self, int idx, Object *obj)
 {
     if ((idx = _fix_index(self, idx)) >= 0) {
-        void *dest = self->data + self->obj_size * idx;
+        Object *dest = self->data + self->obj_size * idx;
         // Before setting a new object destroy the old one
         destroy(dest);
         if(obj != NULL) {
@@ -120,10 +120,10 @@ bool array_set_at(Array *self, int idx, void *obj)
     return false;
 }
 
-bool array_copy_at(Array *self, int idx, void *obj)
+bool array_copy_at(Array *self, int idx, Object *obj)
 {
     if ((idx = _fix_index(self, idx)) >= 0) {
-        void *dest = self->data + self->obj_size * idx;
+        Object *dest = self->data + self->obj_size * idx;
         // Before copy a new object destroy the old one
         destroy(dest);
         init_copy(dest, obj);
@@ -134,9 +134,9 @@ bool array_copy_at(Array *self, int idx, void *obj)
 
 void *array_remove_at(Array *self, int idx)
 {
-    void *obj = NULL;
+    Object *obj = NULL;
     if ((idx = _fix_index(self, idx)) >= 0) {
-        void *dest = self->data + self->obj_size * idx;
+        Object *dest = self->data + self->obj_size * idx;
         if (!is_none(dest)) {
             obj = new_copy(dest);
             destroy(dest);
@@ -149,7 +149,7 @@ void *array_remove_at(Array *self, int idx)
 bool array_destroy_at(Array *self, int idx)
 {
     if ((idx = _fix_index(self, idx)) >= 0) {
-        void *dest = self->data + self->obj_size * idx;
+        Object *dest = self->data + self->obj_size * idx;
         if (!is_none(dest)) {
             destroy(dest);
             *(None *)dest = init(None);
@@ -159,7 +159,7 @@ bool array_destroy_at(Array *self, int idx)
     return false;
 }
 
-void array_for_each(Array *self, void (*obj_cb)(void *))
+void array_for_each(Array *self, void (*obj_cb)(Object *))
 {
     if (obj_cb == NULL) {
         return;
@@ -239,7 +239,7 @@ static void _iter_init(Array *self, Iter *itr)
 }
 
 
-static Class _ArrayCls = {
+static class _ArrayCls = {
     .name = "Array",
     .size = sizeof(Array),
     .vinit = (vinit_cb)_vinit,
@@ -252,4 +252,4 @@ static Class _ArrayCls = {
     .iter_init = (iter_init_cb)_iter_init,
 };
 
-const Class *ArrayCls = &_ArrayCls;
+const class *ArrayCls = &_ArrayCls;

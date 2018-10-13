@@ -13,7 +13,7 @@ Num *num_new(double val)
 
 void num_init(Num *self, double val)
 {
-    object_init(&self->obj, NumCls);
+    object_init(self, NumCls);
     self->val = val;
 }
 
@@ -32,7 +32,7 @@ Num *num_new_cstr(const char *cstr, bool strict)
 
 void num_init_cstr(Num *self, const char *cstr, bool strict)
 {
-    object_init(&self->obj, NumCls);
+    object_init(self, NumCls);
     num_set_cstr(self, cstr, strict);
 }
 
@@ -89,7 +89,7 @@ size_t num_to_cstr(Num *self, char *cstr, size_t size)
 }
 
 
-static Class _NumCls = {
+static class _NumCls = {
     .name = "Num",
     .size = sizeof(Num),
     .vinit = (vinit_cb)_vinit,
@@ -102,4 +102,4 @@ static Class _NumCls = {
     .iter_init = NULL,
 };
 
-const Class *NumCls = &_NumCls;
+const class *NumCls = &_NumCls;

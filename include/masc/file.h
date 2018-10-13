@@ -10,7 +10,7 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     char *path;
     char *mode;
     FILE *file;
@@ -18,7 +18,7 @@ typedef struct {
 } File;
 
 
-extern const void *FileCls;
+extern const class *FileCls;
 
 
 File *file_new(const char *path, const char *mode);

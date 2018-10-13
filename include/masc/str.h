@@ -8,13 +8,13 @@
 
 
 typedef struct {
-    Object obj;
+    Object;
     char *cstr;
     size_t size;
 } Str;
 
 
-extern const Class *StrCls;
+extern const class *StrCls;
 
 
 Str *str_new(const char *fmt, ...);
