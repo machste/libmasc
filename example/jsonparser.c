@@ -22,7 +22,7 @@ static void *value_check(Str *value, Str **err_msg)
 
 static int get_action(Json *js, Str *key, bool compact)
 {
-    if (key != NULL) {
+    if (!is_none(key)) {
         // Get node by key
         void *node = json_get_node(js, str_cstr(key));
         if (node != NULL) {
@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
             "value of JSON node");
     // Parse command line arguments
     Map *args = argparse_parse(ap, argc, argv);
+    put(args);
     delete(ap);
     bool compact = bool_get(map_get(args, "compact"));
     Str *key = map_remove_key(args, "key");
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
     delete(js_file);
     // Perform get or set action
     if (ret == 0) {
-        if (value == NULL) {
+        if (is_none(value)) {
             ret = get_action(js, key, compact);
         } else {
             ret = set_action(js, path, key, value, compact);
