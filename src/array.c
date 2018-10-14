@@ -197,49 +197,45 @@ size_t array_to_cstr(Array *self, char *cstr, size_t size)
 typedef struct {
     void *ptr;
     int idx;
-} _IterPriv;
+} iter_priv;
 
-static void *_next(Iter *itr, Array *self)
+static void *_new_priv(Array *self)
 {
-    void *obj = ((_IterPriv *)itr->priv)->ptr;
-    ((_IterPriv *)itr->priv)->idx++;
-    if (((_IterPriv *)itr->priv)->idx < self->len) {
-        ((_IterPriv *)itr->priv)->ptr += self->obj_size;
+    iter_priv *itr = malloc(sizeof(iter_priv));
+    itr->ptr = self->data;
+    itr->idx = -1;
+    return itr;
+}
+
+static void *_next(Array *self, iter_priv *itr)
+{
+    void *obj = itr->ptr;
+    itr->idx++;
+    if (itr->idx < self->len) {
+        itr->ptr += self->obj_size;
     } else {
         return NULL;
     }
     return obj;
 }
 
-static void _del_obj(Iter *itr, Array *self)
+static void _del_obj(Array *self, iter_priv *itr)
 {
-    array_destroy_at(self, ((_IterPriv *)itr->priv)->idx);
+    array_destroy_at(self, itr->idx);
 }
 
-static bool _is_last(Iter *itr, Array *self)
+static bool _is_last(Array *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx == self->len - 1;
+    return itr->idx == self->len - 1;
 }
 
-static int _get_idx(Iter *itr, Array *self)
+static int _get_idx(Array *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx;
-}
-
-static void _iter_init(Array *self, Iter *itr)
-{
-    itr->next = (iter_next_cb)_next;
-    itr->del_obj = (iter_del_obj_cb)_del_obj;
-    itr->is_last = (iter_is_last_cb)_is_last;
-    itr->get_idx = (iter_get_idx_cb)_get_idx;
-    itr->priv = malloc(sizeof(_IterPriv));
-    ((_IterPriv *)itr->priv)->ptr = self->data;
-    ((_IterPriv *)itr->priv)->idx = -1;
-    itr->free_priv = free;
+    return itr->idx;
 }
 
 
-static class _ArrayCls = {
+static iterable_class _ArrayCls = {
     .name = "Array",
     .size = sizeof(Array),
     .vinit = (vinit_cb)_vinit,
@@ -249,7 +245,14 @@ static class _ArrayCls = {
     .len = (len_cb)array_len,
     .cmp = (cmp_cb)object_cmp,
     .to_cstr = (to_cstr_cb)array_to_cstr,
-    .iter_init = (iter_init_cb)_iter_init,
+    // Interable Class
+    .new_priv = (new_priv_cb)_new_priv,
+    .next = (next_cb)_next,
+    .del_obj = (del_obj_cb)_del_obj,
+    .is_last = (is_last_cb)_is_last,
+    .get_idx = (get_idx_cb)_get_idx,
+    .get_key = NULL,
+    .delete_priv = free,
 };
 
 const class *ArrayCls = &_ArrayCls;

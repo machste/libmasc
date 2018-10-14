@@ -104,7 +104,6 @@ static class _IntCls = {
     .cmp = (cmp_cb)int_cmp,
     .repr = (repr_cb)int_to_cstr,
     .to_cstr = (to_cstr_cb)int_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *IntCls = &_IntCls;

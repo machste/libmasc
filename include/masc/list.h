@@ -3,17 +3,18 @@
 
 #include <stdbool.h>
 
-#include <masc/object.h>
+#include <masc/iterable.h>
 
 
 typedef struct ListNode ListNode;
 
 typedef struct {
-    Object;
+    Iterable;
     ListNode *node;
 } List;
 
 typedef void *(*list_obj_cb)(Object *obj, void *arg);
+
 
 extern const class *ListCls;
 

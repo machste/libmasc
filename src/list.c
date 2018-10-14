@@ -389,49 +389,45 @@ size_t list_to_cstr(List *self, char *cstr, size_t size)
 typedef struct {
     ListNode *next;
     int idx;
-} _IterPriv;
+} iter_priv;
 
-static void *_next(Iter *itr, List *self)
+static void *_new_priv(List *self)
 {
-    ListNode *node = ((_IterPriv *)itr->priv)->next;
+    iter_priv *itr = malloc(sizeof(iter_priv));
+    itr->next = self->node;
+    itr->idx = -1;
+    return itr;
+}
+
+static void *_next(List *self, iter_priv *itr)
+{
+    ListNode *node = itr->next;
     if (node != NULL) {
-        ((_IterPriv *)itr->priv)->idx++;
-        ((_IterPriv *)itr->priv)->next = node->next;
+        itr->idx++;
+        itr->next = node->next;
         return node->obj;
     }
     return NULL;
 }
 
-static void _del_obj(Iter *itr, List *self)
+static void _del_obj(List *self, iter_priv *itr)
 {
-    list_delete_at(self, ((_IterPriv *)itr->priv)->idx);
-    ((_IterPriv *)itr->priv)->idx--;
+    list_delete_at(self, itr->idx);
+    itr->idx--;
 }
 
-static bool _is_last(Iter *itr, List *self)
+static bool _is_last(List *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->next == NULL;
+    return itr->next == NULL;
 }
 
-static int _get_idx(Iter *itr, List *self)
+static int _get_idx(List *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx;
-}
-
-static void _iter_init(List *self, Iter *itr)
-{
-    itr->next = (iter_next_cb)_next;
-    itr->del_obj = (iter_del_obj_cb)_del_obj;
-    itr->is_last = (iter_is_last_cb)_is_last;
-    itr->get_idx = (iter_get_idx_cb)_get_idx;
-    itr->priv = malloc(sizeof(_IterPriv));
-    ((_IterPriv *)itr->priv)->next = self->node;
-    ((_IterPriv *)itr->priv)->idx = -1;
-    itr->free_priv = free;
+    return itr->idx;
 }
 
 
-static class _ListCls = {
+static iterable_class _ListCls = {
     .name = "List",
     .size = sizeof(List),
     .vinit = (vinit_cb)_vinit,
@@ -441,7 +437,14 @@ static class _ListCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)list_to_cstr,
     .to_cstr = (to_cstr_cb)list_to_cstr,
-    .iter_init = (iter_init_cb)_iter_init,
+    // Interable Class
+    .new_priv = (new_priv_cb)_new_priv,
+    .next = (next_cb)_next,
+    .del_obj = (del_obj_cb)_del_obj,
+    .is_last = (is_last_cb)_is_last,
+    .get_idx = (get_idx_cb)_get_idx,
+    .get_key = NULL,
+    .delete_priv = free,
 };
 
 const class *ListCls = &_ListCls;

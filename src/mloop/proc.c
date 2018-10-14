@@ -77,7 +77,6 @@ static class _MlProcCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)_to_cstr,
     .to_cstr = (to_cstr_cb)_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *MlProcCls = &_MlProcCls;

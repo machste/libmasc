@@ -1,14 +1,14 @@
 #ifndef _MASC_MAP_H_
 #define _MASC_MAP_H_
 
-#include <masc/object.h>
+#include <masc/iterable.h>
 #include <masc/list.h>
 
 
 typedef struct MapNode MapNode;
 
 typedef struct {
-    Object;
+    Iterable;
     MapNode *node;
 } Map;
 

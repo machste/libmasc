@@ -136,14 +136,3 @@ size_t to_cstr(const Object *self, char *cstr, size_t size)
         return cstr_ncopy(cstr, null_cstr, size);
     }
 }
-
-void filter(void *iterable, filter_cb cb)
-{
-    Iter *itr = new(Iter, iterable);
-    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
-        if (!cb(obj)) {
-            iter_del_obj(itr);
-        }
-    }
-    delete(itr);
-}

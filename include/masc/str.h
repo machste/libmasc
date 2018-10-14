@@ -3,12 +3,12 @@
 
 #include <stdbool.h>
 
-#include <masc/object.h>
+#include <masc/iterable.h>
 #include <masc/list.h>
 
 
 typedef struct {
-    Object;
+    Iterable;
     char *cstr;
     size_t size;
 } Str;

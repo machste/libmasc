@@ -41,7 +41,6 @@ static class _NoneCls = {
     .cmp = object_cmp,
     .repr = _repr,
     .to_cstr = _to_cstr,
-    .iter_init = NULL,
 };
 
 const class *NoneCls = &_NoneCls;

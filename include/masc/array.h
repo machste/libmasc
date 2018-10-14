@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include <masc/object.h>
+#include <masc/iterable.h>
 
 
 typedef struct {
-    Object;
+    Iterable;
     size_t obj_size;
     size_t len;
     void *data;

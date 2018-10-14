@@ -316,7 +316,6 @@ static class _JsonCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)json_repr,
     .to_cstr = (to_cstr_cb)json_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *JsonCls = &_JsonCls;

@@ -57,7 +57,6 @@ static class _ObjectCls = {
     .cmp = object_cmp,
     .repr = object_to_cstr,
     .to_cstr = object_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *ObjectCls = &_ObjectCls;

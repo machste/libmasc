@@ -14,7 +14,6 @@
 
 
 typedef struct Object Object;
-typedef struct Iter Iter;
 
 typedef void (*vinit_cb)(Object *self, va_list va);
 typedef void (*init_copy_cb)(Object *self, const Object *other);
@@ -25,9 +24,6 @@ typedef int (*cmp_cb)(const Object *self, const Object *other);
 
 typedef size_t (*repr_cb)(const Object *self, char *cstr, size_t size);
 typedef size_t (*to_cstr_cb)(const Object *self, char *cstr, size_t size);
-typedef void (*iter_init_cb)(const Object *self, Iter *itr);
-
-typedef bool (*filter_cb)(Object *obj);
 
 typedef struct {
     const char *name;
@@ -39,7 +35,6 @@ typedef struct {
     cmp_cb cmp;
     repr_cb repr;
     to_cstr_cb to_cstr;
-    iter_init_cb iter_init;
 } class;
 
 const class *class_of(const Object *self);
@@ -59,8 +54,6 @@ int cmp(const Object *self, const Object *other);
 
 size_t repr(const Object *self, char *cstr, size_t size);
 size_t to_cstr(const Object *self, char *cstr, size_t size);
-
-void filter(void *iterable, filter_cb cb);
 
 
 #endif /* _MASC_CLASS_H_ */

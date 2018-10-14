@@ -265,58 +265,53 @@ typedef struct {
     MapNode *next;
     int idx;
     const char *key;
-} _IterPriv;
+} iter_priv;
 
-static void *_next(Iter *itr, Map *self)
+static void *_new_priv(Map *self)
 {
-    MapNode *node = ((_IterPriv *)itr->priv)->next;
+    iter_priv *itr = malloc(sizeof(iter_priv));
+    itr->next = self->node;
+    itr->idx = -1;
+    itr->key = NULL;
+    return itr;
+}
+
+static void *_next(Map *self, iter_priv *itr)
+{
+    MapNode *node = itr->next;
     if (node != NULL) {
-        ((_IterPriv *)itr->priv)->idx++;
-        ((_IterPriv *)itr->priv)->key = node->key;
-        ((_IterPriv *)itr->priv)->next = node->next;
+        itr->idx++;
+        itr->key = node->key;
+        itr->next = node->next;
         return node->value;
     }
     return NULL;
 
 }
 
-static void _del_obj(Iter *itr, Map *self)
+static void _del_obj(Map *self, iter_priv *itr)
 {
-    map_delete_key(self, ((_IterPriv *)itr->priv)->key);
-    ((_IterPriv *)itr->priv)->idx--;
+    map_delete_key(self, itr->key);
+    itr->idx--;
 }
 
-static bool _is_last(Iter *itr, Map *self)
+static bool _is_last(Map *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->next == NULL;
+    return itr->next == NULL;
 }
 
-static int _get_idx(Iter *itr, Map *self)
+static int _get_idx(Map *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx;
+    return itr->idx;
 }
 
-static const char *_get_key(Iter *itr, Map *self)
+static const char *_get_key(Map *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->key;
-}
-
-static void _iter_init(Map *self, Iter *itr)
-{
-    itr->next = (iter_next_cb)_next;
-    itr->del_obj = (iter_del_obj_cb)_del_obj;
-    itr->is_last = (iter_is_last_cb)_is_last;
-    itr->get_idx = (iter_get_idx_cb)_get_idx;
-    itr->get_key = (iter_get_key_cb)_get_key;
-    itr->priv = malloc(sizeof(_IterPriv));
-    ((_IterPriv *)itr->priv)->next = self->node;
-    ((_IterPriv *)itr->priv)->idx = -1;
-    ((_IterPriv *)itr->priv)->key = NULL;
-    itr->free_priv = free;
+    return itr->key;
 }
 
 
-static class _MapCls = {
+static iterable_class _MapCls = {
     .name = "Map",
     .size = sizeof(Map),
     .vinit = (vinit_cb)_vinit,
@@ -326,7 +321,14 @@ static class _MapCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)map_to_cstr,
     .to_cstr = (to_cstr_cb)map_to_cstr,
-    .iter_init = (iter_init_cb)_iter_init,
+    // Interable Class
+    .new_priv = (new_priv_cb)_new_priv,
+    .next = (next_cb)_next,
+    .del_obj = (del_obj_cb)_del_obj,
+    .is_last = (is_last_cb)_is_last,
+    .get_idx = (get_idx_cb)_get_idx,
+    .get_key = (get_key_cb)_get_key,
+    .delete_priv = free,
 };
 
 const class *MapCls = &_MapCls;

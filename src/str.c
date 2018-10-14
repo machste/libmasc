@@ -4,7 +4,6 @@
 
 #include <masc/str.h>
 #include <masc/char.h>
-#include <masc/iter.h>
 #include <masc/cstr.h>
 #include <masc/math.h>
 #include <masc/regex.h>
@@ -481,49 +480,50 @@ Str *to_str(const void *obj)
 typedef struct {
     Char c;
     int idx;
-} _IterPriv;
+} iter_priv;
 
-static void *_next(Iter *itr, Str *self)
+static void *_new_priv(Str *self)
 {
-    int i = ++((_IterPriv *)itr->priv)->idx;
+    iter_priv *itr = malloc(sizeof(iter_priv));
+    itr->c = init(Char, '\0');
+    itr->idx = -1;
+    return itr;
+}
+
+static void _delete_priv(iter_priv *itr)
+{
+    destroy(&itr->c);
+    free(itr);
+}
+
+static void *_next(Str *self, iter_priv *itr)
+{
+    int i = ++itr->idx;
     if (i < self->size - 1) {
-        ((_IterPriv *)itr->priv)->c.c = self->cstr[i];
-        return &((_IterPriv *)itr->priv)->c;
+        itr->c.c = self->cstr[i];
+        return &itr->c;
     }
     return NULL;
 }
 
-static void _del_obj(Iter *itr, Str *self)
+static void _del_obj(Str *self, iter_priv *itr)
 {
-    str_delete_at(self, ((_IterPriv *)itr->priv)->idx);
-    ((_IterPriv *)itr->priv)->idx--;
+    str_delete_at(self, itr->idx);
+    itr->idx--;
 }
 
-static bool _is_last(Iter *itr, Str *self)
+static bool _is_last(Str *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx == self->size - 2;
+    return itr->idx == self->size - 2;
 }
 
-static int _get_idx(Iter *itr, Str *self)
+static int _get_idx(Str *self, iter_priv *itr)
 {
-    return ((_IterPriv *)itr->priv)->idx;
-}
-
-static void _iter_init(Str *self, Iter *itr)
-{
-    itr->next = (iter_next_cb)_next;
-    itr->del_obj = (iter_del_obj_cb)_del_obj;
-    itr->is_last = (iter_is_last_cb)_is_last;
-    itr->get_idx = (iter_get_idx_cb)_get_idx;
-    itr->priv = malloc(sizeof(_IterPriv));
-    char_init(&((_IterPriv *)itr->priv)->c, '\0');
-    ((_IterPriv *)itr->priv)->idx = -1;
-    itr->free_priv = free;
+    return itr->idx;
 }
 
 
-
-static class _StrCls = {
+static iterable_class _StrCls = {
     .name = "Str",
     .size = sizeof(Str),
     .vinit = (vinit_cb)_vinit,
@@ -533,7 +533,14 @@ static class _StrCls = {
     .cmp = (cmp_cb)str_cmp,
     .repr = (repr_cb)str_repr,
     .to_cstr = (to_cstr_cb)str_to_cstr,
-    .iter_init = (iter_init_cb)_iter_init,
+    // Interable Class
+    .new_priv = (new_priv_cb)_new_priv,
+    .next = (next_cb)_next,
+    .del_obj = (del_obj_cb)_del_obj,
+    .is_last = (is_last_cb)_is_last,
+    .get_idx = (get_idx_cb)_get_idx,
+    .get_key = NULL,
+    .delete_priv = (delete_priv_cb)_delete_priv,
 };
 
 const class *StrCls = &_StrCls;

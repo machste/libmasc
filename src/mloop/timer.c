@@ -52,7 +52,6 @@ static class _MlTimerCls = {
     .cmp = (cmp_cb)ml_timer_cmp,
     .repr = (repr_cb)_to_cstr,
     .to_cstr = (to_cstr_cb)_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *MlTimerCls = &_MlTimerCls;

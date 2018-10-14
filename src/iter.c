@@ -1,25 +1,17 @@
 #include <masc/iter.h>
+#include <masc/iterable.h>
 
-
-void iter_init(Iter *self, void *iterable)
-{
-    object_init(self, IterCls);
-    self->iterable = iterable;
-    if (iterable != NULL && class_of(iterable) != NULL
-            && class_of(iterable)->iter_init != NULL) {
-        class_of(iterable)->iter_init(iterable, self);
-    } else {
-        self->priv = NULL;
-        self->next = NULL;
-        self->is_last = NULL;
-        self->free_priv = NULL;
-    }
-}
 
 static void _vinit(Iter *self, va_list va)
 {
-    void *iterable = va_arg(va, void *);
-    iter_init(self, iterable);
+    object_init(self, IterCls);
+    self->iterable = va_arg(va, Iterable *);
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->new_priv != NULL) {
+        self->priv = iterable_cls->new_priv(self->iterable);
+    } else {
+        self->priv = NULL;
+    }
 }
 
 static void _init_copy(Iter *self, const Iter *other)
@@ -29,15 +21,19 @@ static void _init_copy(Iter *self, const Iter *other)
 
 static void _destroy(Iter *self)
 {
-    if(self != NULL && self->free_priv != NULL) {
-        self->free_priv(self->priv);
+    if (self->priv != NULL) {
+        const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+        if (iterable_cls != NULL && iterable_cls->delete_priv != NULL) {
+            iterable_cls->delete_priv(self->priv);
+        }
     }
 }
 
 void *next(Iter *self)
 {
-    if (self != NULL && self->next != NULL) {
-        return self->next(self, self->iterable);
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->next != NULL) {
+        return iterable_cls->next(self->iterable, self->priv);
     } else {
         return NULL;
     }
@@ -45,15 +41,17 @@ void *next(Iter *self)
 
 void iter_del_obj(Iter *self)
 {
-    if (self != NULL && self->del_obj != NULL) {
-        self->del_obj(self, self->iterable);
-    }   
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->del_obj != NULL) {
+        iterable_cls->del_obj(self->iterable, self->priv);
+    }
 }
 
 bool iter_is_last(Iter *self)
 {
-    if (self != NULL && self->is_last != NULL) {
-        return self->is_last(self, self->iterable);
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->is_last != NULL) {
+        return iterable_cls->is_last(self->iterable, self->priv);
     } else {
         return false;
     }
@@ -61,17 +59,19 @@ bool iter_is_last(Iter *self)
 
 int iter_get_idx(Iter *self)
 {
-    if (self != NULL && self->get_idx != NULL) {
-        return self->get_idx(self, self->iterable);
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->get_idx != NULL) {
+        return iterable_cls->get_idx(self->iterable, self->priv);
     } else {
-        return 0;
+        return -1;
     }
 }
 
 const char *iter_get_key(Iter *self)
 {
-    if (self != NULL && self->get_key != NULL) {
-        return self->get_key(self, self->iterable);
+    const iterable_class *iterable_cls = iterable_class_of(self->iterable);
+    if (iterable_cls != NULL && iterable_cls->get_key != NULL) {
+        return iterable_cls->get_key(self->iterable, self->priv);
     } else {
         return NULL;
     }
@@ -86,7 +86,6 @@ static class _IterCls = {
     .destroy = (destroy_cb)_destroy,
     .repr = (repr_cb)object_to_cstr,
     .to_cstr = (to_cstr_cb)object_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *IterCls = &_IterCls;

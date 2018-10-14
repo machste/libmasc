@@ -77,7 +77,6 @@ static class _BoolCls = {
     .cmp = (cmp_cb)bool_cmp,
     .repr = (repr_cb)bool_to_cstr,
     .to_cstr = (to_cstr_cb)bool_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *BoolCls = &_BoolCls;

@@ -191,7 +191,6 @@ static class _ApArgCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)object_to_cstr,
     .to_cstr = (to_cstr_cb)object_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *ApArgCls = &_ApArgCls;

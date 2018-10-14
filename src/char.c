@@ -73,7 +73,6 @@ static class _CharCls = {
     .cmp = (cmp_cb)char_cmp,
     .repr = (repr_cb)char_repr,
     .to_cstr = (to_cstr_cb)char_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *CharCls = &_CharCls;

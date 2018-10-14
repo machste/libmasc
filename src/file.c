@@ -265,7 +265,6 @@ static class _FileCls = {
     .cmp = (cmp_cb)file_cmp,
     .repr = (repr_cb)file_to_cstr,
     .to_cstr = (to_cstr_cb)file_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *FileCls = &_FileCls;

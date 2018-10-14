@@ -149,7 +149,6 @@ static class _RegexCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)regex_to_cstr,
     .to_cstr = (to_cstr_cb)regex_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *RegexCls = &_RegexCls;

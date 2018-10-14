@@ -198,7 +198,6 @@ static class _TcpServerCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)tcpserver_to_cstr,
     .to_cstr = (to_cstr_cb)tcpserver_to_cstr,
-    .iter_init = NULL,
 };
 
 const void *TcpServerCls = &_TcpServerCls;
@@ -244,7 +243,6 @@ static class _TcpServerCliCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)_cli_to_cstr,
     .to_cstr = (to_cstr_cb)_cli_to_cstr,
-    .iter_init = NULL,
 };
 
 static const void *TcpServerCliCls = &_TcpServerCliCls;

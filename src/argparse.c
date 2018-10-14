@@ -463,7 +463,6 @@ static class _ArgparseCls = {
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)argparse_to_cstr,
     .to_cstr = (to_cstr_cb)argparse_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *ArgparseCls = &_ArgparseCls;

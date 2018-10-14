@@ -6,37 +6,24 @@
 #include <masc/object.h>
 
 
-typedef struct Iter Iter;
+typedef struct Iterable Iterable;
 
-typedef void *(*iter_next_cb)(Iter *self, void *iterable);
-typedef void (*iter_del_obj_cb)(Iter *self, void *iterable);
-typedef bool (*iter_is_last_cb)(Iter *self, void *iterable);
-typedef int (*iter_get_idx_cb)(Iter *self, void *iterable);
-typedef const char *(*iter_get_key_cb)(Iter *self, void *iterable);
-
-typedef void (*iter_free_priv_cb)(void *priv);
-
-struct Iter {
+typedef struct {
     Object;
-    void *iterable;
+    Iterable *iterable;
     void *priv;
-    iter_next_cb next;
-    iter_del_obj_cb del_obj;
-    iter_is_last_cb is_last;
-    iter_get_idx_cb get_idx;
-    iter_get_key_cb get_key;
-    iter_free_priv_cb free_priv;
-};
+} Iter;
 
 
 extern const class *IterCls;
 
 
 void *next(Iter *self);
-
+ 
 void iter_del_obj(Iter *self);
 bool iter_is_last(Iter *self);
 int iter_get_idx(Iter *self);
 const char *iter_get_key(Iter *self);
+
 
 #endif /* _MASC_ITER_H_ */

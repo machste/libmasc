@@ -99,7 +99,6 @@ static class _NumCls = {
     .cmp = (cmp_cb)num_cmp,
     .repr = (repr_cb)num_to_cstr,
     .to_cstr = (to_cstr_cb)num_to_cstr,
-    .iter_init = NULL,
 };
 
 const class *NumCls = &_NumCls;
