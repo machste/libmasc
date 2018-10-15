@@ -3,7 +3,7 @@
 
 #include <masc/argparse.h>
 #include <masc/json.h>
-#include <masc/iter.h>
+#include <masc/iterable.h>
 #include <masc/list.h>
 #include <masc/array.h>
 #include <masc/macro.h>
@@ -25,6 +25,7 @@
 #include <masc/math.h>
 #include <masc/random.h>
 #include <masc/tcpserver.h>
+#include <masc/tcpclient.h>
 #include <masc/mloop.h>
 #include <masc/log.h>
 
