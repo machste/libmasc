@@ -192,12 +192,17 @@ MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg);
 MlFd *mloop_fd_by_fd(int fd);
 
 /**
- * @brief Cancle Timer
+ * @brief Set Blocking Mode
+ */
+bool mloop_fd_set_blocking(int fd, bool blocking);
+
+/**
+ * @brief Cancle File Descriptor Events
  */
 bool mloop_fd_cancle(MlFd *self);
 
 /**
- * @brief Delete Timer
+ * @brief Delete File Descriptor
  */
 void mloop_fd_delete(MlFd *self);
 

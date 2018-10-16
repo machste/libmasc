@@ -197,9 +197,7 @@ MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg)
     }
     // Set fd flags
     if (!(flags & ML_FD_BLOCKING)) {
-        int fl = fcntl(mlfd->fd, F_GETFL, 0);
-        fl |= O_NONBLOCK;
-        fcntl(mlfd->fd, F_SETFL, fl);
+        mloop_fd_set_blocking(mlfd->fd, false);
     }
     e.data.ptr = mlfd;
     if (epoll_ctl(poll_fd, EPOLL_CTL_ADD, mlfd->fd, &e) == 0) {
@@ -225,6 +223,18 @@ MlFd *mloop_fd_by_fd(int fd)
     }
     destroy(&i);
     return mlfd;
+}
+
+// TODO: Once there is an Io class move it.
+bool mloop_fd_set_blocking(int fd, bool blocking)
+{
+    int fl = fcntl(fd, F_GETFL, 0);
+    if (blocking) {
+        fl &= ~O_NONBLOCK;
+    } else {
+        fl |= O_NONBLOCK;
+    }
+    return fcntl(fd, F_SETFL, fl) == 0;
 }
 
 bool mloop_fd_cancle(MlFd *self)
