@@ -193,7 +193,7 @@ MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg)
         e.events |= EPOLLIN | EPOLLRDHUP;
     }
     if (flags & ML_FD_WRITE) {
-        e.events |= EPOLLIN;
+        e.events |= EPOLLOUT;
     }
     // Set fd flags
     if (!(flags & ML_FD_BLOCKING)) {
