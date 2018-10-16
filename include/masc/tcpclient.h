@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 
 #include <masc/object.h>
+#include <masc/mloop.h>
 
 
 typedef enum {
@@ -18,16 +19,21 @@ typedef enum {
 typedef struct TcpClient TcpClient;
 
 typedef void (*tcpclient_data_cb)(TcpClient *self, void *data, size_t size);
+typedef void (*tcpclient_conn_cb)(TcpClient *self, int so_errno);
 typedef void (*tcpclient_hup_cb)(TcpClient *self);
 
 
 struct TcpClient {
     Object;
     char sentinel;
+    int timeout;
+    MlFd *conn_evt;
+    MlTimer *time_evt;
     struct sockaddr_in addr;
     int fd;
     void *data;
     size_t size;
+    tcpclient_conn_cb cli_connect_cb;
     tcpclient_data_cb cli_data_cb;
     tcpclient_data_cb cli_packet_cb;
     tcpclient_hup_cb serv_hup_cb;
@@ -41,6 +47,9 @@ extern const void *TcpClientCls;
 void tcpclient_init(TcpClient *self, const char *ip, in_port_t port);
 
 void tcpclient_destroy(TcpClient *self);
+
+const char *tcpclient_ip(TcpClient *self);
+in_port_t tcpclient_port(TcpClient *self);
 
 TcpClientError tcpclient_start(TcpClient *self);
 void tcpclient_stop(TcpClient *self);

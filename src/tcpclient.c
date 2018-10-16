@@ -1,12 +1,11 @@
 #include <unistd.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <stdio.h>
 
 #include <masc/tcpclient.h>
-#include <masc/mloop.h>
-#include "mloop/fd.h"
 
 
 #define RX_BUFFER_SIZE 512
@@ -19,6 +18,10 @@ void tcpclient_init(TcpClient *self, const char *ip, in_port_t port)
 {
     object_init(self, TcpClientCls);
     self->sentinel = '\n';
+    self->timeout = 3000;
+    self->conn_evt = NULL;
+    self->time_evt = NULL;
+    self->cli_connect_cb = NULL;
     self->cli_data_cb = _dlf_data_cb;
     self->cli_packet_cb = NULL;
     self->serv_hup_cb = NULL;
@@ -44,6 +47,16 @@ static void _vinit(TcpClient *self, va_list va)
 void tcpclient_destroy(TcpClient *self)
 {
     tcpclient_stop(self);
+}
+
+const char *tcpclient_ip(TcpClient *self)
+{
+    return inet_ntoa(self->addr.sin_addr);
+}
+
+in_port_t tcpclient_port(TcpClient *self)
+{
+    return ntohs(self->addr.sin_port);
 }
 
 static void _dlf_data_cb(TcpClient *self, void *new_data, size_t new_size)
@@ -114,6 +127,45 @@ static void _client_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
     }
 }
 
+static void _connect_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
+{
+    TcpClient *cli = arg;
+    mloop_fd_delete(cli->conn_evt);
+    cli->conn_evt = NULL;
+    int so_err;
+    socklen_t so_err_len = sizeof(so_err);
+    getsockopt(cli->fd, SOL_SOCKET, SO_ERROR, &so_err, &so_err_len);
+    if (cli->cli_connect_cb != NULL) {
+        cli->cli_connect_cb(cli, so_err);
+    }
+    if (so_err == 0) {
+        mloop_fd_new(cli->fd, ML_FD_READ, _client_cb, cli);
+        if (cli->time_evt != NULL) {
+            mloop_timer_delete(cli->time_evt);
+            cli->time_evt = NULL;
+        }
+    } else {
+        cli->err = TCPCLIENT_CONNECT_ERR;
+        close(cli->fd);
+        cli->fd = -1;
+    }
+}
+
+static void _timeout_cb(MlTimer *self, void *arg)
+{
+    TcpClient *cli = arg;
+    mloop_fd_delete(cli->conn_evt);
+    cli->conn_evt = NULL;
+    if (cli->cli_connect_cb != NULL) {
+        cli->cli_connect_cb(cli, ETIMEDOUT);
+    }
+    cli->err = TCPCLIENT_CONNECT_ERR;
+    close(cli->fd);
+    cli->fd = -1;
+    mloop_timer_delete(cli->time_evt);
+    cli->time_evt = NULL;
+}
+
 TcpClientError tcpclient_start(TcpClient *self)
 {
     if (self->err != TCPCLIENT_SUCCESS) {
@@ -123,55 +175,39 @@ TcpClientError tcpclient_start(TcpClient *self)
         self->err = TCPCLIENT_SOCKET_ERR;
         return self->err;
     }
+    mloop_fd_set_blocking(self->fd, false);
+    // Try to connect
+    bool in_progress = false;
     if (connect(self->fd, (struct sockaddr *)&self->addr,
-            sizeof(self->addr)) < 0) {
+            sizeof(self->addr)) == 0) {
+        mloop_fd_new(self->fd, ML_FD_READ, _client_cb, self);
+    } else if (errno == EINPROGRESS) {
+        // Connecting process needs more time
+        in_progress = true;
+        self->conn_evt = mloop_fd_new(self->fd, ML_FD_WRITE, _connect_cb, self);
+        if (self->timeout > 0) {
+            self->time_evt = mloop_timer_new(self->timeout, _timeout_cb, self);
+        }
+    } else {
         self->err = TCPCLIENT_CONNECT_ERR;
+        close(self->fd);
+        self->fd = -1;
         return self->err;
     }
-    //TODO: Connection timeout
-    /* Could be done this way ... (of course by using mloop)
-     * 
-     * The socket is nonblocking and the connection  cannot  be  com‐
-     * pleted  immediately.   It  is possible to select(2) or poll(2)
-     * for completion by selecting the  socket  for  writing.   After
-     * select(2) indicates writability, use getsockopt(2) to read the
-     * SO_ERROR option at level SOL_SOCKET to determine whether  con‐
-     * nect() completed successfully (SO_ERROR is zero) or unsuccess‐
-     * fully (SO_ERROR is one of the usual error codes  listed  here,
-     *  explaining the reason for the failure).
-
-    res = connect(soc, (struct sockaddr *)&addr, sizeof(addr)); 
-    if (res < 0) { 
-     if (errno == EINPROGRESS) { 
-        tv.tv_sec = 15; 
-        tv.tv_usec = 0; 
-        FD_ZERO(&myset); 
-        FD_SET(soc, &myset); 
-        if (select(soc+1, NULL, &myset, NULL, &tv) > 0) { 
-           lon = sizeof(int); 
-           getsockopt(soc, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon); 
-           if (valopt) { 
-              fprintf(stderr, "Error in connection() %d - %s\n", valopt, strerror(valopt)); 
-              exit(0); 
-           } 
-        } 
-        else { 
-           fprintf(stderr, "Timeout or error() %d - %s\n", valopt, strerror(valopt)); 
-           exit(0); 
-        } 
-     } 
-     else { 
-        fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno)); 
-        exit(0); 
-     } 
-    } 
-    */
-    mloop_fd_new(self->fd, ML_FD_READ, _client_cb, self);
+    if (!in_progress && self->cli_connect_cb != NULL) {
+        self->cli_connect_cb(self, errno);
+    }
     return self->err;
 }
 
 void tcpclient_stop(TcpClient *self)
 {
+    if (self->conn_evt != NULL) {
+        mloop_fd_delete(self->conn_evt);
+    }
+    if (self->time_evt != NULL) {
+        mloop_timer_delete(self->time_evt);
+    }
     if (self->fd >= 0) {
         MlFd *mlfd = mloop_fd_by_fd(self->fd);
         if (mlfd != NULL) {
@@ -185,7 +221,7 @@ void tcpclient_stop(TcpClient *self)
 size_t tcpclient_to_cstr(TcpClient *self, char *cstr, size_t size)
 {
     return snprintf(cstr, size, "<%s %s:%u at %p>", name_of(self),
-            inet_ntoa(self->addr.sin_addr), ntohs(self->addr.sin_port), self);
+            tcpclient_ip(self), tcpclient_port(self), self);
 }
 
 
