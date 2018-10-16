@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     argparse_add_opt(ap, 0, "bind", "IP", "1", argparse_ip, "IP address");
     argparse_set_default(ap, "bind", "0.0.0.0");
     argparse_add_arg(ap, "port", "PORT", "?", port_check, "port (0 - 65535)");
-    argparse_set_default(ap, "port", "8080");
+    argparse_set_default(ap, "port", "4321");
     // Parse command line arguments
     Map *args = argparse_parse(ap, argc, argv);
     delete(ap);
