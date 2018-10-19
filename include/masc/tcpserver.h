@@ -24,8 +24,6 @@ typedef struct {
     TcpServer *server;
     int fd;
     struct sockaddr_in addr;
-    void *data;
-    size_t size;
 } TcpServerCli;
 
 typedef bool (*tcpserver_accept_cb)(TcpServer *self, TcpServerCli *cli);
@@ -42,7 +40,7 @@ struct TcpServer {
     int fd;
     tcpserver_accept_cb accept_cb;
     tcpserver_data_cb cli_data_cb;
-    tcpserver_data_cb cli_packet_cb;
+    tcpserver_data_cb cli_pkg_cb;
     tcpserver_hup_cb cli_hup_cb;
     List clients;
     TcpServerError err;

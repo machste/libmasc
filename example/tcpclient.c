@@ -5,9 +5,6 @@
 #include <masc.h>
 
 
-static TcpClient client;
-
-
 static void *log_level_check(Str *log_level_str, Str **err_msg)
 {
     Int *log_level = argparse_int(log_level_str, err_msg);
@@ -46,55 +43,10 @@ static void *port_check(Str *port_str, Str **err_msg)
     return port;
 }
 
-static void stdin_line_cb(Str *line)
+void stdin_line_cb(MlFdPkg *self, void *data, size_t size, void *arg)
 {
-    dprint(client.fd, "%O\n", line);
-}
-
-static void stdin_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
-{
-    static char *buf = NULL;
-    static size_t buf_size = 0;
-    static size_t pos = 0;
-    // Read data
-    if (events & ML_FD_READ) {
-        while(true) {
-            if (buf_size <= pos) {
-                buf_size += 256;
-                buf = realloc(buf, buf_size);
-            }
-            ssize_t len = read(fd, buf + pos, buf_size - pos);
-            if (len > 0) {
-                pos += len;
-            } else {
-                break;
-            }
-        }
-    }
-    // Search for complete lines
-    size_t i = 0, start = 0;
-    for (i = 0; i < pos; i++) {
-        if (buf[i] == '\n') {
-            Str *str = str_new_ncopy(buf + start, i - start);
-            stdin_line_cb(str);
-            delete(str);
-            // Set new start posistion and skip new line
-            start = i + 1;
-        }
-    }
-    // Copy remaining data to the start of the buffer
-    if (start < i) {
-        pos = i - start;
-        memcpy(buf, buf + start, pos);
-    } else {
-        free(buf);
-        buf = NULL;
-        pos = 0;
-        buf_size = 0;
-    }
-    if (events & ML_FD_EOF) {
-        log_error("stdin eof!");
-    }
+    TcpClient *cli = arg;
+    write(cli->fd, data, size);
 }
 
 static void connect_cb(TcpClient *self, int so_errno)
@@ -146,14 +98,14 @@ int main(int argc, char *argv[])
     log_init(log_level);
     log_add_stdout();
     // Setup TCP client
-    client = init(TcpClient, str_cstr(ip), port);
-    client.cli_connect_cb = connect_cb;
-    client.cli_packet_cb = pkg_cb;
+    TcpClient client = init(TcpClient, str_cstr(ip), port);
+    client.connect_cb = connect_cb;
+    client.pkg_cb = pkg_cb;
     client.serv_hup_cb = serv_hup_cb;
     delete(ip);
     // Init mloop
     mloop_init();
-    mloop_fd_new(STDIN_FILENO, ML_FD_READ, stdin_cb, NULL);
+    mloop_fd_pkg_new(STDIN_FILENO, '\n', stdin_line_cb, NULL, &client);
     // Start TCP client
     if (tcpclient_start(&client) == TCPCLIENT_SUCCESS) {
         mloop_run();

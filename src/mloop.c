@@ -13,6 +13,8 @@
 #include "mloop/timer.h"
 #include "mloop/proc.h"
 #include "mloop/fd.h"
+#include "mloop/fdreader.h"
+#include "mloop/fdpkg.h"
 
 
 static int poll_fd;
@@ -180,33 +182,64 @@ void mloop_proc_delete(MlProc *self)
     delete(self);
 }
 
+static bool _reg_epoll_events(MlFd *self)
+{
+    struct epoll_event e;
+    memset(&e, 0, sizeof(struct epoll_event));
+    // Set event flags
+    if (self->flags & ML_FD_READ) {
+        e.events |= EPOLLIN | EPOLLRDHUP;
+    }
+    if (self->flags & ML_FD_WRITE) {
+        e.events |= EPOLLOUT;
+    }
+    // Set fd flags
+    if (!(self->flags & ML_FD_BLOCKING)) {
+        mloop_fd_set_blocking(self->fd, false);
+    }
+    e.data.ptr = self;
+    return epoll_ctl(poll_fd, EPOLL_CTL_ADD, self->fd, &e) == 0;    
+}
+
 MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg)
 {
     if (!(flags & (ML_FD_READ | ML_FD_WRITE))) {
         return NULL;
     }
-    MlFd *mlfd = new(MlFd, fd, flags, cb, arg);
-    struct epoll_event e;
-    memset(&e, 0, sizeof(struct epoll_event));
-    // Set event flags
-    if (flags & ML_FD_READ) {
-        e.events |= EPOLLIN | EPOLLRDHUP;
-    }
-    if (flags & ML_FD_WRITE) {
-        e.events |= EPOLLOUT;
-    }
-    // Set fd flags
-    if (!(flags & ML_FD_BLOCKING)) {
-        mloop_fd_set_blocking(mlfd->fd, false);
-    }
-    e.data.ptr = mlfd;
-    if (epoll_ctl(poll_fd, EPOLL_CTL_ADD, mlfd->fd, &e) == 0) {
-        list_append(&mlfds, mlfd);
+    MlFd *self = new(MlFd, fd, flags, cb, arg);
+    if (_reg_epoll_events(self)) {
+        list_append(&mlfds, self);
     } else {
-        delete(mlfd);
-        mlfd = NULL;
+        delete(self);
+        self = NULL;
     }
-    return mlfd;
+    return self;
+}
+
+MlFdReader *mloop_fd_reader_new(int fd, ml_fd_data_cb data_cb,
+        ml_fd_eof_cb eof_cb, void* arg)
+{
+    MlFdReader *self = new(MlFdReader, fd, data_cb, eof_cb, arg);
+    if (_reg_epoll_events(self)) {
+        list_append(&mlfds, self);
+    } else {
+        delete(self);
+        self = NULL;
+    }
+    return self;
+}
+
+MlFdPkg *mloop_fd_pkg_new(int fd, char sen, ml_fd_pkg_cb pkg_cb,
+        ml_fd_eof_cb eof_cb, void* arg)
+{
+    MlFdPkg *self = new(MlFdPkg, fd, sen, pkg_cb, eof_cb, arg);
+    if (_reg_epoll_events(self)) {
+        list_append(&mlfds, self);
+    } else {
+        delete(self);
+        self = NULL;
+    }
+    return self;
 }
 
 MlFd *mloop_fd_by_fd(int fd)

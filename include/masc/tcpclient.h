@@ -31,11 +31,9 @@ struct TcpClient {
     MlTimer *time_evt;
     struct sockaddr_in addr;
     int fd;
-    void *data;
-    size_t size;
-    tcpclient_conn_cb cli_connect_cb;
-    tcpclient_data_cb cli_data_cb;
-    tcpclient_data_cb cli_packet_cb;
+    tcpclient_conn_cb connect_cb;
+    tcpclient_data_cb data_cb;
+    tcpclient_data_cb pkg_cb;
     tcpclient_hup_cb serv_hup_cb;
     TcpClientError err;
 };

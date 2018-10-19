@@ -8,12 +8,6 @@
 #include <masc/tcpclient.h>
 
 
-#define RX_BUFFER_SIZE 512
-
-
-static void _dlf_data_cb(TcpClient *self, void *data, size_t len);
-
-
 void tcpclient_init(TcpClient *self, const char *ip, in_port_t port)
 {
     object_init(self, TcpClientCls);
@@ -21,13 +15,11 @@ void tcpclient_init(TcpClient *self, const char *ip, in_port_t port)
     self->timeout = 3000;
     self->conn_evt = NULL;
     self->time_evt = NULL;
-    self->cli_connect_cb = NULL;
-    self->cli_data_cb = _dlf_data_cb;
-    self->cli_packet_cb = NULL;
+    self->connect_cb = NULL;
+    self->data_cb = NULL;
+    self->pkg_cb = NULL;
     self->serv_hup_cb = NULL;
     self->fd = -1;
-    self->data = NULL;
-    self->size = 0;
     self->addr.sin_family = AF_INET;        
     self->addr.sin_port = htons(port);    
     if (inet_aton(ip, &self->addr.sin_addr)) {
@@ -59,71 +51,36 @@ in_port_t tcpclient_port(TcpClient *self)
     return ntohs(self->addr.sin_port);
 }
 
-static void _dlf_data_cb(TcpClient *self, void *new_data, size_t new_size)
-{
-    char *data = new_data;
-    size_t size = new_size;
-    if (self->data != NULL) {
-        // Append new data to existing
-        data = self->data = realloc(self->data, self->size + new_size);
-        memcpy(self->data + self->size, new_data, new_size);
-        size = self->size += new_size;
-    }
-    // Search for complete packets which end with a sentinel
-    size_t i = 0, pos = 0;
-    for (i = 0; i < size; i++) {
-        if (data[i] == self->sentinel) {
-            if (self->cli_packet_cb != NULL) {
-                self->cli_packet_cb(self, data + pos, i - pos + 1);
-            }
-            // Set new start posistion and skip the sentinel
-            pos = i + 1;
-        }
-    }
-    // Copy remaining data to client for the next round
-    if (pos < i) {
-        self->size = i - pos;
-        self->data = realloc(self->data, self->size);
-        memcpy(self->data, data + pos, self->size);
-    } else {
-        free(self->data);
-        self->data = NULL;
-        self->size = 0;
-    }
-}
-
-static void _client_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
+static void _data_cb(MlFdReader *self, void *data, size_t size, void *arg)
 {
     TcpClient *cli = arg;
-    if (events & ML_FD_READ) {
-        // Read data
-        size_t buf_size = 0;
-        size_t pos = 0;
-        void *buf = NULL;
-        while(true) {
-            if (buf_size <= pos) {
-                buf_size += RX_BUFFER_SIZE;
-                buf = realloc(buf, buf_size);
-            }
-            ssize_t len = read(cli->fd, buf + pos, buf_size - pos);
-            if (len > 0) {
-                pos += len;
-            } else {
-                break;
-            }
-        }
-        if(pos > 0 && cli->cli_data_cb != NULL) {
-            cli->cli_data_cb(cli, buf, pos);
-        }
-        free(buf);
+    cli->data_cb(cli, data, size);
+}
+
+static void _pkg_cb(MlFdPkg *self, void *data, size_t size, void *arg)
+{
+    TcpClient *cli = arg;
+    cli->pkg_cb(cli, data, size);
+}
+
+static void _eof_cb(MlFdReader *self, void *arg)
+{
+    TcpClient *cli = arg;
+    cli->err = TCPCLIENT_SERV_HUP_ERR;
+    if(cli->serv_hup_cb != NULL) {
+        cli->serv_hup_cb(cli);
     }
-    if (events & ML_FD_EOF) {
-        // If EOF is indicated shutdown the client
-        cli->err = TCPCLIENT_SERV_HUP_ERR;
-        if(cli->serv_hup_cb != NULL) {
-            cli->serv_hup_cb(cli);
-        }
-        tcpclient_stop(cli);
+    tcpclient_stop(cli);
+}
+
+static void _reg_data_callbacks(TcpClient *self)
+{
+    if (self->data_cb != NULL) {
+        mloop_fd_reader_new(self->fd, _data_cb, _eof_cb, self);
+    } else if (self->pkg_cb != NULL) {
+        mloop_fd_pkg_new(self->fd, self->sentinel, _pkg_cb, _eof_cb, self);
+    } else {
+        mloop_fd_reader_new(self->fd, NULL, _eof_cb, self);
     }
 }
 
@@ -135,11 +92,11 @@ static void _connect_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
     int so_err;
     socklen_t so_err_len = sizeof(so_err);
     getsockopt(cli->fd, SOL_SOCKET, SO_ERROR, &so_err, &so_err_len);
-    if (cli->cli_connect_cb != NULL) {
-        cli->cli_connect_cb(cli, so_err);
+    if (cli->connect_cb != NULL) {
+        cli->connect_cb(cli, so_err);
     }
     if (so_err == 0) {
-        mloop_fd_new(cli->fd, ML_FD_READ, _client_cb, cli);
+        _reg_data_callbacks(cli);
         if (cli->time_evt != NULL) {
             mloop_timer_delete(cli->time_evt);
             cli->time_evt = NULL;
@@ -156,8 +113,8 @@ static void _timeout_cb(MlTimer *self, void *arg)
     TcpClient *cli = arg;
     mloop_fd_delete(cli->conn_evt);
     cli->conn_evt = NULL;
-    if (cli->cli_connect_cb != NULL) {
-        cli->cli_connect_cb(cli, ETIMEDOUT);
+    if (cli->connect_cb != NULL) {
+        cli->connect_cb(cli, ETIMEDOUT);
     }
     cli->err = TCPCLIENT_CONNECT_ERR;
     close(cli->fd);
@@ -180,7 +137,7 @@ TcpClientError tcpclient_start(TcpClient *self)
     bool in_progress = false;
     if (connect(self->fd, (struct sockaddr *)&self->addr,
             sizeof(self->addr)) == 0) {
-        mloop_fd_new(self->fd, ML_FD_READ, _client_cb, self);
+        _reg_data_callbacks(self);
     } else if (errno == EINPROGRESS) {
         // Connecting process needs more time
         in_progress = true;
@@ -194,8 +151,8 @@ TcpClientError tcpclient_start(TcpClient *self)
         self->fd = -1;
         return self->err;
     }
-    if (!in_progress && self->cli_connect_cb != NULL) {
-        self->cli_connect_cb(self, errno);
+    if (!in_progress && self->connect_cb != NULL) {
+        self->connect_cb(self, errno);
     }
     return self->err;
 }

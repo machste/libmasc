@@ -26,11 +26,17 @@ typedef unsigned long ml_time_t;
 typedef struct MlTimer MlTimer;
 typedef struct MlProc MlProc;
 typedef struct MlFd MlFd;
+typedef struct MlFdReader MlFdReader;
+typedef struct MlFdPkg MlFdPkg;
 
 typedef void (*ml_timer_cb)(MlTimer *self, void *arg);
 typedef int (*ml_proc_cb)(void *arg);
 typedef void (*ml_proc_done_cb)(MlProc *self, int ret, void *arg);
 typedef void (*ml_fd_cb)(MlFd *self, int fd, ml_fd_flag_t events, void *arg);
+typedef void (*ml_fd_data_cb)(MlFdReader *self, void *data, size_t size,
+                              void *arg);
+typedef void (*ml_fd_eof_cb)(MlFdReader *self, void *arg);
+typedef void (*ml_fd_pkg_cb)(MlFdPkg *self, void *data, size_t size, void *arg);
 
 struct MlTimer {
     Object;
@@ -59,6 +65,19 @@ struct MlFd {
     void *arg;
 };
 
+struct MlFdReader {
+    MlFd;
+    ml_fd_data_cb data_cb;
+    ml_fd_eof_cb eof_cb;
+};
+
+struct MlFdPkg {
+    MlFdReader;
+    char sentinel;
+    ml_fd_pkg_cb pkg_cb;
+    void *data;
+    size_t size;
+};
 
 /**
  * @brief Initialise the Main Loop
@@ -185,6 +204,39 @@ void mloop_proc_delete(MlProc *self);
  * @return the added MlFd object otherwise NULL
  */
 MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg);
+
+/**
+ * @brief Add a File Descriptor Reader
+ *
+ * Add a file descriptor to wait for incoming data, read all data and call the
+ * callback function.
+ * 
+ * @param fd the file descriptor
+ * @param data_cb callback function for incoming data
+ * @param eof_cb callback function when the end of file is reached
+ * @param arg optional argument for the callback functions
+ *
+ * @return the added MlFdReader object otherwise NULL
+ */
+MlFdReader *mloop_fd_reader_new(int fd, ml_fd_data_cb data_cb,
+        ml_fd_eof_cb eof_cb, void* arg);
+
+/**
+ * @brief Add a File Descriptor Packager
+ *
+ * Add a file descriptor to wait for incoming data, read all data, split it by
+ * the given sentinel and call the callback function.
+ * 
+ * @param fd the file descriptor
+ * @param sen the sentinel which marks the end of each package
+ * @param pkg_cb callback function for incoming packages
+ * @param eof_cb callback function when the end of file is reached
+ * @param arg optional argument for the callback functions
+ *
+ * @return the added MlFdReader object otherwise NULL
+ */
+MlFdPkg *mloop_fd_pkg_new(int fd, char sen, ml_fd_pkg_cb pkg_cb,
+        ml_fd_eof_cb eof_cb, void* arg);
 
 /**
  * @brief Get MlFd by File Descriptor

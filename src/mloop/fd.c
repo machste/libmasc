@@ -1,9 +1,7 @@
-#include <stdio.h>
-
 #include "fd.h"
 
 
-static void _vinit(MlFd *self, va_list va)
+static void _fd_vinit(MlFd *self, va_list va)
 {
     object_init(self, MlFdCls);
     self->fd = va_arg(va, int);
@@ -16,7 +14,7 @@ static void _vinit(MlFd *self, va_list va)
 static class _MlFdCls = {
     .name = "MlFd",
     .size = sizeof(MlFd),
-    .vinit = (vinit_cb)_vinit,
+    .vinit = (vinit_cb)_fd_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
     .len = (len_cb)object_len,

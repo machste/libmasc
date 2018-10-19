@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     TcpServer server = init(TcpServer, str_cstr(ip), port);
     delete(ip);
     server.accept_cb = accept_cb;
-    server.cli_packet_cb = pkg_cb;
+    server.cli_pkg_cb = pkg_cb;
     server.cli_hup_cb = cli_hup_cb;
     mloop_init();
     TcpServerError err = tcpserver_start(&server);
