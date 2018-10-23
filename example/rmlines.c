@@ -1,5 +1,6 @@
 #include <masc.h>
 
+
 static int rm_lines(Regex *re, File *f, bool invert)
 {
     int ret = 0;
