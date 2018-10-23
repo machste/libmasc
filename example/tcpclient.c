@@ -1,5 +1,3 @@
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <masc.h>
 
 
@@ -18,11 +16,8 @@ static void *log_level_check(Str *log_level_str, Str **err_msg)
 
 static void *host_check(Str *hostname, Str **err_msg)
 {
-    Str *ip = NULL;
-    struct hostent *host = gethostbyname(str_cstr(hostname));
-    if (host != NULL) {
-        ip = str_new_cstr(inet_ntoa(*((struct in_addr *)host->h_addr)));
-    } else {
+    Str *ip = socket_gethostbyname(str_cstr(hostname));
+    if (ip == NULL) {
         *err_msg = str_new("unknown host: %O!", hostname);
     }
     return ip;
