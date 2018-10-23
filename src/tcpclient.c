@@ -51,6 +51,17 @@ in_port_t tcpclient_port(TcpClient *self)
     return ntohs(self->addr.sin_port);
 }
 
+static void _connect_cb(TcpClient *self, int so_errno)
+{
+    if (self->connect_cb != NULL) {
+        if (so_errno == 0) {
+            self->connect_cb(self, NULL);
+        } else {
+            self->connect_cb(self, strerror(so_errno));
+        }
+    }
+}
+
 static void _data_cb(MlFdReader *self, void *data, size_t size, void *arg)
 {
     TcpClient *cli = arg;
@@ -84,7 +95,7 @@ static void _reg_data_callbacks(TcpClient *self)
     }
 }
 
-static void _connect_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
+static void _conn_evt(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
 {
     TcpClient *cli = arg;
     mloop_fd_delete(cli->conn_evt);
@@ -92,9 +103,7 @@ static void _connect_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
     int so_err;
     socklen_t so_err_len = sizeof(so_err);
     getsockopt(cli->fd, SOL_SOCKET, SO_ERROR, &so_err, &so_err_len);
-    if (cli->connect_cb != NULL) {
-        cli->connect_cb(cli, so_err);
-    }
+    _connect_cb(cli, so_err);
     if (so_err == 0) {
         _reg_data_callbacks(cli);
         if (cli->time_evt != NULL) {
@@ -113,14 +122,12 @@ static void _timeout_cb(MlTimer *self, void *arg)
     TcpClient *cli = arg;
     mloop_fd_delete(cli->conn_evt);
     cli->conn_evt = NULL;
-    if (cli->connect_cb != NULL) {
-        cli->connect_cb(cli, ETIMEDOUT);
-    }
-    cli->err = TCPCLIENT_CONNECT_ERR;
-    close(cli->fd);
-    cli->fd = -1;
     mloop_timer_delete(cli->time_evt);
     cli->time_evt = NULL;
+    cli->err = TCPCLIENT_CONNECT_ERR;
+    _connect_cb(cli, ETIMEDOUT);
+    close(cli->fd);
+    cli->fd = -1;
 }
 
 TcpClientError tcpclient_start(TcpClient *self)
@@ -141,7 +148,7 @@ TcpClientError tcpclient_start(TcpClient *self)
     } else if (errno == EINPROGRESS) {
         // Connecting process needs more time
         in_progress = true;
-        self->conn_evt = mloop_fd_new(self->fd, ML_FD_WRITE, _connect_cb, self);
+        self->conn_evt = mloop_fd_new(self->fd, ML_FD_WRITE, _conn_evt, self);
         if (self->timeout > 0) {
             self->time_evt = mloop_timer_new(self->timeout, _timeout_cb, self);
         }
@@ -151,8 +158,8 @@ TcpClientError tcpclient_start(TcpClient *self)
         self->fd = -1;
         return self->err;
     }
-    if (!in_progress && self->connect_cb != NULL) {
-        self->connect_cb(self, errno);
+    if (!in_progress) {
+        _connect_cb(self, errno);
     }
     return self->err;
 }

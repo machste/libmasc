@@ -1,4 +1,3 @@
-#include <string.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <masc.h>
@@ -48,11 +47,11 @@ void stdin_line_cb(MlFdPkg *self, void *data, size_t size, void *arg)
     write(cli->fd, data, size);
 }
 
-static void connect_cb(TcpClient *self, int so_errno)
+static void connect_cb(TcpClient *self, const char *err_msg)
 {
-    if (so_errno != 0) {
+    if (err_msg != NULL) {
         log_error("unable to connect to %s:%i, %s!", tcpclient_ip(self),
-                tcpclient_port(self), strerror(so_errno));
+                tcpclient_port(self), err_msg);
         mloop_stop();
     } else {
         log_debug("connected to %s:%i.", tcpclient_ip(self),

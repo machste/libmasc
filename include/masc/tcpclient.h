@@ -19,7 +19,7 @@ typedef enum {
 typedef struct TcpClient TcpClient;
 
 typedef void (*tcpclient_data_cb)(TcpClient *self, void *data, size_t size);
-typedef void (*tcpclient_conn_cb)(TcpClient *self, int so_errno);
+typedef void (*tcpclient_conn_cb)(TcpClient *self, const char *err_msg);
 typedef void (*tcpclient_hup_cb)(TcpClient *self);
 
 
