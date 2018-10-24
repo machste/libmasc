@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
             "value of JSON node");
     // Parse command line arguments
     Map *args = argparse_parse(ap, argc, argv);
-    put(args);
     delete(ap);
     bool compact = bool_get(map_get(args, "compact"));
     Str *key = map_remove_key(args, "key");
