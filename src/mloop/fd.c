@@ -17,7 +17,6 @@ static class _MlFdCls = {
     .vinit = (vinit_cb)_fd_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
-    .len = (len_cb)object_len,
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)object_to_cstr,
     .to_cstr = (to_cstr_cb)object_to_cstr,

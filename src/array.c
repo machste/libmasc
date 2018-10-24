@@ -242,10 +242,10 @@ static iterable_class _ArrayCls = {
     .init_copy = (init_copy_cb)array_init_copy,
     .destroy = (destroy_cb)array_destroy,
     .repr = (repr_cb)array_to_cstr,
-    .len = (len_cb)array_len,
     .cmp = (cmp_cb)object_cmp,
     .to_cstr = (to_cstr_cb)array_to_cstr,
     // Interable Class
+    .len = (len_cb)array_len,
     .new_priv = (new_priv_cb)_new_priv,
     .next = (next_cb)_next,
     .del_obj = (del_obj_cb)_del_obj,

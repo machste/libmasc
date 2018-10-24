@@ -25,11 +25,6 @@ void object_destroy(Object *self)
 {
 }
 
-size_t object_len(const Object *self)
-{
-    return 0;
-}
-
 int object_cmp(const Object *self, const Object *other)
 {
     if (self == other) {
@@ -53,7 +48,6 @@ static class _ObjectCls = {
     .vinit = _vinit,
     .init_copy = object_init_copy,
     .destroy = object_destroy,
-    .len = object_len,
     .cmp = object_cmp,
     .repr = object_to_cstr,
     .to_cstr = object_to_cstr,

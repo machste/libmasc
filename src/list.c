@@ -433,11 +433,11 @@ static iterable_class _ListCls = {
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)list_init_copy,
     .destroy = (destroy_cb)list_destroy,
-    .len = (len_cb)list_len,
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)list_to_cstr,
     .to_cstr = (to_cstr_cb)list_to_cstr,
     // Interable Class
+    .len = (len_cb)list_len,
     .new_priv = (new_priv_cb)_new_priv,
     .next = (next_cb)_next,
     .del_obj = (del_obj_cb)_del_obj,

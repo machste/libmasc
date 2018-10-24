@@ -96,14 +96,6 @@ void __delete_objs__(Object *self, ...)
     va_end(va);
 }
 
-size_t len(const Object *self)
-{
-    if (self == NULL || class_of(self) == NULL) {
-        return 0;
-    }
-    return class_of(self)->len(self);
-}
-
 int cmp(const Object *self, const Object *other)
 {
     if (self == other) {

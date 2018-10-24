@@ -73,7 +73,6 @@ static class _BoolCls = {
     .vinit = (vinit_cb)bool_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,
-    .len = (len_cb)object_len,
     .cmp = (cmp_cb)bool_cmp,
     .repr = (repr_cb)bool_to_cstr,
     .to_cstr = (to_cstr_cb)bool_to_cstr,

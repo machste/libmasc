@@ -37,7 +37,6 @@ static class _NoneCls = {
     .vinit = _vinit,
     .init_copy = object_init_copy,
     .destroy = object_destroy,
-    .len = object_len,
     .cmp = object_cmp,
     .repr = _repr,
     .to_cstr = _to_cstr,

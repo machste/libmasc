@@ -19,7 +19,6 @@ typedef void (*vinit_cb)(Object *self, va_list va);
 typedef void (*init_copy_cb)(Object *self, const Object *other);
 typedef void (*destroy_cb)(Object *self);
 
-typedef size_t (*len_cb)(const Object *self);
 typedef int (*cmp_cb)(const Object *self, const Object *other);
 
 typedef size_t (*repr_cb)(const Object *self, char *cstr, size_t size);
@@ -31,7 +30,6 @@ typedef struct {
     vinit_cb vinit;
     init_copy_cb init_copy;
     destroy_cb destroy;
-    len_cb len;
     cmp_cb cmp;
     repr_cb repr;
     to_cstr_cb to_cstr;
@@ -48,8 +46,6 @@ void destroy(Object *self);
 void delete(Object *self);
 void __delete_objs__(Object *self, ...);
 
-
-size_t len(const Object *self);
 int cmp(const Object *self, const Object *other);
 
 size_t repr(const Object *self, char *cstr, size_t size);

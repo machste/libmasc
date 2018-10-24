@@ -8,6 +8,7 @@
 
 typedef struct Iterable Iterable;
 
+typedef size_t (*len_cb)(const Iterable *self);
 typedef void *(*new_priv_cb)(Iterable *self);
 typedef void *(*next_cb)(Iterable *self, void *priv);
 typedef void (*del_obj_cb)(Iterable *self, void *priv);
@@ -18,6 +19,7 @@ typedef void (*delete_priv_cb)(void *priv);
 
 typedef struct {
     class;
+    len_cb len;
     new_priv_cb new_priv;
     next_cb next;
     del_obj_cb del_obj;
@@ -31,7 +33,9 @@ typedef bool (*filter_cb)(Object *obj);
 
 const iterable_class *iterable_class_of(const Iterable *self);
 
-void filter(Iterable *iterable, filter_cb cb);
+size_t len(const Iterable *self);
+
+void filter(Iterable *self, filter_cb cb);
 
 
 #endif /* _MASC_ITERABLE_CLASS_H_ */

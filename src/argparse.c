@@ -459,7 +459,6 @@ static class _ArgparseCls = {
     .vinit = (vinit_cb)argparse_vinit,
     .init_copy = (init_copy_cb)_init_copy,
     .destroy = (destroy_cb)argparse_destroy,
-    .len = (len_cb)object_len,
     .cmp = (cmp_cb)object_cmp,
     .repr = (repr_cb)argparse_to_cstr,
     .to_cstr = (to_cstr_cb)argparse_to_cstr,
