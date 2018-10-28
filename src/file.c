@@ -23,12 +23,16 @@ void file_init(File *self, const char *path, const char *mode)
     object_init(self, FileCls);
     self->path = strdup(path);
     self->mode = strdup(mode);
-    // TODO: Check if path is a directory!
-    self->file = fopen(path, mode);
-    if (self->file == NULL) {
-        self->errnum = errno;
+    if (path_is_dir(path)) {
+        self->file = NULL;
+        self->errnum = EISDIR;
     } else {
-        self->errnum = 0;
+        self->file = fopen(path, mode);
+        if (self->file == NULL) {
+            self->errnum = errno;
+        } else {
+            self->errnum = 0;
+        }
     }
 }
 
@@ -62,9 +66,19 @@ const char *file_basename(File *self)
     return path_basename(self->path);
 }
 
-bool file_is_open(File *self)
+int file_get_fd(File *self)
 {
-    return self->file != NULL;
+    int fd;
+    if (self->file != NULL) {
+        fd = fileno(self->file);
+        if (fd < 0) {
+            self->errnum = errno;
+        }
+    } else {
+        self->errnum = EBADF;
+        fd = -1;
+    }
+    return fd;
 }
 
 char *file_err_msg(File *self)
@@ -75,16 +89,22 @@ char *file_err_msg(File *self)
 size_t file_size(File *self)
 {
     struct stat file_stats;
-    if (self->file != NULL) {
-        int fd = fileno(self->file);
-        if (fd >= 0 && fstat(fd, &file_stats) == 0) {
-            return file_stats.st_size;
-        }
+    int fd = file_get_fd(self);
+    if (fd >= 0 && fstat(fd, &file_stats) == 0) {
+        return file_stats.st_size;
     }
     return 0;
 }
 
-Str *file_read(File *self, long len) {
+ssize_t file_read(File *self, void *data, size_t size)
+{
+    if (self->file == NULL) {
+        return -1;
+    }
+    return fread(data, 1, size, self->file);
+}
+
+Str *file_readstr(File *self, long len) {
     if (self->file == NULL) {
         return NULL;
     }
@@ -92,7 +112,7 @@ Str *file_read(File *self, long len) {
         len = file_size(self) - ftell(self->file);
     }
     Str *s = str_new_ncopy(NULL, len);
-    long read_len = fread(s->cstr, 1, len, self->file);
+    size_t read_len = fread(s->cstr, 1, len, self->file);
     if (read_len < len) {
         s->size = read_len + 1;
         s->cstr = realloc(s->cstr, s->size);
@@ -140,64 +160,12 @@ Str *file_readline(File *self)
     return line;
 }
 
-List *file_readlines(File *self)
-{
-    List *l = new(List);
-    Str *line;
-    for (int i = 0; (line = file_readline(self)) != NULL; i++) {
-        list_append(l, line);
-    }
-    return l;
-}
-
-long file_write(File *self, const char *cstr)
+ssize_t file_write(File *self, const void *data, size_t size)
 {
     if (self->file == NULL) {
         return -1;
     }
-    return fwrite(cstr, 1, strlen(cstr), self->file);
-}
-
-long file_write_fmt(File *self, const char *fmt, ...)
-{
-    if (self->file == NULL) {
-        return -1;
-    }
-    va_list va;
-    va_start(va, fmt);
-    long len = vfprint(self->file, fmt, va);
-    va_end(va);
-    return len;
-}
-
-long file_put(File *self, void *obj)
-{
-    Str *s = new(Str, "%O\n", obj);
-    long len = file_write(self, str_cstr(s));
-    delete(s);
-    return len;
-}
-
-long file_writelines(File *self, void *iterable)
-{
-    long len = 0;
-    Iter *itr = new(Iter, iterable);
-    for (void *obj = next(itr); obj != NULL; obj = next(itr)) {
-        long line_len;
-        if (isinstance(obj, Str)) {
-            line_len = file_write(self, ((Str *)obj)->cstr);
-        } else {
-            line_len = file_put(self, obj);
-        }
-        if (line_len >= 0) {
-            len += line_len;
-        } else {
-            len = -1;
-            break;
-        } 
-    }
-    delete(itr);
-    return len;
+    return fwrite(data, 1, size, self->file);
 }
 
 void file_rewind(File *self)
@@ -243,7 +211,7 @@ int file_cmp(const File *self, const File *other)
 size_t file_to_cstr(File *self, char *cstr, size_t size)
 {
     char *state;
-    if (file_is_open(self)) {
+    if (self->file != NULL) {
         state = "open";
     } else if (self->errnum != 0) {
         state = strerror(self->errnum);
@@ -255,7 +223,7 @@ size_t file_to_cstr(File *self, char *cstr, size_t size)
 }
 
 
-static class _FileCls = {
+static io_class _FileCls = {
     .name = "File",
     .size = sizeof(File),
     .vinit = (vinit_cb)_vinit,
@@ -264,6 +232,13 @@ static class _FileCls = {
     .cmp = (cmp_cb)file_cmp,
     .repr = (repr_cb)file_to_cstr,
     .to_cstr = (to_cstr_cb)file_to_cstr,
+    // Io Class
+    .get_fd = (get_fd_cb)file_get_fd,
+    .__read__ = (read_cb)file_read,
+    .readstr = (readstr_cb)file_readstr,
+    .readline = (readline_cb)file_readline,
+    .__write__ = (write_cb)file_write,
+    .__close__ = (close_cb)file_close,
 };
 
-const class *FileCls = &_FileCls;
+const io_class *FileCls = &_FileCls;

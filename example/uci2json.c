@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     File *uci_file = new(File, argv[1], "r");
-    if (file_is_open(uci_file)) {
+    if (is_open(uci_file)) {
         Map *uci = uci_parse(uci_file);
         Json *js = new(Json, uci);
         delete(uci);

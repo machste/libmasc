@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     List *users = new(List);
     File *f = new(File, "/etc/passwd", "r");
-    if (file_is_open(f)) {
+    if (is_open(f)) {
         Str *line;
         while ((line = file_readline(f)) != NULL) {
             str_rstrip(line);

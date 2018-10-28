@@ -52,15 +52,14 @@ static int set_action(Json *js, Str *path, Str *key, void *value, bool compact)
     if (json_set_node(js, str_cstr(key), new_copy(value))) {
         // Write new json content to json file
         File *js_file = new(File, str_cstr(path), "w");
-        if (file_is_open(js_file)) {
+        if (is_open(js_file)) {
             Str *js_str;
             if (compact) {
                 js_str = to_str(js);
             } else {
                 js_str = json_pretty_str(js);
             }
-            file_write(js_file, str_cstr(js_str));
-            file_write(js_file, "\n");
+            writeobj(js_file, js_str);
             delete(js_str);
         } else {
             fprint(stderr, "Error: File '%s': %s!\n", file_path(js_file),
@@ -97,8 +96,8 @@ int main(int argc, char *argv[])
     // Open JSON file, read and parse it
     Json *js = NULL;
     File *js_file = new(File, str_cstr(path), "r");
-    if (file_is_open(js_file)) {
-        Str *js_str = file_read(js_file, -1);
+    if (is_open(js_file)) {
+        Str *js_str = readstr(js_file, -1);
         js = json_new_cstr(str_cstr(js_str));
         delete(js_str);
         if (!json_is_valid(js)) {

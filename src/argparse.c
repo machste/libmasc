@@ -434,7 +434,7 @@ void *argparse_num(Str *num, Str **err_msg)
 void *argparse_file(Str *path, Str **err_msg)
 {
     File *f = new(File, str_cstr(path), "r");
-    if (!file_is_open(f)) {
+    if (!is_open(f)) {
         *err_msg = str_new("file '%s': %s!", file_path(f), file_err_msg(f));
         delete(f);
         f = NULL;

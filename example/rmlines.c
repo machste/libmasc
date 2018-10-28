@@ -5,7 +5,7 @@ static int rm_lines(Regex *re, File *f, bool invert)
 {
     int ret = 0;
     int rm_line_count = 0;
-    List *lines = file_readlines(f);
+    List *lines = readlines(f);
     // Define filter callback function
     bool re_match(Str *line) {
         bool keep_line = regex_is_match(re, str_cstr(line)) == invert;
@@ -18,7 +18,7 @@ static int rm_lines(Regex *re, File *f, bool invert)
     filter(lines, (filter_cb)re_match);
     // Write the remaining lines
     if (file_reopen(f, "w")) {
-        file_writelines(f, lines);
+        writelines(f, lines);
         print("Removed %i lines from '%s'\n", rm_line_count, file_path(f));
     } else {
         fprint(stderr, "File '%s': %s!\n", file_path(f), file_err_msg(f));
