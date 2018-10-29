@@ -3,10 +3,12 @@
 
 #include <stdbool.h>
 
-#include <masc/class.h>
+#include <masc/object.h>
 
 
-typedef struct Iterable Iterable;
+typedef struct {
+    Object;
+} Iterable;
 
 typedef size_t (*len_cb)(const Iterable *self);
 typedef void *(*new_priv_cb)(Iterable *self);

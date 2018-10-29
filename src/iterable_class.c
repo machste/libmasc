@@ -1,4 +1,5 @@
-#include <masc/iterable.h>
+#include <masc/iterable_class.h>
+#include <masc/iter.h>
 
 
 const iterable_class *iterable_class_of(const Iterable *self)

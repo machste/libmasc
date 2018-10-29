@@ -1,7 +1,7 @@
 #ifndef _MASC_MAP_H_
 #define _MASC_MAP_H_
 
-#include <masc/iterable.h>
+#include <masc/iter.h>
 #include <masc/list.h>
 
 

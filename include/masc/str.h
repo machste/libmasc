@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include <masc/iterable.h>
+#include <masc/iter.h>
 #include <masc/list.h>
 
 

@@ -3,7 +3,7 @@
 
 #include <masc/argparse.h>
 #include <masc/json.h>
-#include <masc/iterable.h>
+#include <masc/iter.h>
 #include <masc/list.h>
 #include <masc/array.h>
 #include <masc/macro.h>

@@ -1,5 +1,4 @@
 #include <masc/iter.h>
-#include <masc/iterable.h>
 
 
 static void _vinit(Iter *self, va_list va)

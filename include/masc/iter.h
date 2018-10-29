@@ -3,10 +3,8 @@
 
 #include <stdbool.h>
 
-#include <masc/object.h>
+#include <masc/iterable_class.h>
 
-
-typedef struct Iterable Iterable;
 
 typedef struct {
     Object;
