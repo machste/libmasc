@@ -9,4 +9,4 @@ Version: @PROJECT_VERSION@
 
 Requires:
 Libs: -L${libdir} -lmasc
-Cflags: -I${includedir}
+Cflags: -std=gnu11 -fplan9-extensions -I${includedir}
