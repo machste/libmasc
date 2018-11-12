@@ -8,9 +8,12 @@
 #include <masc/tcpclient.h>
 
 
-void tcpclient_init(TcpClient *self, const char *ip, in_port_t port)
+void tcpclient_init(TcpClient *self, const char *ip, int port)
 {
     object_init(self, TcpClientCls);
+    self->ip = strdup(ip);
+    self->port = port;
+    self->sock = NULL;
     self->sentinel = '\n';
     self->timeout = 3000;
     self->conn_evt = NULL;
@@ -19,36 +22,19 @@ void tcpclient_init(TcpClient *self, const char *ip, in_port_t port)
     self->data_cb = NULL;
     self->pkg_cb = NULL;
     self->serv_hup_cb = NULL;
-    self->fd = -1;
-    self->addr.sin_family = AF_INET;        
-    self->addr.sin_port = htons(port);    
-    if (inet_aton(ip, &self->addr.sin_addr)) {
-        self->err = TCPCLIENT_SUCCESS;
-    } else {
-        self->err = TCPCLIENT_INVALID_ADDR;
-    }
 }
 
 static void _vinit(TcpClient *self, va_list va)
 {
     char *ip = va_arg(va, char *);
-    in_port_t port = (in_port_t)va_arg(va, int);
+    int port = va_arg(va, int);
     tcpclient_init(self, ip, port);
 }
 
 void tcpclient_destroy(TcpClient *self)
 {
+    free(self->ip);
     tcpclient_stop(self);
-}
-
-const char *tcpclient_ip(TcpClient *self)
-{
-    return inet_ntoa(self->addr.sin_addr);
-}
-
-in_port_t tcpclient_port(TcpClient *self)
-{
-    return ntohs(self->addr.sin_port);
 }
 
 static void _connect_cb(TcpClient *self, int so_errno)
@@ -62,19 +48,19 @@ static void _connect_cb(TcpClient *self, int so_errno)
     }
 }
 
-static void _data_cb(MlFdReader *self, void *data, size_t size, void *arg)
+static void _data_cb(MlIoReader *self, void *data, size_t size, void *arg)
 {
     TcpClient *cli = arg;
     cli->data_cb(cli, data, size);
 }
 
-static void _pkg_cb(MlFdPkg *self, void *data, size_t size, void *arg)
+static void _pkg_cb(MlIoPkg *self, void *data, size_t size, void *arg)
 {
     TcpClient *cli = arg;
     cli->pkg_cb(cli, data, size);
 }
 
-static void _eof_cb(MlFdReader *self, void *arg)
+static void _eof_cb(MlIoReader *self, void *arg)
 {
     TcpClient *cli = arg;
     cli->err = TCPCLIENT_SERV_HUP_ERR;
@@ -87,22 +73,22 @@ static void _eof_cb(MlFdReader *self, void *arg)
 static void _reg_data_callbacks(TcpClient *self)
 {
     if (self->data_cb != NULL) {
-        mloop_fd_reader_new(self->fd, _data_cb, _eof_cb, self);
+        mloop_io_reader_new(self->sock, _data_cb, _eof_cb, self);
     } else if (self->pkg_cb != NULL) {
-        mloop_fd_pkg_new(self->fd, self->sentinel, _pkg_cb, _eof_cb, self);
+        mloop_io_pkg_new(self->sock, self->sentinel, _pkg_cb, _eof_cb, self);
     } else {
-        mloop_fd_reader_new(self->fd, NULL, _eof_cb, self);
+        mloop_io_reader_new(self->sock, NULL, _eof_cb, self);
     }
 }
 
-static void _conn_evt(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
+static void _conn_evt(MlIo *self, int fd, ml_io_flag_t events, void *arg)
 {
     TcpClient *cli = arg;
-    mloop_fd_delete(cli->conn_evt);
+    mloop_io_delete(cli->conn_evt);
     cli->conn_evt = NULL;
     int so_err;
     socklen_t so_err_len = sizeof(so_err);
-    getsockopt(cli->fd, SOL_SOCKET, SO_ERROR, &so_err, &so_err_len);
+    socket_getsockopt(cli->sock, SOL_SOCKET, SO_ERROR, &so_err, &so_err_len);
     _connect_cb(cli, so_err);
     if (so_err == 0) {
         _reg_data_callbacks(cli);
@@ -112,22 +98,22 @@ static void _conn_evt(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
         }
     } else {
         cli->err = TCPCLIENT_CONNECT_ERR;
-        close(cli->fd);
-        cli->fd = -1;
+        delete(cli->sock);
+        cli->sock = NULL;
     }
 }
 
 static void _timeout_cb(MlTimer *self, void *arg)
 {
     TcpClient *cli = arg;
-    mloop_fd_delete(cli->conn_evt);
+    mloop_io_delete(cli->conn_evt);
     cli->conn_evt = NULL;
     mloop_timer_delete(cli->time_evt);
     cli->time_evt = NULL;
     cli->err = TCPCLIENT_CONNECT_ERR;
     _connect_cb(cli, ETIMEDOUT);
-    close(cli->fd);
-    cli->fd = -1;
+    delete(cli->sock);
+    cli->sock = NULL;
 }
 
 TcpClientError tcpclient_start(TcpClient *self)
@@ -135,27 +121,27 @@ TcpClientError tcpclient_start(TcpClient *self)
     if (self->err != TCPCLIENT_SUCCESS) {
         return self->err;
     }
-    if ((self->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    self->sock = new(Socket, AF_INET, SOCK_STREAM, 0);
+    if (!is_open(self->sock)) {
         self->err = TCPCLIENT_SOCKET_ERR;
         return self->err;
     }
-    mloop_fd_set_blocking(self->fd, false);
+    set_blocking(self->sock, false);
     // Try to connect
     bool in_progress = false;
-    if (connect(self->fd, (struct sockaddr *)&self->addr,
-            sizeof(self->addr)) == 0) {
+    if (socket_connect(self->sock, self->ip, self->port)) {
         _reg_data_callbacks(self);
     } else if (errno == EINPROGRESS) {
         // Connecting process needs more time
         in_progress = true;
-        self->conn_evt = mloop_fd_new(self->fd, ML_FD_WRITE, _conn_evt, self);
+        self->conn_evt = mloop_io_new(self->sock, ML_IO_WRITE, _conn_evt, self);
         if (self->timeout > 0) {
             self->time_evt = mloop_timer_new(self->timeout, _timeout_cb, self);
         }
     } else {
         self->err = TCPCLIENT_CONNECT_ERR;
-        close(self->fd);
-        self->fd = -1;
+        delete(self->sock);
+        self->sock = NULL;
         return self->err;
     }
     if (!in_progress) {
@@ -167,25 +153,25 @@ TcpClientError tcpclient_start(TcpClient *self)
 void tcpclient_stop(TcpClient *self)
 {
     if (self->conn_evt != NULL) {
-        mloop_fd_delete(self->conn_evt);
+        mloop_io_delete(self->conn_evt);
     }
     if (self->time_evt != NULL) {
         mloop_timer_delete(self->time_evt);
     }
-    if (self->fd >= 0) {
-        MlFd *mlfd = mloop_fd_by_fd(self->fd);
-        if (mlfd != NULL) {
-            mloop_fd_delete(mlfd);
+    if (self->sock != NULL) {
+        MlIo *mlio = mloop_io_by_io(self->sock);
+        if (mlio != NULL) {
+            mloop_io_delete(mlio);
         }
-        close(self->fd);
-        self->fd = -1;
+        delete(self->sock);
+        self->sock = NULL;
     }
 }
 
 size_t tcpclient_to_cstr(TcpClient *self, char *cstr, size_t size)
 {
-    return snprintf(cstr, size, "<%s %s:%u at %p>", name_of(self),
-            tcpclient_ip(self), tcpclient_port(self), self);
+    return snprintf(cstr, size, "<%s %s:%i at %p>", name_of(self), self->ip,
+            self->port, self);
 }
 
 

@@ -1,9 +1,8 @@
 #ifndef _MASC_TCPCLIENT_H_
 #define _MASC_TCPCLIENT_H_
 
-#include <netinet/in.h>
-
 #include <masc/object.h>
+#include <masc/socket.h>
 #include <masc/mloop.h>
 
 
@@ -25,12 +24,13 @@ typedef void (*tcpclient_hup_cb)(TcpClient *self);
 
 struct TcpClient {
     Object;
+    char *ip;
+    int port;
+    Socket *sock;
     char sentinel;
     int timeout;
-    MlFd *conn_evt;
+    MlIo *conn_evt;
     MlTimer *time_evt;
-    struct sockaddr_in addr;
-    int fd;
     tcpclient_conn_cb connect_cb;
     tcpclient_data_cb data_cb;
     tcpclient_data_cb pkg_cb;
@@ -42,12 +42,9 @@ struct TcpClient {
 extern const void *TcpClientCls;
 
 
-void tcpclient_init(TcpClient *self, const char *ip, in_port_t port);
+void tcpclient_init(TcpClient *self, const char *ip, int port);
 
 void tcpclient_destroy(TcpClient *self);
-
-const char *tcpclient_ip(TcpClient *self);
-in_port_t tcpclient_port(TcpClient *self);
 
 TcpClientError tcpclient_start(TcpClient *self);
 void tcpclient_stop(TcpClient *self);

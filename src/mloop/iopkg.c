@@ -1,10 +1,10 @@
 #include <string.h>
 
-#include "fdreader.h"
-#include "fdpkg.h"
+#include "ioreader.h"
+#include "iopkg.h"
 
 
-static void _pkg_data_cb(MlFdPkg *self, void *_data, size_t _size, void *arg)
+static void _pkg_data_cb(MlIoPkg *self, void *_data, size_t _size, void *arg)
 {
     char *data = _data;
     size_t size = _size;
@@ -37,28 +37,28 @@ static void _pkg_data_cb(MlFdPkg *self, void *_data, size_t _size, void *arg)
     }
 }
 
-static void _pkg_vinit(MlFdPkg *self, va_list va)
+static void _pkg_vinit(MlIoPkg *self, va_list va)
 {
-    int fd = va_arg(va, int);
+    IoBase *io = va_arg(va, IoBase *);
     self->sentinel = (char)va_arg(va, int);
-    self->pkg_cb = va_arg(va, ml_fd_pkg_cb);
-    ml_fd_eof_cb eof_cb = va_arg(va, ml_fd_eof_cb);
+    self->pkg_cb = va_arg(va, ml_io_pkg_cb);
+    ml_io_eof_cb eof_cb = va_arg(va, ml_io_eof_cb);
     void *arg = va_arg(va, void *);
-    __init__(MlFdReaderCls, self, fd, _pkg_data_cb, eof_cb, arg);
+    __init__(MlIoReaderCls, self, io, _pkg_data_cb, eof_cb, arg);
     self->data = NULL;
     self->size = 0;
 }
 
-static void _pkg_destroy(MlFdPkg *self)
+static void _pkg_destroy(MlIoPkg *self)
 {
     if (self->data != NULL) {
         free(self->data);
     }
 }
 
-static class _MlFdPkgCls = {
-    .name = "MlFdPkg",
-    .size = sizeof(MlFdPkg),
+static class _MlIoPkgCls = {
+    .name = "MlIoPkg",
+    .size = sizeof(MlIoPkg),
     .vinit = (vinit_cb)_pkg_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)_pkg_destroy,
@@ -67,4 +67,4 @@ static class _MlFdPkgCls = {
     .to_cstr = (to_cstr_cb)object_to_cstr,
 };
 
-const class *MlFdPkgCls = &_MlFdPkgCls;
+const class *MlIoPkgCls = &_MlIoPkgCls;

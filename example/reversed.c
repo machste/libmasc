@@ -5,11 +5,11 @@ static bool accept_cb(TcpServer *self, TcpServerCli *cli)
 {
     log_info("new: %O", cli);
     if (list_len(&self->clients) >= 2) {
-        dprint(cli->fd, "Too many other clients, good bye!\n");
+        writefmt(cli->sock, "Too many other clients, good bye!\n");
         print("%O: No new clients!\n", self);
         return false;
     }
-    dprint(cli->fd, "Welcome to reversed, type something ...\n");
+    writefmt(cli->sock, "Welcome to reversed, type something ...\n");
     return true;
 }
 
@@ -19,14 +19,14 @@ static void pkg_cb(TcpServer *self, TcpServerCli *cli, void *data, size_t size)
     str_strip(str);
     log_debug("data: %O: %O", cli, str);
     if (cstr_eq(str_cstr(str), "quit")) {
-        dprint(cli->fd, "Good bye!\n", str);
+        writefmt(cli->sock, "Good bye!\n");
         tcpserver_cli_close(cli);
     } else if (cstr_eq(str_cstr(str), "stop")) {
-        dprint(cli->fd, "Shutdown reversed, good bye!\n", str);
+        writefmt(cli->sock, "Shutdown reversed, good bye!\n");
         mloop_stop();
     } else {
         str_reverse(str);
-        dprint(cli->fd, "%O\n", str);
+        writefmt(cli->sock, "%O\n", str);
     } 
     delete(str);
 }

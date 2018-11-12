@@ -12,9 +12,9 @@
 #include <masc/macro.h>
 #include "mloop/timer.h"
 #include "mloop/proc.h"
-#include "mloop/fd.h"
-#include "mloop/fdreader.h"
-#include "mloop/fdpkg.h"
+#include "mloop/io.h"
+#include "mloop/ioreader.h"
+#include "mloop/iopkg.h"
 
 
 static int poll_fd;
@@ -24,7 +24,7 @@ static bool got_sigchld = false;
 static ml_time_t start_time;
 static List timers;
 static List procs;
-static List mlfds;
+static List mlios;
 
 
 static void sigterm_cb(int signum)
@@ -43,7 +43,7 @@ void mloop_init(void)
     start_time = 0;
     list_init(&timers);
     list_init(&procs);
-    list_init(&mlfds);
+    list_init(&mlios);
     poll_fd = epoll_create(32);
     if (poll_fd >= 0) {
         fcntl(poll_fd, F_SETFD, fcntl(poll_fd, F_GETFD) | FD_CLOEXEC);
@@ -59,7 +59,7 @@ void mloop_destroy(void)
     initialised = false;
     list_destroy(&timers);
     list_destroy(&procs);
-    list_destroy(&mlfds);
+    list_destroy(&mlios);
     close(poll_fd);
 }
 
@@ -182,33 +182,33 @@ void mloop_proc_delete(MlProc *self)
     delete(self);
 }
 
-static bool _reg_epoll_events(MlFd *self)
+static bool _reg_epoll_events(MlIo *self)
 {
     struct epoll_event e;
     memset(&e, 0, sizeof(struct epoll_event));
     // Set event flags
-    if (self->flags & ML_FD_READ) {
+    if (self->flags & ML_IO_READ) {
         e.events |= EPOLLIN | EPOLLRDHUP;
     }
-    if (self->flags & ML_FD_WRITE) {
+    if (self->flags & ML_IO_WRITE) {
         e.events |= EPOLLOUT;
     }
     // Set fd flags
-    if (!(self->flags & ML_FD_BLOCKING)) {
-        mloop_fd_set_blocking(self->fd, false);
+    if (!(self->flags & ML_IO_BLOCKING)) {
+        set_blocking(self->io, false);
     }
     e.data.ptr = self;
-    return epoll_ctl(poll_fd, EPOLL_CTL_ADD, self->fd, &e) == 0;    
+    return epoll_ctl(poll_fd, EPOLL_CTL_ADD, get_fd(self->io), &e) == 0;    
 }
 
-MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg)
+MlIo *mloop_io_new(IoBase *io, ml_io_flag_t flags, ml_io_cb cb, void* arg)
 {
-    if (!(flags & (ML_FD_READ | ML_FD_WRITE))) {
+    if (!(flags & (ML_IO_READ | ML_IO_WRITE))) {
         return NULL;
     }
-    MlFd *self = new(MlFd, fd, flags, cb, arg);
+    MlIo *self = new(MlIo, io, flags, cb, arg);
     if (_reg_epoll_events(self)) {
-        list_append(&mlfds, self);
+        list_append(&mlios, self);
     } else {
         delete(self);
         self = NULL;
@@ -216,12 +216,12 @@ MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg)
     return self;
 }
 
-MlFdReader *mloop_fd_reader_new(int fd, ml_fd_data_cb data_cb,
-        ml_fd_eof_cb eof_cb, void* arg)
+MlIoReader *mloop_io_reader_new(IoBase *io, ml_io_data_cb data_cb,
+        ml_io_eof_cb eof_cb, void* arg)
 {
-    MlFdReader *self = new(MlFdReader, fd, data_cb, eof_cb, arg);
+    MlIoReader *self = new(MlIoReader, io, data_cb, eof_cb, arg);
     if (_reg_epoll_events(self)) {
-        list_append(&mlfds, self);
+        list_append(&mlios, self);
     } else {
         delete(self);
         self = NULL;
@@ -229,12 +229,12 @@ MlFdReader *mloop_fd_reader_new(int fd, ml_fd_data_cb data_cb,
     return self;
 }
 
-MlFdPkg *mloop_fd_pkg_new(int fd, char sen, ml_fd_pkg_cb pkg_cb,
-        ml_fd_eof_cb eof_cb, void* arg)
+MlIoPkg *mloop_io_pkg_new(IoBase *io, char sen, ml_io_pkg_cb pkg_cb,
+        ml_io_eof_cb eof_cb, void* arg)
 {
-    MlFdPkg *self = new(MlFdPkg, fd, sen, pkg_cb, eof_cb, arg);
+    MlIoPkg *self = new(MlIoPkg, io, sen, pkg_cb, eof_cb, arg);
     if (_reg_epoll_events(self)) {
-        list_append(&mlfds, self);
+        list_append(&mlios, self);
     } else {
         delete(self);
         self = NULL;
@@ -242,46 +242,34 @@ MlFdPkg *mloop_fd_pkg_new(int fd, char sen, ml_fd_pkg_cb pkg_cb,
     return self;
 }
 
-MlFd *mloop_fd_by_fd(int fd)
+MlIo *mloop_io_by_io(IoBase *io)
 {
-    if (fd < 0) {
+    if (io == NULL) {
         return NULL;
     }
-    MlFd *mlfd;
-    Iter i = init(Iter, &mlfds);
-    for (mlfd = next(&i); mlfd != NULL; mlfd = next(&i)) {
-        if (mlfd->fd == fd) {
+    MlIo *mlio;
+    Iter i = init(Iter, &mlios);
+    for (mlio = next(&i); mlio != NULL; mlio = next(&i)) {
+        if (get_fd(mlio->io) == get_fd(io)) {
             break;
         }
     }
     destroy(&i);
-    return mlfd;
+    return mlio;
 }
 
-// TODO: Once there is an Io class move it.
-bool mloop_fd_set_blocking(int fd, bool blocking)
+bool mloop_io_cancle(MlIo *self)
 {
-    int fl = fcntl(fd, F_GETFL, 0);
-    if (blocking) {
-        fl &= ~O_NONBLOCK;
-    } else {
-        fl |= O_NONBLOCK;
-    }
-    return fcntl(fd, F_SETFL, fl) == 0;
-}
-
-bool mloop_fd_cancle(MlFd *self)
-{
-    list_remove(&mlfds, self);
-    if (epoll_ctl(poll_fd, EPOLL_CTL_DEL, self->fd, NULL) != 0) {
+    list_remove(&mlios, self);
+    if (epoll_ctl(poll_fd, EPOLL_CTL_DEL, get_fd(self->io), NULL) != 0) {
         return false;
     }
     return true;
 }
 
-void mloop_fd_delete(MlFd *self)
+void mloop_io_delete(MlIo *self)
 {
-    mloop_fd_cancle(self);
+    mloop_io_cancle(self);
     delete(self);
 }
 
@@ -364,20 +352,20 @@ static void _handle_epoll(int timeout)
     static struct epoll_event events[16];
     int nfds = epoll_wait(poll_fd, events, ARRAY_LEN(events), timeout);
     for (int i = 0; i < nfds; i++) {
-        MlFd *mlfd = events[i].data.ptr;
-        if (mlfd->cb != NULL) {
-            ml_fd_flag_t ev = 0;
+        MlIo *mlio = events[i].data.ptr;
+        if (mlio->cb != NULL) {
+            ml_io_flag_t ev = 0;
             if(events[i].events & EPOLLIN) {
-                ev |= ML_FD_READ;
+                ev |= ML_IO_READ;
             }
             if(events[i].events & EPOLLRDHUP) {
-                ev |= ML_FD_EOF;
+                ev |= ML_IO_EOF;
             }
             if(events[i].events & EPOLLOUT) {
-                ev |= ML_FD_WRITE;
+                ev |= ML_IO_WRITE;
             }
             if (ev != 0) { 
-                mlfd->cb(mlfd, mlfd->fd, ev, mlfd->arg);
+                mlio->cb(mlio, get_fd(mlio->io), ev, mlio->arg);
             }
         }
     }

@@ -11,9 +11,12 @@
 static const void *TcpServerCliCls;
 
 
-void tcpserver_init(TcpServer *self, const char *ip, in_port_t port)
+void tcpserver_init(TcpServer *self, const char *ip, int port)
 {
     object_init(self, TcpServerCls);
+    self->ip = strdup(ip);
+    self->port = port;
+    self->sock = NULL;
     self->listen_backlog = 4;
     self->sentinel = '\n';
     self->accept_cb = NULL;
@@ -21,48 +24,42 @@ void tcpserver_init(TcpServer *self, const char *ip, in_port_t port)
     self->cli_pkg_cb = NULL;
     self->cli_hup_cb = NULL;
     list_init(&self->clients);
-    self->fd = -1;
-    self->addr.sin_family = AF_INET;        
-    self->addr.sin_port = htons(port);    
-    if (inet_aton(ip, &self->addr.sin_addr)) {
-        self->err = TCPSERVER_SUCCESS;
-    } else {
-        self->err = TCPSERVER_INVALID_ADDR;
-    }
+    self->err = TCPSERVER_SUCCESS;
 }
 
 static void _vinit(TcpServer *self, va_list va)
 {
     char *ip = va_arg(va, char *);
-    in_port_t port = (in_port_t)va_arg(va, int);
+    int port = va_arg(va, int);
     tcpserver_init(self, ip, port);
 }
 
 void tcpserver_destroy(TcpServer *self)
 {
+    free(self->ip);
     list_destroy(&self->clients);
-    if (self->fd >= 0) {
-        MlFd *mlfd = mloop_fd_by_fd(self->fd);
-        if (mlfd != NULL) {
-            mloop_fd_delete(mlfd);
+    if (self->sock != NULL) {
+        MlIo *mlio = mloop_io_by_io(self->sock);
+        if (mlio != NULL) {
+            mloop_io_delete(mlio);
         }
-        close(self->fd);
+        delete(self->sock);
     }
 }
 
-static void _cli_data_cb(MlFdReader *self, void *data, size_t size, void *arg)
+static void _cli_data_cb(MlIoReader *self, void *data, size_t size, void *arg)
 {
     TcpServerCli *cli = arg;
     cli->server->cli_data_cb(cli->server, cli, data, size);
 }
 
-static void _cli_pkg_cb(MlFdPkg *self, void *data, size_t size, void *arg)
+static void _cli_pkg_cb(MlIoPkg *self, void *data, size_t size, void *arg)
 {
     TcpServerCli *cli = arg;
     cli->server->cli_pkg_cb(cli->server, cli, data, size);
 }
 
-static void _eof_cb(MlFdReader *self, void *arg)
+static void _eof_cb(MlIoReader *self, void *arg)
 {
     TcpServerCli *cli = arg;
     if(cli->server->cli_hup_cb != NULL) {
@@ -74,22 +71,22 @@ static void _eof_cb(MlFdReader *self, void *arg)
 static void _cli_reg_data_callbacks(TcpServer *self, TcpServerCli *cli)
 {
     if (self->cli_data_cb != NULL) {
-        mloop_fd_reader_new(cli->fd, _cli_data_cb, _eof_cb, cli);
+        mloop_io_reader_new(cli->sock, _cli_data_cb, _eof_cb, cli);
     } else if (self->cli_pkg_cb != NULL) {
-        mloop_fd_pkg_new(cli->fd, self->sentinel, _cli_pkg_cb, _eof_cb, cli);
+        mloop_io_pkg_new(cli->sock, self->sentinel, _cli_pkg_cb, _eof_cb, cli);
     } else {
-        mloop_fd_reader_new(cli->fd, NULL, _eof_cb, cli);
+        mloop_io_reader_new(cli->sock, NULL, _eof_cb, cli);
     }
 }
 
-static void _server_cb(MlFd *self, int fd, ml_fd_flag_t events, void *arg)
+static void _server_cb(MlIo *self, int fd, ml_io_flag_t events, void *arg)
 {
     TcpServer *server = arg;
-    int cli_fd;
+    Socket *s;
     struct sockaddr in_addr;
     socklen_t in_len = sizeof(in_addr);
-    while ((cli_fd = accept(self->fd, &in_addr, &in_len)) != -1) {
-        TcpServerCli *cli = new(TcpServerCli, server, cli_fd, &in_addr);
+    while ((s = socket_accept((Socket *)self->io, &in_addr, &in_len)) != NULL) {
+        TcpServerCli *cli = new(TcpServerCli, server, s, &in_addr);
         bool accept_cli = true;
         if(server->accept_cb != NULL) {
             accept_cli = server->accept_cb(server, cli);
@@ -109,28 +106,29 @@ TcpServerError tcpserver_start(TcpServer *self)
     if (self->err != TCPSERVER_SUCCESS) {
         return self->err;
     }
-    if ((self->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    self->sock = new(Socket, AF_INET, SOCK_STREAM, 0);
+    if (!is_open(self->sock)) {
         self->err = TCPSERVER_SOCKET_ERR;
         return self->err;
     }
     int o = 1;
-    if (setsockopt(self->fd, SOL_SOCKET, SO_REUSEADDR, &o, sizeof(o)) < 0) {
-        close(self->fd);
+    if (socket_setsockopt(self->sock, SOL_SOCKET, SO_REUSEADDR,
+            &o, sizeof(o)) < 0) {
+        delete(self->sock);
         self->err = TCPSERVER_SETSOCKET_ERR;
         return self->err;
     }
-    if (bind(self->fd, (struct sockaddr *)&self->addr,
-            sizeof(self->addr)) < 0) {
-        close(self->fd);
+    if (!socket_bind(self->sock, self->ip, self->port)) {
+        delete(self->sock);
         self->err = TCPSERVER_BIND_ERR;
         return self->err;
     }
-    if (listen(self->fd, self->listen_backlog) < 0) {
-        close(self->fd);
+    if (!socket_listen(self->sock, self->listen_backlog)) {
+        delete(self->sock);
         self->err = TCPSERVER_LISTEN_ERR;
         return self->err;
     }
-    mloop_fd_new(self->fd, ML_FD_READ, _server_cb, self);
+    mloop_io_new(self->sock, ML_IO_READ, _server_cb, self);
     return self->err;
 }
 
@@ -141,8 +139,8 @@ void tcpserver_cli_close(TcpServerCli *cli)
 
 size_t tcpserver_to_cstr(TcpServer *self, char *cstr, size_t size)
 {
-    return snprintf(cstr, size, "<%s %s:%u at %p>", name_of(self),
-            inet_ntoa(self->addr.sin_addr), ntohs(self->addr.sin_port), self);
+    return snprintf(cstr, size, "<%s %s:%u at %p>", name_of(self), self->ip,
+            self->port, self);
 }
 
 
@@ -164,18 +162,18 @@ static void _cli_vinit(TcpServerCli *self, va_list va)
 {
     object_init(self, TcpServerCliCls);
     self->server = va_arg(va, TcpServer *);
-    self->fd = va_arg(va, int);
+    self->sock = va_arg(va, Socket *);
     struct sockaddr_in *addr = va_arg(va, struct sockaddr_in *);
     memcpy(&self->addr, addr, sizeof(self->addr));
 }
 
 static void _cli_destroy(TcpServerCli *self, va_list va)
 {
-    MlFd *mlfd = mloop_fd_by_fd(self->fd);
-    if (mlfd != NULL) {
-        mloop_fd_delete(mlfd);
+    MlIo *mlio = mloop_io_by_io(self->sock);
+    if (mlio != NULL) {
+        mloop_io_delete(mlio);
     }
-    close(self->fd);
+    delete(self->sock);
 }
 
 static size_t _cli_to_cstr(TcpServerCli *self, char *cstr, size_t size)

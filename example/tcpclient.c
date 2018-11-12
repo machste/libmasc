@@ -36,21 +36,20 @@ static void *port_check(Str *port_str, Str **err_msg)
     return port;
 }
 
-void stdin_line_cb(MlFdPkg *self, void *data, size_t size, void *arg)
+void stdin_line_cb(MlIoPkg *self, void *data, size_t size, void *arg)
 {
     TcpClient *cli = arg;
-    write(cli->fd, data, size);
+    write(cli->sock, data, size);
 }
 
 static void connect_cb(TcpClient *self, const char *err_msg)
 {
     if (err_msg != NULL) {
-        log_error("unable to connect to %s:%i, %s!", tcpclient_ip(self),
-                tcpclient_port(self), err_msg);
+        log_error("unable to connect to %s:%i, %s!", self->ip, self->port,
+                err_msg);
         mloop_stop();
     } else {
-        log_debug("connected to %s:%i.", tcpclient_ip(self),
-                tcpclient_port(self));
+        log_debug("connected to %s:%i.", self->ip, self->port);
     }
 }
 
@@ -98,13 +97,15 @@ int main(int argc, char *argv[])
     delete(ip);
     // Init mloop
     mloop_init();
-    mloop_fd_pkg_new(STDIN_FILENO, '\n', stdin_line_cb, NULL, &client);
+    Io input = init(Io, STDIN_FILENO);
+    mloop_io_pkg_new(&input, '\n', stdin_line_cb, NULL, &client);
     // Start TCP client
     if (tcpclient_start(&client) == TCPCLIENT_SUCCESS) {
         mloop_run();
     } else {
         ret = -1;
     }
+    destroy(&input);
     destroy(&client);
     mloop_destroy();
     log_destroy();

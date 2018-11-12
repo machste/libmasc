@@ -12,31 +12,32 @@
 #include <stdbool.h>
 
 #include <masc/object.h>
+#include <masc/io.h>
 
 
 typedef enum {
-    ML_FD_READ = 1,
-    ML_FD_WRITE = 2,
-    ML_FD_BLOCKING = 4,
-    ML_FD_EOF = 8,
-} ml_fd_flag_t;
+    ML_IO_READ = 1,
+    ML_IO_WRITE = 2,
+    ML_IO_BLOCKING = 4,
+    ML_IO_EOF = 8,
+} ml_io_flag_t;
 
 typedef unsigned long ml_time_t;
 
 typedef struct MlTimer MlTimer;
 typedef struct MlProc MlProc;
-typedef struct MlFd MlFd;
-typedef struct MlFdReader MlFdReader;
-typedef struct MlFdPkg MlFdPkg;
+typedef struct MlIo MlIo;
+typedef struct MlIoReader MlIoReader;
+typedef struct MlIoPkg MlIoPkg;
 
 typedef void (*ml_timer_cb)(MlTimer *self, void *arg);
 typedef int (*ml_proc_cb)(void *arg);
 typedef void (*ml_proc_done_cb)(MlProc *self, int ret, void *arg);
-typedef void (*ml_fd_cb)(MlFd *self, int fd, ml_fd_flag_t events, void *arg);
-typedef void (*ml_fd_data_cb)(MlFdReader *self, void *data, size_t size,
+typedef void (*ml_io_cb)(MlIo *self, int fd, ml_io_flag_t events, void *arg);
+typedef void (*ml_io_data_cb)(MlIoReader *self, void *data, size_t size,
                               void *arg);
-typedef void (*ml_fd_eof_cb)(MlFdReader *self, void *arg);
-typedef void (*ml_fd_pkg_cb)(MlFdPkg *self, void *data, size_t size, void *arg);
+typedef void (*ml_io_eof_cb)(MlIoReader *self, void *arg);
+typedef void (*ml_io_pkg_cb)(MlIoPkg *self, void *data, size_t size, void *arg);
 
 struct MlTimer {
     Object;
@@ -57,24 +58,24 @@ struct MlProc {
     void *arg;
 };
 
-struct MlFd {
+struct MlIo {
     Object;
-    int fd;
-    ml_fd_flag_t flags;
-    ml_fd_cb cb;
+    IoBase *io;
+    ml_io_flag_t flags;
+    ml_io_cb cb;
     void *arg;
 };
 
-struct MlFdReader {
-    MlFd;
-    ml_fd_data_cb data_cb;
-    ml_fd_eof_cb eof_cb;
+struct MlIoReader {
+    MlIo;
+    ml_io_data_cb data_cb;
+    ml_io_eof_cb eof_cb;
 };
 
-struct MlFdPkg {
-    MlFdReader;
+struct MlIoPkg {
+    MlIoReader;
     char sentinel;
-    ml_fd_pkg_cb pkg_cb;
+    ml_io_pkg_cb pkg_cb;
     void *data;
     size_t size;
 };
@@ -192,71 +193,66 @@ bool mloop_proc_cancle(MlProc *self);
 void mloop_proc_delete(MlProc *self);
 
 /**
- * @brief Add a File Descriptor
+ * @brief Add an I/O 
  *
- * Add a file descriptor to wait for an I/O event.
+ * Add an I/O to wait for an I/O event.
  * 
- * @param fd the file descriptor
+ * @param io an I/O object
  * @param flags
  * @param cb callback function
  * @param arg optional argument for the callback function
  *
- * @return the added MlFd object otherwise NULL
+ * @return the added MlIo object otherwise NULL
  */
-MlFd *mloop_fd_new(int fd, ml_fd_flag_t flags, ml_fd_cb cb, void* arg);
+MlIo *mloop_io_new(IoBase *io, ml_io_flag_t flags, ml_io_cb cb, void* arg);
 
 /**
- * @brief Add a File Descriptor Reader
+ * @brief Add an I/O Reader
  *
- * Add a file descriptor to wait for incoming data, read all data and call the
- * callback function.
+ * Add an I/O to wait for incoming data, read all data and call the callback
+ * function.
  * 
- * @param fd the file descriptor
+ * @param io an I/O object
  * @param data_cb callback function for incoming data
  * @param eof_cb callback function when the end of file is reached
  * @param arg optional argument for the callback functions
  *
- * @return the added MlFdReader object otherwise NULL
+ * @return the added MlIoReader object otherwise NULL
  */
-MlFdReader *mloop_fd_reader_new(int fd, ml_fd_data_cb data_cb,
-        ml_fd_eof_cb eof_cb, void* arg);
+MlIoReader *mloop_io_reader_new(IoBase *io, ml_io_data_cb data_cb,
+        ml_io_eof_cb eof_cb, void* arg);
 
 /**
- * @brief Add a File Descriptor Packager
+ * @brief Add an I/O Packager
  *
- * Add a file descriptor to wait for incoming data, read all data, split it by
- * the given sentinel and call the callback function.
+ * Add an I/O to wait for incoming data, read all data, split it by the given
+ * sentinel and call the callback function.
  * 
- * @param fd the file descriptor
+ * @param io an I/O object
  * @param sen the sentinel which marks the end of each package
  * @param pkg_cb callback function for incoming packages
  * @param eof_cb callback function when the end of file is reached
  * @param arg optional argument for the callback functions
  *
- * @return the added MlFdReader object otherwise NULL
+ * @return the added MlIoReader object otherwise NULL
  */
-MlFdPkg *mloop_fd_pkg_new(int fd, char sen, ml_fd_pkg_cb pkg_cb,
-        ml_fd_eof_cb eof_cb, void* arg);
+MlIoPkg *mloop_io_pkg_new(IoBase *io, char sen, ml_io_pkg_cb pkg_cb,
+        ml_io_eof_cb eof_cb, void* arg);
 
 /**
- * @brief Get MlFd by File Descriptor
+ * @brief Get Main Loop I/O by I/O object
  */
-MlFd *mloop_fd_by_fd(int fd);
+MlIo *mloop_io_by_io(IoBase *io);
 
 /**
- * @brief Set Blocking Mode
+ * @brief Cancle I/O Events
  */
-bool mloop_fd_set_blocking(int fd, bool blocking);
+bool mloop_io_cancle(MlIo *self);
 
 /**
- * @brief Cancle File Descriptor Events
+ * @brief Delete Main Loop I/O
  */
-bool mloop_fd_cancle(MlFd *self);
-
-/**
- * @brief Delete File Descriptor
- */
-void mloop_fd_delete(MlFd *self);
+void mloop_io_delete(MlIo *self);
 
 /**
  * @brief Run the Main Loop

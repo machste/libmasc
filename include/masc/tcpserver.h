@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 
 #include <masc/object.h>
+#include <masc/socket.h>
 #include <masc/list.h>
 
 
@@ -21,8 +22,8 @@ typedef struct TcpServer TcpServer;
 
 typedef struct {
     Object;
+    Socket *sock;
     TcpServer *server;
-    int fd;
     struct sockaddr_in addr;
 } TcpServerCli;
 
@@ -34,10 +35,11 @@ typedef void (*tcpserver_hup_cb)(TcpServer *self, TcpServerCli *cli);
 
 struct TcpServer {
     Object;
+    char *ip;
+    int port;
+    Socket *sock;
     int listen_backlog;
     char sentinel;
-    struct sockaddr_in addr;
-    int fd;
     tcpserver_accept_cb accept_cb;
     tcpserver_data_cb cli_data_cb;
     tcpserver_data_cb cli_pkg_cb;
@@ -50,7 +52,7 @@ struct TcpServer {
 extern const void *TcpServerCls;
 
 
-void tcpserver_init(TcpServer *self, const char *ip, in_port_t port);
+void tcpserver_init(TcpServer *self, const char *ip, int port);
 
 void tcpserver_destroy(TcpServer *self);
 
