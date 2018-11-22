@@ -124,10 +124,22 @@ int mloop_run_time(void);
 MlTimer *mloop_timer_new(int msec, ml_timer_cb cb, void *arg);
 
 /**
- * @brief Add Existing Timer
+ * @brief Retrigger an Timer
  *
- * Reuse an existing timer and set a new time in milliseconds, if msec is -1
- * it will use the previous set time.
+ * Reuse an existing timer and set a new time in milliseconds, if msec is less
+ * than 0 it will use the previous time. This function calculates a new
+ * absolute time at the time this function is called.
+ *
+ * @param msec time in milliseconds
+ */
+void mloop_timer_in(MlTimer *self, int msec);
+
+/**
+ * @brief Add Time to a Timer
+ *
+ * Reuse an existing timer and add msec to the previous absolute time, if msec
+ * is less than 0 it will use the previous set relative time. Use this function
+ * for running a timer in continuous mode.
  *
  * @param msec time in milliseconds
  */

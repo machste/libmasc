@@ -29,7 +29,7 @@ static void timer3_cb(MlTimer *self, void *proc3)
         print(" -> cancle proc3: %O\n", proc3);
         mloop_proc_cancle(proc3);
     }
-    mloop_timer_add(self, mloop_timer_msec(self) + 2);
+    mloop_timer_in(self, mloop_timer_msec(self) + 2);
 }
 
 static void timer4_cb(MlTimer *self, void *timer2)
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 {
     mloop_init();
     mloop_timer_new(100, timer1_cb, NULL);
-    MlTimer *timer2 = mloop_timer_new(25, timer2_cb, NULL);
+    MlTimer *timer2 = mloop_timer_new(10, timer2_cb, NULL);
     mloop_proc_new(proc1_run, proc1_done, &(int){40});
     mloop_proc_new(proc2_run, proc2_done, NULL);
     MlProc *proc3 = mloop_proc_new(proc3_run, proc3_done, NULL);

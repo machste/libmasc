@@ -92,23 +92,37 @@ MlTimer *mloop_timer_new(int msec, ml_timer_cb cb, void *arg)
 {
     if (msec >= 0) { 
         MlTimer *timer = new(MlTimer, cb, arg);
-        mloop_timer_add(timer, msec);
+        mloop_timer_in(timer, msec);
         return timer;
     }
     return NULL;
 }
 
-void mloop_timer_add(MlTimer *self, int msec)
+static void _timer_set(MlTimer *self, ml_time_t time)
 {
     if (self->pending) {
         mloop_timer_cancle(self);
     }
-    // Calculate absolute time to trigger the timer
-    self->msec = msec < 0 ? self->msec : msec;
-    self->time = mloop_time() + self->msec;
+    self->time = time;
     self->pending = true;
     // Insert the timer to the timer list
     list_sort_in(&timers, self, (cmp_cb)ml_timer_cmp);
+}
+
+void mloop_timer_in(MlTimer *self, int msec)
+{
+    if (msec >= 0) {
+        self->msec = msec;
+    }
+    _timer_set(self, mloop_time() + self->msec);
+}
+
+void mloop_timer_add(MlTimer *self, int msec)
+{
+    if (msec >= 0) {
+        self->msec = msec;
+    }
+    _timer_set(self, self->time + self->msec);
 }
 
 bool mloop_timer_cancle(MlTimer *self)
