@@ -4,6 +4,10 @@ project(masc VERSION 1.0.0)
 
 include(GNUInstallDirs)
 
+if(UNIX)
+    set(CMAKE_INSTALL_PREFIX /usr)
+endif(UNIX)
+
 option(LOG_ENABLED "Use logging for more detailed information." ON)
 
 set(CMAKE_C_FLAGS "-O0 -g -std=gnu11 -fplan9-extensions -Wall -Werror")
@@ -24,10 +28,6 @@ configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
 add_definitions("-include config.h")
-
-if(UNIX)
-    set(CMAKE_INSTALL_PREFIX /usr)
-endif(UNIX)
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
