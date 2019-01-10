@@ -30,6 +30,6 @@
 #include <masc/tcpclient.h>
 #include <masc/mloop.h>
 #include <masc/log.h>
-
+#include <masc/datetime.h>
 
 #endif /* _MASC_H_ */
