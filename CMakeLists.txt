@@ -4,6 +4,8 @@ project(masc VERSION 1.0.0)
 
 include(GNUInstallDirs)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(UNIX)
     set(CMAKE_INSTALL_PREFIX /usr)
 endif(UNIX)
