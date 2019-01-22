@@ -16,16 +16,22 @@ int main(int argc, char *argv[])
     print("upper: %O\n", str_upper(s));
     print("reverse: %O\n", str_reverse(s));
     // Escape string und unescape
-    str_copy(s, "Hallo\nWelt!\t\"Foo\"\xff\"");
+    str_copy(s, "Hello\nWorld!\t\"Foo\"\xff\"");
     print("String with special chars:\n%O\n---\n", s);
     print("escape: '%O'\n", str_escape(s));
     print("unescape:\n%s\n---\n", str_unescape(s)->cstr);
     // Set other string
-    str_copy(s, "   Hallo Welt   ");
+    str_copy(s, " Hello World");
+    print("ljust:  '%O'\n", str_ljust(s, 20, '*'));
+    str_copy(s, "Hello World ");
+    print("rjust:  '%O'\n", str_rjust(s, 20, '*'));
+    str_copy(s, " Hello World ");
+    print("center: '%O'\n", str_center(s, 20, '*'));
+    str_copy(s, "   Hello World   ");
     print("lstrip: '%O'\n", str_lstrip(s));
-    str_copy(s, "   Hallo Welt   ");
+    str_copy(s, "   Hello World   ");
     print("rstrip: '%O'\n", str_rstrip(s));
-    str_copy(s, "   Hallo Welt!   ");
+    str_copy(s, "   Hello World   ");
     print("strip:  '%O'\n", str_strip(s));
     print("startswith(\"Ha\"): %d\n", str_startswith(s, "Ha"));
     print("endswith(\"lt!\"): %d\n", str_endswith(s, "lt!"));

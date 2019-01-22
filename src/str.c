@@ -381,6 +381,59 @@ Str *str_strip(Str *self)
     return self;
 }
 
+Str *str_ljust(Str *self, int width, char fillchar)
+{
+    if (width >= self->size) {
+        size_t len = str_len(self);
+        size_t lspace = width - len;
+        self->size = width + 1;
+        self->cstr = realloc(self->cstr, self->size);
+        for (int i = width - 1; i >= 0; i--) {
+            if (i < len) {
+                self->cstr[i + lspace] = self->cstr[i];
+            }
+            if (i < lspace) {
+                self->cstr[i] = fillchar;
+            }
+        }
+        self->cstr[width] = '\0';
+    }
+    return self;
+}
+
+Str *str_rjust(Str *self, int width, char fillchar)
+{
+    if (width >= self->size) {
+        size_t len = str_len(self);
+        self->size = width + 1;
+        self->cstr = realloc(self->cstr, self->size);
+        for (size_t i = len; i < width; i++) {
+            self->cstr[i] = fillchar;
+        }
+        self->cstr[width] = '\0';
+    }
+    return self;
+}
+
+Str *str_center(Str *self, int width, char fillchar)
+{
+    if (width >= self->size) {
+        size_t len = str_len(self);
+        size_t lspace = (width - len) / 2;
+        self->size = width + 1;
+        self->cstr = realloc(self->cstr, self->size);
+        for (int i = width - 1; i >= 0; i--) {
+            if (i < len) {
+                self->cstr[i + lspace] = self->cstr[i];
+            }
+            if (i < lspace || i >= lspace + len) {
+                self->cstr[i] = fillchar;
+            }
+        }
+    }
+    return self;
+}
+
 Str *str_slice(Str *self, size_t start, size_t end) {
     start = _fix_index(self, start);
     end = _fix_index(self, end);

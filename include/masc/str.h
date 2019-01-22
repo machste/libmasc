@@ -73,6 +73,10 @@ Str *str_lstrip(Str *self);
 Str *str_rstrip(Str *self);
 Str *str_strip(Str *self);
 
+Str *str_ljust(Str *self, int width, char fillchar);
+Str *str_rjust(Str *self, int width, char fillchar);
+Str *str_center(Str *self, int width, char fillchar);
+
 Str *str_slice(Str *self, size_t start, size_t end);
 
 List *str_split(Str *self, const char *sep, int maxsplit);
