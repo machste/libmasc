@@ -430,6 +430,7 @@ Str *str_center(Str *self, int width, char fillchar)
                 self->cstr[i] = fillchar;
             }
         }
+        self->cstr[width] = '\0';
     }
     return self;
 }
