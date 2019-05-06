@@ -99,17 +99,22 @@ int main(int argc, char *argv[])
     server.cli_hup_cb = cli_hup_cb;
     mloop_init();
     TcpServerError err = tcpserver_start(&server);
-    if (err == TCPSERVER_SUCCESS) {
-        if (daemonize) {
-            daemon(0, 0);
-        }
-        log_info("%O: waiting for connections ...", &server);
-        mloop_run();
-        log_info("%O: shutdown", &server);
-    } else {
+    if (err != TCPSERVER_SUCCESS) {
         log_error("unable to start reversed!");
         ret = -1;
+        goto cleanup;
     }
+    if (daemonize) {
+        if (daemon(0, 0) != 0) {
+            log_error("unable to daemonize!");
+            ret = -1;
+            goto cleanup;
+        }
+    }
+    log_info("%O: waiting for connections ...", &server);
+    mloop_run();
+    log_info("%O: shutdown", &server);
+cleanup:
     destroy(&server);
     mloop_destroy();
     log_destroy();
