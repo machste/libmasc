@@ -12,7 +12,7 @@ endif(UNIX)
 
 option(LOG_ENABLED "Use logging for more detailed information." ON)
 
-set(CMAKE_C_FLAGS "-O0 -g -std=gnu11 -fplan9-extensions -Wall -Werror")
+add_definitions(-Os -g -Wall -Werror -std=gnu11 -fplan9-extensions)
 
 file(GLOB HEADERS include/masc/*.h)
 file(GLOB_RECURSE SOURCES src/*.c)
