@@ -6,21 +6,21 @@
 #include <stdio.h>
 
 
-void put(const void *obj);
-void put_repr(const void *obj);
+int put(const void *obj);
+int put_repr(const void *obj);
 
-size_t print(const char *fmt, ...);
-size_t fprint(FILE *stream, const char *fmt, ...);
-size_t vfprint(FILE *stream, const char *fmt, va_list va);
-size_t dprint(int fd, const char *fmt, ...);
-size_t vdprint(int fd, const char *fmt, va_list va);
+ssize_t print(const char *fmt, ...);
+ssize_t fprint(FILE *stream, const char *fmt, ...);
+ssize_t vfprint(FILE *stream, const char *fmt, va_list va);
+ssize_t dprint(int fd, const char *fmt, ...);
+ssize_t vdprint(int fd, const char *fmt, va_list va);
 
 size_t format(char *cstr, size_t size, const char *fmt, ...);
 size_t vformat(char *cstr, size_t size, const char *fmt, va_list va);
 
 size_t pretty_cstr(const void *obj, char *cstr, size_t size);
 
-size_t pretty_print(const void *obj);
+ssize_t pretty_print(const void *obj);
 
 
 #endif /* _MASC_PRINT_H_ */

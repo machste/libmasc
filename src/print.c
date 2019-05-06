@@ -14,41 +14,43 @@
 #include <masc/math.h>
 
 
-void put(const void *obj)
+int put(const void *obj)
 {
     Str *s = to_str(obj);
-    puts(str_cstr(s));
+    int len = puts(str_cstr(s));
     delete(s);
+    return len;
 }
 
-void put_repr(const void *obj)
+int put_repr(const void *obj)
 {
     size_t size = repr(obj, NULL, 0) + 1;
     char *cstr = malloc(size);
     repr(obj, cstr, size);
-    puts(cstr);
+    int len = puts(cstr);
     free(cstr);
+    return len;
 }
 
-size_t print(const char *fmt, ...)
+ssize_t print(const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
-    size_t len = vfprint(stdout, fmt, va);
+    ssize_t len = vfprint(stdout, fmt, va);
     va_end(va);
     return len;
 }
 
-size_t fprint(FILE *stream, const char *fmt, ...)
+ssize_t fprint(FILE *stream, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
-    size_t len = vfprint(stream, fmt, va);
+    ssize_t len = vfprint(stream, fmt, va);
     va_end(va);
     return len;
 }
 
-size_t vfprint(FILE *stream, const char *fmt, va_list va)
+ssize_t vfprint(FILE *stream, const char *fmt, va_list va)
 {
     va_list va2;
     // Make a copy of va to use it twice
@@ -56,22 +58,25 @@ size_t vfprint(FILE *stream, const char *fmt, va_list va)
     size_t len = vformat(NULL, 0, fmt, va);
     char *cstr = malloc(len + 1);
     vformat(cstr, len + 1, fmt, va2);
-    fwrite(cstr, 1, len, stream);
+    ssize_t written_len = fwrite(cstr, 1, len, stream);
+    if (written_len != len) {
+        written_len = -1;
+    }
     free(cstr);
     va_end(va2);
-    return len;
+    return written_len;
 }
 
-size_t dprint(int fd, const char *fmt, ...)
+ssize_t dprint(int fd, const char *fmt, ...)
 {
     va_list va;
     va_start(va, fmt);
-    size_t len = vdprint(fd, fmt, va);
+    ssize_t len = vdprint(fd, fmt, va);
     va_end(va);
     return len;
 }
 
-size_t vdprint(int fd, const char *fmt, va_list va)
+ssize_t vdprint(int fd, const char *fmt, va_list va)
 {
     va_list va2;
     // Make a copy of va to use it twice
@@ -79,10 +84,10 @@ size_t vdprint(int fd, const char *fmt, va_list va)
     size_t len = vformat(NULL, 0, fmt, va);
     char *cstr = malloc(len + 1);
     vformat(cstr, len + 1, fmt, va2);
-    write(fd, cstr, len);
+    ssize_t written_len = write(fd, cstr, len);
     free(cstr);
     va_end(va2);
-    return len;
+    return written_len;
 }
 
 size_t format(char *cstr, size_t size, const char *fmt, ...)
@@ -362,12 +367,12 @@ size_t pretty_cstr(const void *obj, char *cstr, size_t size)
     return obj_pretty_cstr(obj, true, 0, cstr, size);
 }
 
-size_t pretty_print(const void *obj)
+ssize_t pretty_print(const void *obj)
 {
     size_t size = pretty_cstr(obj, NULL, 0) + 1;
     char *cstr = malloc(size);
     pretty_cstr(obj, cstr, size);
-    puts(cstr);
+    ssize_t len = print(cstr);
     free(cstr);
-    return size - 1;
+    return len;
 }
