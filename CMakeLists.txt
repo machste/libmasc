@@ -10,9 +10,15 @@ if(UNIX)
     set(CMAKE_INSTALL_PREFIX /usr)
 endif(UNIX)
 
+option(DEBUG "Enable Debugging (GDB support and no optimisation)." OFF)
 option(LOG_ENABLED "Use logging for more detailed information." ON)
 
-add_definitions(-Os -g -Wall -Werror -std=gnu11 -fplan9-extensions)
+if(DEBUG)
+	add_definitions(-O0 -ggdb3 -DDEBUG)
+else()
+	add_definitions(-Os -g)
+endif()
+add_definitions(-Wall -Werror -std=gnu11 -fplan9-extensions)
 
 file(GLOB HEADERS include/masc/*.h)
 file(GLOB_RECURSE SOURCES src/*.c)
