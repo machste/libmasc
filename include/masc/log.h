@@ -39,6 +39,7 @@ void log_msg(int level, const char *msg_fmt, ...);
 
 void log_add_stream(FILE *file);
 void log_add_file(const char *path);
+void log_add_console(void);
 void log_add_syslog(const char *ident, int option, int facility);
 
 

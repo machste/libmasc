@@ -13,6 +13,7 @@ typedef struct LogFacility LogFacility;
 typedef enum {
     LOG_FACILITY_STREAM,
     LOG_FACILITY_FILE,
+    LOG_FACILITY_CONSOLE,
     LOG_FACILITY_SYSLOG,
     LOG_FACILITY_CUSTOM,
     LOG_FACILITY_NONE
@@ -116,6 +117,23 @@ void log_add_file(const char *path)
     } else {
         log_error("could not open '%s'!", path);
     }
+}
+
+static void _console_write_cb(LogFacility *self, int level, Str *msg)
+{
+    str_prepend_fmt(msg, "%s: ", level_to_cstr[level]);
+    str_append(msg, "\n");
+    FILE *sink = level <= LOG_ERR ? stderr : stdout;
+    fwrite(msg->cstr, 1, msg->size - 1, sink);
+    fflush(sink);
+}
+
+void log_add_console(void)
+{
+    LogFacility *f = new(LogFacility);
+    f->type = LOG_FACILITY_CONSOLE;
+    f->write_cb = _console_write_cb;
+    list_append(&facilities, f);
 }
 
 static void _syslog_write_cb(LogFacility *self, int level, Str *msg)
