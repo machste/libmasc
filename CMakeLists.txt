@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(masc VERSION 1.0.0)
+project(masc VERSION 1.1.0)
 
 include(GNUInstallDirs)
 
@@ -32,18 +32,18 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+configure_file(lib${PROJECT_NAME}.pc.in lib${PROJECT_NAME}.pc @ONLY)
 
 configure_file(config.h.in ${PROJECT_BINARY_DIR}/config.h)
 add_definitions("-include config.h")
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/masc)
 
 install(FILES "include/masc.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
+install(FILES ${CMAKE_BINARY_DIR}/lib${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
 # Setup examples
