@@ -352,13 +352,6 @@ static size_t obj_pretty_cstr(const void *obj, bool last, int level, char *cstr,
             len += cstr_ncopy(cstr + len, ",\n", max(0, size - len));
         }
     }
-    if (level == 0) {
-        // Remove trailing newline
-        len--;
-        if (max(0, size - len) > 0) {
-            cstr[len] = '\0';
-        }
-    }
     return len;
 }
 
