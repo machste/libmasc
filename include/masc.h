@@ -8,6 +8,7 @@
 #include <masc/array.h>
 #include <masc/macro.h>
 #include <masc/io.h>
+#include <masc/ip.h>
 #include <masc/file.h>
 #include <masc/socket.h>
 #include <masc/regex.h>
