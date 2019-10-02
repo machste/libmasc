@@ -490,6 +490,15 @@ void *str_to_number(Str *self, bool strict)
     return cstr_to_number(self->cstr, strict, NULL);
 }
 
+int str_find(Str *self, const char *cstr)
+{
+    char *pos = strstr(self->cstr, cstr);
+    if (pos != NULL) {
+        return pos - self->cstr;
+    }
+    return -1;
+}
+
 bool str_is_match(Str *self, const char *regex)
 {
     bool ret = false;
