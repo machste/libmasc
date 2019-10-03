@@ -2,7 +2,6 @@
 
 #include <masc/math.h>
 #include <masc/num.h>
-#include <masc/int.h>
 
 
 long max(long a, long b)
@@ -13,6 +12,18 @@ long max(long a, long b)
 long min(long a, long b)
 {
     return a < b ? a : b;
+}
+
+Int *cstr_to_int(const char *cstr, bool strict, char **endptr)
+{
+    Int *i = NULL;
+    char *_dummy_endptr;
+    if (endptr == NULL) { endptr = &_dummy_endptr; }
+    long value = strtol(cstr, endptr, 0);
+    if ((!strict && *endptr != cstr) || (strict && **endptr == '\0')) {
+        i = int_new(value);
+    }
+    return i;
 }
 
 void *cstr_to_number(const char *cstr, bool strict, char **endptr)
