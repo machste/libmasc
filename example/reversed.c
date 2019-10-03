@@ -81,7 +81,9 @@ int main(int argc, char *argv[])
     delete(ap);
     int log_level = int_get(map_get(args, "log-level"));
     bool daemonize = bool_get(map_get(args, "b"));
-    Str *ip = map_remove_key(args, "bind");
+    Ip *_ip = map_remove_key(args, "bind");
+    Str *ip = to_str(_ip);
+    delete(_ip);
     int port = int_get(map_get(args, "port"));
     delete(args);
     // Setup logging

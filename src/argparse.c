@@ -10,6 +10,7 @@
 #include <masc/bool.h>
 #include <masc/iter.h>
 #include <masc/file.h>
+#include <masc/ip.h>
 #include <masc/print.h>
 #include "argparse/arg.h"
 
@@ -442,14 +443,15 @@ void *argparse_file(Str *path, Str **err_msg)
     return f;
 }
 
-void *argparse_ip(Str *ip, Str **err_msg)
+void *argparse_ip(Str *ip_str, Str **err_msg)
 {
-    struct in_addr addr;
-    if (!inet_aton(str_cstr(ip), &addr)) {
-        *err_msg = str_new("invalid IP: %O!", ip);
-        return NULL;
+    Ip *ip = new(Ip, str_cstr(ip_str));
+    if (!ip_is_valid(ip)) {
+        *err_msg = str_new("invalid IP: '%O'", ip_str);
+        delete(ip);
+        ip = NULL;
     }
-    return new_copy(ip);
+    return ip;
 }
 
 
