@@ -17,13 +17,11 @@ typedef struct {
 extern const io_class *SocketCls;
 
 
-Socket *socket_new(int domain, int type, int protocol);
-void socket_init(Socket *self, int domain, int type, int protocol);
+Socket *socket_new(int family, int type, int protocol);
+void socket_init(Socket *self, int family, int type, int protocol);
 
 void socket_destroy(Socket *self);
 void socket_delete(Socket *self);
-
-Str *socket_gethostbyname(const char *hostname);
 
 bool socket_connect(Socket *self, const char *ip, int port);
 

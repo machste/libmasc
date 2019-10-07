@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 
 #include <masc/ip.h>
+#include <masc/net.h>
 #include <masc/cstr.h>
 #include <masc/str.h>
 #include <masc/int.h>
@@ -113,14 +114,7 @@ uint8_t ip_max_prefixlen(const Ip *self)
 
 const char *ip_family_cstr(const Ip *self)
 {
-	switch(self->family) {
-	case AF_INET:
-		return "inet";
-	case AF_INET6:
-		return "inet6";
-	default:
-		return "unknown";
-	}
+	return net_af_to_cstr(self->family);
 }
 
 typedef bool (*_bytes_cb)(uint8_t *byte, void *args);

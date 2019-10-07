@@ -6,25 +6,25 @@
 #include <masc/socket.h>
 
 
-Socket *socket_new(int domain, int type, int protocol)
+Socket *socket_new(int family, int type, int protocol)
 {
     Socket *self = malloc(sizeof(Socket));
-    socket_init(self, domain, type, protocol);
+    socket_init(self, family, type, protocol);
     return self;
 }
 
-void socket_init(Socket *self, int domain, int type, int protocol)
+void socket_init(Socket *self, int family, int type, int protocol)
 {
     object_init(self, SocketCls);
-    self->fd = socket(domain, type, protocol);
+    self->fd = socket(family, type, protocol);
 }
 
 static void _vinit(Socket *self, va_list va)
 {
-    int domain = va_arg(va, int);
+    int family = va_arg(va, int);
     int type = va_arg(va, int);
     int protocol = va_arg(va, int);
-    socket_init(self, domain, type, protocol);
+    socket_init(self, family, type, protocol);
 }
 
 void socket_destroy(Socket *self)
@@ -36,16 +36,6 @@ void socket_delete(Socket *self)
 {
     socket_destroy(self);
     free(self);
-}
-
-Str *socket_gethostbyname(const char *hostname)
-{
-    Str *ip = NULL;
-    struct hostent *host = gethostbyname(hostname);
-    if (host != NULL) {
-        ip = str_new_cstr(inet_ntoa(*((struct in_addr *)host->h_addr)));
-    }
-    return ip;
 }
 
 bool socket_connect(Socket *self, const char *ip, int port)

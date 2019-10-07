@@ -16,7 +16,7 @@ static void *log_level_check(Str *log_level_str, Str **err_msg)
 
 static void *host_check(Str *hostname, Str **err_msg)
 {
-    Str *ip = socket_gethostbyname(str_cstr(hostname));
+    Str *ip = net_gethostbyname(str_cstr(hostname));
     if (ip == NULL) {
         *err_msg = str_new("unknown host: %O!", hostname);
     }
