@@ -4,12 +4,12 @@
 static void ip_print_network_size(const Ip *self)
 {
 	uint8_t power = ip_max_prefixlen(self) - self->prefixlen;
-	uint64_t hosts = (power <= 32) ? 1 << power : 0;
+	uint64_t hosts = (power <= 32) ? (uint64_t)1 << power : 0;
 	print("hosts: ");
 	if (power < 2) {
 		print("%i", hosts);
 	} else if (power <= 32) {
-		print("%i (2^%i - 2)", hosts - 2, power);
+		print("%lu (2^%i - 2)", hosts - 2, power);
 	} else {
 		print("2^%i - 2", power);
 	}
