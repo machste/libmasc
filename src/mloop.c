@@ -39,6 +39,9 @@ static void sigchld_cb(int signum)
 
 void mloop_init(void)
 {
+    if (initialised) {
+        return;
+    }
     running = false;
     start_time = 0;
     list_init(&timers);
@@ -90,7 +93,7 @@ int mloop_run_time(void)
 
 MlTimer *mloop_timer_new(int msec, ml_timer_cb cb, void *arg)
 {
-    if (msec >= 0) { 
+    if (initialised && msec >= 0) {
         MlTimer *timer = new(MlTimer, cb, arg);
         mloop_timer_in(timer, msec);
         return timer;
@@ -111,7 +114,7 @@ static void _timer_set(MlTimer *self, ml_time_t time)
 
 void mloop_timer_in(MlTimer *self, int msec)
 {
-    if (msec >= 0) {
+    if (initialised && msec >= 0) {
         self->msec = msec;
     }
     _timer_set(self, mloop_time() + self->msec);
@@ -119,7 +122,7 @@ void mloop_timer_in(MlTimer *self, int msec)
 
 void mloop_timer_add(MlTimer *self, int msec)
 {
-    if (msec >= 0) {
+    if (initialised && msec >= 0) {
         self->msec = msec;
     }
     _timer_set(self, self->time + self->msec);
@@ -127,7 +130,7 @@ void mloop_timer_add(MlTimer *self, int msec)
 
 bool mloop_timer_cancle(MlTimer *self)
 {
-    if (!self->pending) {
+    if (!initialised || !self->pending) {
         return false;
     }
     list_remove(&timers, self);
@@ -159,7 +162,7 @@ static bool _proc_run(MlProc *self)
 
 MlProc *mloop_proc_new(ml_proc_cb run_cb, ml_proc_done_cb done_cb, void *arg)
 {
-    if (run_cb == NULL) {
+    if (initialised && run_cb == NULL) {
         return NULL;
     }
     MlProc *self = new(MlProc, run_cb, done_cb, arg);
@@ -172,7 +175,7 @@ MlProc *mloop_proc_new(ml_proc_cb run_cb, ml_proc_done_cb done_cb, void *arg)
 
 bool mloop_proc_rerun(MlProc *self)
 {
-    if (self->running) {
+    if (!initialised || self->running) {
         return false;
     }
     return _proc_run(self);
@@ -180,7 +183,7 @@ bool mloop_proc_rerun(MlProc *self)
 
 bool mloop_proc_cancle(MlProc *self)
 {
-    if (!self->running) {
+    if (!initialised || !self->running) {
         return false;
     }
     if (ml_proc_kill(self) != 0) {
@@ -192,7 +195,9 @@ bool mloop_proc_cancle(MlProc *self)
 void mloop_proc_delete(MlProc *self)
 {
     mloop_proc_cancle(self);
-    list_remove(&procs, self);
+    if (initialised) {
+        list_remove(&procs, self);
+    }
     delete(self);
 }
 
@@ -217,7 +222,7 @@ static bool _reg_epoll_events(MlIo *self)
 
 MlIo *mloop_io_new(IoBase *io, ml_io_flag_t flags, ml_io_cb cb, void* arg)
 {
-    if (!(flags & (ML_IO_READ | ML_IO_WRITE))) {
+    if (!initialised || !(flags & (ML_IO_READ | ML_IO_WRITE))) {
         return NULL;
     }
     MlIo *self = new(MlIo, io, flags, cb, arg);
@@ -233,6 +238,9 @@ MlIo *mloop_io_new(IoBase *io, ml_io_flag_t flags, ml_io_cb cb, void* arg)
 MlIoReader *mloop_io_reader_new(IoBase *io, ml_io_data_cb data_cb,
         ml_io_eof_cb eof_cb, void* arg)
 {
+    if (!initialised) {
+        return NULL;
+    }
     MlIoReader *self = new(MlIoReader, io, data_cb, eof_cb, arg);
     if (_reg_epoll_events(self)) {
         list_append(&mlios, self);
@@ -246,6 +254,9 @@ MlIoReader *mloop_io_reader_new(IoBase *io, ml_io_data_cb data_cb,
 MlIoPkg *mloop_io_pkg_new(IoBase *io, char sen, ml_io_pkg_cb pkg_cb,
         ml_io_eof_cb eof_cb, void* arg)
 {
+    if (!initialised) {
+        return NULL;
+    }
     MlIoPkg *self = new(MlIoPkg, io, sen, pkg_cb, eof_cb, arg);
     if (_reg_epoll_events(self)) {
         list_append(&mlios, self);
@@ -258,7 +269,7 @@ MlIoPkg *mloop_io_pkg_new(IoBase *io, char sen, ml_io_pkg_cb pkg_cb,
 
 MlIo *mloop_io_by_io(IoBase *io)
 {
-    if (io == NULL) {
+    if (!initialised || io == NULL) {
         return NULL;
     }
     MlIo *mlio;
@@ -274,6 +285,9 @@ MlIo *mloop_io_by_io(IoBase *io)
 
 bool mloop_io_cancle(MlIo *self)
 {
+    if (!initialised) {
+        return NULL;
+    }
     list_remove(&mlios, self);
     if (epoll_ctl(poll_fd, EPOLL_CTL_DEL, get_fd(self->io), NULL) != 0) {
         return false;
@@ -301,8 +315,6 @@ static int _next_timer(void)
     }
     return diff;
 }
-
-#include <masc/print.h>
 
 static void _handle_timers(void)
 {
@@ -387,6 +399,11 @@ static void _handle_epoll(int timeout)
 
 void mloop_run(void)
 {
+    // If the main loop is already running, return immediately
+    if (running) {
+        return;
+    }
+    // Start the main loop
     running = true;
     start_time = mloop_time();
     while (running) {
