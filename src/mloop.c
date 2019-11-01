@@ -19,8 +19,8 @@
 
 static int poll_fd;
 static bool initialised = false;
-static bool running;
-static bool got_sigchld = false;
+static volatile bool running;
+static volatile bool got_sigchld = false;
 static ml_time_t start_time;
 static List timers;
 static List procs;
