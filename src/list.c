@@ -109,7 +109,7 @@ bool list_is_empty(List *self)
 bool list_is_in(List *self, Object *obj)
 {
     for (ListNode *node = self->node; node != NULL; node = node->next) {
-        if (obj == node->obj) {
+        if (cmp(obj, node->obj) == 0) {
             return true;
         }
     }
