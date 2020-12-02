@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #include <masc/cstr.h>
+#include <masc/str.h>
 #include <masc/math.h>
 #include <masc/macro.h>
 
@@ -166,4 +167,29 @@ char *cstr_swapcase(char *cstr)
         }
     }
     return cstr;
+}
+
+List *cstr_split(const char *cstr, const char *sep, int maxsplit)
+{
+    List *l = list_new();
+    const char *start = cstr, *end = cstr;
+    size_t sep_len = strlen(sep);
+    size_t split = 0;
+    do {
+        Str *slice;
+        if (maxsplit < 0 || split < maxsplit) {
+            end = strstr(start, sep);
+        } else {
+            end = NULL;
+        }
+        if (end != NULL) {
+            slice = str_new_ncopy(start, end - start);
+        } else {
+            slice = str_new_cstr(start);
+        }
+        list_append(l, slice);
+        start = end + sep_len;
+        split++;
+    } while (end != NULL);
+    return l;
 }

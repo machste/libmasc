@@ -448,27 +448,7 @@ Str *str_slice(Str *self, size_t start, size_t end) {
 
 List *str_split(Str *self, const char *sep, int maxsplit)
 {
-    List *l = list_new();
-    char *start = self->cstr, *end = self->cstr;
-    size_t sep_len = strlen(sep);
-    size_t split = 0;
-    do {
-        Str *slice;
-        if (maxsplit < 0 || split < maxsplit) {
-            end = strstr(start, sep);
-        } else {
-            end = NULL;
-        }
-        if (end != NULL) {
-            slice = str_new_ncopy(start, end - start);
-        } else {
-            slice = str_new_cstr(start);
-        }
-        list_append(l, slice);
-        start = end + sep_len;
-        split++;
-    } while (end != NULL);
-    return l;
+    return cstr_split(self->cstr, sep, maxsplit);
 }
 
 Str *str_join(void *iterable, const char *sep) {
