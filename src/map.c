@@ -110,6 +110,11 @@ static MapNode *_node_by_key(Map *self, const char *key)
     return NULL;
 }
 
+bool map_has_key(Map *self, const char *key)
+{
+    return _node_by_key(self, key) != NULL;
+}
+
 void *map_get(Map *self, const char *key)
 {
     MapNode *node = _node_by_key(self, key);

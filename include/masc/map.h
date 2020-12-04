@@ -27,6 +27,8 @@ void map_delete(Map *self);
 
 size_t map_len(Map *self);
 
+bool map_has_key(Map *self, const char *key);
+
 void *map_get(Map *self, const char *key);
 void map_set(Map *self, const char *key, void *value);
 
