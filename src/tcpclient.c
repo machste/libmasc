@@ -22,6 +22,7 @@ void tcpclient_init(TcpClient *self, const char *ip, int port)
     self->data_cb = NULL;
     self->pkg_cb = NULL;
     self->serv_hup_cb = NULL;
+    self->err = TCPCLIENT_SUCCESS;
 }
 
 static void _vinit(TcpClient *self, va_list va)
