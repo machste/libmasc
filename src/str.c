@@ -479,6 +479,19 @@ int str_find(Str *self, const char *cstr)
     return -1;
 }
 
+Str *str_replace(Str *self, const char *old, const char *now, int count)
+{
+    Str *str;
+    List *parts = str_split(self, old, count);
+    if (len(parts) > 1) {
+        str = str_join(parts, now);
+    } else {
+        str = new_copy(self);
+    }
+    delete(parts);
+    return str;
+}
+
 bool str_is_match(Str *self, const char *regex)
 {
     bool ret = false;

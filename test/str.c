@@ -79,10 +79,14 @@ int main(int argc, char *argv[])
     filter(joined,
             LAMBDA(bool, (Object *c){return !char_is_alpha((Char *)c);}));
     print("filtered: %O\n", joined);
+    // Replace
+    Str *replaced = str_replace(joined, ", ", " - ", -1);
+    print("replaced: %O\n", replaced);
     // Clean-up
     delete(split);
     delete(splitted);
     delete(joined);
+    delete(replaced);
     delete(s);
     return 0;
 }

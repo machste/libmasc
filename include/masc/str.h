@@ -86,6 +86,8 @@ void *str_to_number(Str *self, bool strict);
 
 int str_find(Str *self, const char *cstr);
 
+Str *str_replace(Str *self, const char *old, const char *now, int count);
+
 bool str_is_match(Str *self, const char *regex);
 
 size_t str_repr(Str *self, char *cstr, size_t size);
