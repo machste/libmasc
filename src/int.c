@@ -62,14 +62,14 @@ bool int_set_cstr(Int *self, const char *cstr, bool strict)
     return false;
 }
 
-long int_iadd(Int *self, Int *other)
+long int_iadd(Int *self, long other)
 {
-    return self->val += other->val;
+    return self->val += other;
 }
 
-Int *int_add(Int *self, Int *other)
+Int *int_add(Int *self, long other)
 {
-    return int_new(self->val + other->val);
+    return int_new(self->val + other);
 }
 
 bool int_in_range(Int *self, long start, long stop)

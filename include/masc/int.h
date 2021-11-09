@@ -26,8 +26,14 @@ void int_delete(Int *self);
 long int_get(Int *self);
 void int_set(Int *self, long value);
 bool int_set_cstr(Int *self, const char *cstr, bool strict);
-long int_iadd(Int *self, Int *other);
-Int *int_add(Int *self, Int *other);
+
+long int_iadd(Int *self, long other);
+#define int_incr(self) int_iadd(self, 1)
+Int *int_add(Int *self, long other);
+#define int_isub(self, other) int_iadd(self, -(other))
+#define int_decr(self) int_iadd(self, -1)
+#define int_sub(self, other) int_add(self, -(other))
+
 
 bool int_in_range(Int *self, long start, long stop);
 
