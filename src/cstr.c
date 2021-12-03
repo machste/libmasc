@@ -113,6 +113,14 @@ bool cstr_eq(const char *cstr, const char *other)
     return strcmp(cstr, other) == 0;
 }
 
+const char *cstr_skip_spaces(const char *cstr)
+{
+    while(*cstr != '\0' && isspace(*cstr)) {
+        cstr++;
+    }
+    return cstr;
+}
+
 size_t cstr_startswith(const char *cstr, const char *start)
 {
     size_t pos = 0;

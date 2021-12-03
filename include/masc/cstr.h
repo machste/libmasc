@@ -17,6 +17,8 @@ bool cstr_is_empty(const char *cstr);
 
 bool cstr_eq(const char *cstr, const char *other);
 
+const char *cstr_skip_spaces(const char *cstr);
+
 size_t cstr_startswith(const char *cstr, const char *start);
 size_t cstr_endswith(const char *cstr, const char *end);
 
