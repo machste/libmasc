@@ -5,6 +5,8 @@
 #include <stdbool.h>
 
 #include <masc/list.h>
+#include <masc/num.h>
+
 
 size_t cstr_putc(char *dest, const char c, size_t size);
 
@@ -27,5 +29,9 @@ char *cstr_upper(char *cstr);
 char *cstr_swapcase(char *cstr);
 
 List *cstr_split(const char *cstr, const char *sep, int maxsplit);
+
+Int *cstr_to_int(const char *cstr, bool strict, char **endptr);
+Double *cstr_to_double(const char *cstr, bool strict, char **endptr);
+Num *cstr_to_number(const char *cstr, bool strict, char **endptr);
 
 #endif /* _MASC_CSTR_H_ */

@@ -1,5 +1,5 @@
 #include <masc/num.h>
-#include <masc/math.h>
+#include <masc/cstr.h>
 #include <masc/macro.h>
 #include <masc/print.h>
 
@@ -31,8 +31,8 @@ int main(int argc, char *argv[])
     delete(n3);
     delete(n4);
     delete(i1);
-    char *cstr_nums[] = {"42", "0.12", "0xef", "0xf.dx", "gugus", "1A", "0.1B",
-            "0b1001"};
+    char *cstr_nums[] = {" 42", "0.12", "0XEF", "0xf.dx", "gugus", "1A", "0.1B",
+            "0b1001", "  0B111xy"};
     for (int i = 0; i < ARRAY_LEN(cstr_nums); i++) {
         Num *num = cstr_to_number(cstr_nums[i], false, NULL);
         Num *num_strict = cstr_to_number(cstr_nums[i], true, NULL);
