@@ -1,38 +1,41 @@
 #include <masc/num.h>
-#include <masc/int.h>
 #include <masc/math.h>
 #include <masc/macro.h>
 #include <masc/print.h>
 
 int main(int argc, char *argv[])
 {
-    Num *n = new(Num, 42.0);
-    put(n);
-    num_set(n, 10.0 / 3);
-    put(n);
-    num_set_cstr(n, "0.345", true);
-    print("%O (%s)\n", n, name_of(n));
-    Num *n1 = num_new_cstr("0xff", true);
-    put(n1);
+    Double *d = new(Double, 42.0);
+    put(d);
+    double_set(d, 10.0 / 3);
+    put(d);
+    double_set_cstr(d, "0.345", true);
+    put(d);
+    Num *n1 = cstr_to_number("0xff", true, NULL);
+    print("n1 = 0xff = %O (%s)\n", n1, name_of(n1));
     Num *n2 = new_copy(n1);
-    Num *n3 = num_add(n2, n);
-    put(n2);
-    put(n3);
-    num_iadd(n3, n1);
-    put(n3);
+    print("n2 = n1 = %O (%s)\n", n2, name_of(n2));
+    Num *n3 = add(n2, d);
+    print("n3 = n2 + 0.345 = %O (%s)\n", n3, name_of(n3));
+    Num *n4 = add(d, n3);
+    print("n4 = 0.345 + n3 = %O (%s)\n", n4, name_of(n4));
     Int *i1 = int_new_cstr("0xdeadbeef", true);
-    print("%O (%s)\n", i1, name_of(i1));
+    print("i1 = 0xdeadbeef = %O (%s)\n", i1, name_of(i1));
     int_set_cstr(i1, "12V", false);
-    put(i1);
-    delete(n);
+    print("i1 = 12V = %O (%s)\n", i1, name_of(i1));
+    iadd(n3, i1);
+    print("n3 = n3 + i1 = %O (%s)\n", n3, name_of(n3));
+    delete(d);
     delete(n1);
     delete(n2);
     delete(n3);
+    delete(n4);
     delete(i1);
-    char *cstr_nums[] = {"42", "0.12", "0xef", "0xf.dx", "gugus", "1A", "0.1B"};
+    char *cstr_nums[] = {"42", "0.12", "0xef", "0xf.dx", "gugus", "1A", "0.1B",
+            "0b1001"};
     for (int i = 0; i < ARRAY_LEN(cstr_nums); i++) {
-        void *num = cstr_to_number(cstr_nums[i], false, NULL);
-        void *num_strict = cstr_to_number(cstr_nums[i], true, NULL);
+        Num *num = cstr_to_number(cstr_nums[i], false, NULL);
+        Num *num_strict = cstr_to_number(cstr_nums[i], true, NULL);
         print("%s: %O (%s), strict: %O (%s)\n", cstr_nums[i], num, name_of(num),
                 num_strict, name_of(num_strict));
         delete(num);

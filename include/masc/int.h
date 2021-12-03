@@ -3,16 +3,16 @@
 
 #include <stdbool.h>
 
-#include <masc/object.h>
+#include <masc/num_class.h>
 
 
 typedef struct {
-    Object;
+    Num;
     long val;
 } Int;
 
 
-extern const class *IntCls;
+extern const num_class *IntCls;
 
 
 Int *int_new(long val);
@@ -34,11 +34,11 @@ Int *int_add(Int *self, long other);
 #define int_decr(self) int_iadd(self, -1)
 #define int_sub(self, other) int_add(self, -(other))
 
-
 bool int_in_range(Int *self, long start, long stop);
 
 int int_cmp(const Int *self, const Int *other);
 
 size_t int_to_cstr(Int *self, char *cstr, size_t size);
+double int_to_double(Int *self);
 
 #endif /* _MASC_INT_H_ */

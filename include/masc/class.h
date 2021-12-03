@@ -10,7 +10,7 @@
 
 #define delete_objs(obj, ...) __delete_objs__(obj, ##__VA_ARGS__, NULL)
 
-#define isinstance(obj, cls) (class_of(obj) == cls##Cls)
+#define isinstance(obj, cls) (class_of(obj) == (class *)cls##Cls)
 
 
 typedef struct Object Object;

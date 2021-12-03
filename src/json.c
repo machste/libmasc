@@ -5,8 +5,8 @@
 #include <masc/map.h>
 #include <masc/list.h>
 #include <masc/str.h>
-#include <masc/num.h>
 #include <masc/int.h>
+#include <masc/double.h>
 #include <masc/bool.h>
 #include <masc/none.h>
 #include <masc/cstr.h>
@@ -33,7 +33,7 @@ static char *err2str[] = {
 
 static bool is_valid_root(const void *root)
 {
-    const class *rcls[] = {MapCls, ListCls, StrCls, NumCls, IntCls,
+    const class *rcls[] = {MapCls, ListCls, StrCls, IntCls, DoubleCls,
         BoolCls, NoneCls
     };
     const class *root_cls = class_of(root);

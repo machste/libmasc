@@ -1,5 +1,5 @@
 #include <masc/list.h>
-#include <masc/num.h>
+#include <masc/double.h>
 #include <masc/bool.h>
 #include <masc/char.h>
 #include <masc/str.h>
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     print("get_at(0): %O\n", list_get_at(l1, 0));
     // Fill the list with some numbers
     for (double d = 0; d < 10; d++) {
-        Num *n = new(Num, d);
+        Double *n = new(Double, d);
         list_append(l1, n);
     }
     print("l1: %O (len: %zu)\n", l1, len(l1));
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
             list_get_at(l1, 4));
     // Iterate over list
     Iter *itr = new(Iter, l1);
-    for (Num *n = next(itr); n != NULL; n = next(itr)) {
+    for (Double *n = next(itr); n != NULL; n = next(itr)) {
         print("%s: %O (idx: %i)\n", name_of(n), n, iter_get_idx(itr));
     }
     delete(itr);
@@ -34,13 +34,13 @@ int main(int argc, char *argv[])
     list_append(&l2, new(Bool, false));
     list_set_at(&l2, 4, new(Char, '4'));
     print("l2: %O\n", &l2);
-    list_insert_after(&l2, 2, new(Num, 2.5));
-    list_insert_at(&l2, 0, new(Num, 0.5));
+    list_insert_after(&l2, 2, new(Double, 2.5));
+    list_insert_at(&l2, 0, new(Double, 0.5));
     list_insert_at(&l2, -1, new(Bool, true));
     // For each item
     void *obj_cb(void *obj, double *min) {
         print("%s: %O\n", name_of(obj), obj);
-        if (isinstance(obj, Num) && num_get(obj) > *min) {
+        if (isinstance(obj, Double) && double_get(obj) > *min) {
             return obj;
         } else {
             return NULL;

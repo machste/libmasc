@@ -12,11 +12,11 @@ int main(int argc, char *argv[])
 {
     Map *m = new(Map);
     // Fill the map with some values
-    map_set(m, "number", new(Num, 41.0));
+    map_set(m, "number", new(Double, 41.0));
     map_set(m, "string", new(Str, "Hallo Welt"));
-    map_set(m, "number", new(Num, 42.0));
+    map_set(m, "number", new(Int, 42));
     map_set(m, "bool", new(Bool, true));
-    map_set(m, "float", new(Num, 3.333));
+    map_set(m, "float", new(Double, 3.333));
     map_set(m, "values", map_get_values(m));
     print("map: %O, len: %zu\n", m, map_len(m));
     // Iterate over map
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     map_delete_key(m, "values");
     print("map: %O\n", m);
     // Filter map
-    filter(m, LAMBDA(bool, (Object *o){return !isinstance(o, Num);}));
+    filter(m, LAMBDA(bool, (Object *o){return !isinstance(o, Double);}));
     print("map: %O\n", m);
     delete(m);
     return 0;

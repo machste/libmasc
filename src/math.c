@@ -26,9 +26,21 @@ Int *cstr_to_int(const char *cstr, bool strict, char **endptr)
     return i;
 }
 
-void *cstr_to_number(const char *cstr, bool strict, char **endptr)
+Double *cstr_to_double(const char *cstr, bool strict, char **endptr)
 {
-    void *num_obj = NULL;
+    Double *d = NULL;
+    char *_dummy_endptr;
+    if (endptr == NULL) { endptr = &_dummy_endptr; }
+    double value = strtod(cstr, endptr);
+    if ((!strict && *endptr != cstr) || (strict && **endptr == '\0')) {
+        d = double_new(value);
+    }
+    return d;
+}
+
+Num *cstr_to_number(const char *cstr, bool strict, char **endptr)
+{
+    Num *num_obj = NULL;
     char *dend, *lend;
     double d = strtod(cstr, &dend);
     long l = strtol(cstr, &lend, 0);
@@ -38,7 +50,7 @@ void *cstr_to_number(const char *cstr, bool strict, char **endptr)
             num_obj = int_new(l);
             if (endptr != NULL) { *endptr = lend; }
         } else if (!strict || (strict && *dend == '\0')) {
-            num_obj = num_new(d);
+            num_obj = double_new(d);
             if (endptr != NULL) { *endptr = dend; }
         }
     }

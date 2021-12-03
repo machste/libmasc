@@ -34,14 +34,14 @@ int main(int argc, char *argv[])
     filter(a2, (filter_cb)_filter_cb);
     put(a2);
     // Mixed array
-    Array *mixed = new(Array, max(sizeof(Str), sizeof(Num)), 6);
+    Array *mixed = new(Array, max(sizeof(Str), sizeof(Double)), 6);
     // Fill it with strings and nums
     for (int i = 0; i < array_len(mixed); i++) {
         if (i % 2 == 0) {
             Str s = init(Str, "string %i", i);
             array_set_at(mixed, i, &s);
         } else {
-            Num n = init(Num, (double)i);
+            Double n = init(Double, (double)i);
             array_set_at(mixed, i, &n);
         }
     }

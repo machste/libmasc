@@ -9,7 +9,7 @@
 #include <masc/cstr.h>
 #include <masc/datetime.h>
 #include <masc/file.h>
-#include <masc/int.h>
+#include <masc/num.h>
 #include <masc/io.h>
 #include <masc/ip.h>
 #include <masc/iter.h>

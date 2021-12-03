@@ -8,7 +8,7 @@
 #include <masc/net.h>
 #include <masc/cstr.h>
 #include <masc/str.h>
-#include <masc/int.h>
+#include <masc/num.h>
 #include <masc/math.h>
 
 

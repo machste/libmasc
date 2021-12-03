@@ -465,9 +465,14 @@ Str *str_join(void *iterable, const char *sep) {
     return str;
 }
 
-void *str_to_number(Str *self, bool strict)
+Num *str_to_number(Str *self, bool strict)
 {
     return cstr_to_number(self->cstr, strict, NULL);
+}
+
+Int *str_to_int(Str *self, bool strict)
+{
+    return cstr_to_int(self->cstr, strict, NULL);
 }
 
 int str_find(Str *self, const char *cstr)
