@@ -55,7 +55,7 @@ bool int_set_cstr(Int *self, const char *cstr, bool strict)
 {
     char *endptr;
     long value = strtol(cstr, &endptr, 0);
-    if ((!strict && endptr != cstr) || (strict && *endptr == '\0')) {
+    if (endptr != cstr && (!strict || (strict && *endptr == '\0'))) {
         self->val = value;
         return true;
     }

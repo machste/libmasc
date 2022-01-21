@@ -223,7 +223,7 @@ Int *cstr_to_int(const char *cstr, bool strict, char **endptr)
     char *_dummy_endptr;
     if (endptr == NULL) { endptr = &_dummy_endptr; }
     long value = _strtol(cstr, endptr);
-    if ((!strict && *endptr != cstr) || (strict && **endptr == '\0')) {
+    if (*endptr != cstr && (!strict || (strict && **endptr == '\0'))) {
         i = int_new(value);
     }
     return i;
@@ -235,7 +235,7 @@ Double *cstr_to_double(const char *cstr, bool strict, char **endptr)
     char *_dummy_endptr;
     if (endptr == NULL) { endptr = &_dummy_endptr; }
     double value = strtod(cstr, endptr);
-    if ((!strict && *endptr != cstr) || (strict && **endptr == '\0')) {
+    if (*endptr != cstr && (!strict || (strict && **endptr == '\0'))) {
         d = double_new(value);
     }
     return d;

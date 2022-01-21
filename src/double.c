@@ -55,7 +55,7 @@ bool double_set_cstr(Double *self, const char *cstr, bool strict)
 {
     char *endptr;
     double value = strtod(cstr, &endptr);
-    if ((!strict && endptr != cstr) || (strict && *endptr == '\0')) {
+    if (endptr != cstr && (!strict || (strict && *endptr == '\0'))) {
         self->val = value;
         return true;
     }
