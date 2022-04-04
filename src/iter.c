@@ -76,10 +76,17 @@ const char *iter_get_key(Iter *self)
     }
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _IterCls = {
     .name = "Iter",
     .size = sizeof(Iter),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)_init_copy,
     .destroy = (destroy_cb)_destroy,

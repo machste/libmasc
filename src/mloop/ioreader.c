@@ -46,10 +46,17 @@ static void _reader_vinit(MlIoReader *self, va_list va)
     __init__(MlIoCls, self, io, ML_IO_READ, _reader_data_cb, arg);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = MlIoCls;
+}
+
 
 static class _MlIoReaderCls = {
     .name = "MlIoReader",
     .size = sizeof(MlIoReader),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_reader_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

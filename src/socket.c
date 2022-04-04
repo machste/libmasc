@@ -91,10 +91,17 @@ int socket_setsockopt(Socket *self, int level, int optname, void *optval,
     return setsockopt(self->fd, level, optname, optval, optlen);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static io_class _SocketCls = {
     .name = "Socket",
     .size = sizeof(Socket),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)io_init_copy,
     .destroy = (destroy_cb)io_destroy,

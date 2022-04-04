@@ -8,7 +8,7 @@
 
 typedef struct ListNode ListNode;
 
-typedef struct {
+typedef struct List {
     Iterable;
     ListNode *node;
 } List;

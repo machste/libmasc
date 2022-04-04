@@ -73,10 +73,17 @@ size_t io_to_cstr(Io *self, char *cstr, size_t size)
             name_of(self), self->fd, self);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 io_class _IoCls = {
     .name = "Io",
     .size = sizeof(Io),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)io_init_copy,
     .destroy = (destroy_cb)io_destroy,

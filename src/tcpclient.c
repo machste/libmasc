@@ -175,10 +175,17 @@ size_t tcpclient_to_cstr(TcpClient *self, char *cstr, size_t size)
             self->port, self);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 class _TcpClientCls = {
     .name = "TcpClient",
     .size = sizeof(TcpClient),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)tcpclient_destroy,

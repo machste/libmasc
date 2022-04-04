@@ -56,9 +56,17 @@ static void _pkg_destroy(MlIoPkg *self)
     }
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = MlIoReaderCls;
+}
+
+
 static class _MlIoPkgCls = {
     .name = "MlIoPkg",
     .size = sizeof(MlIoPkg),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_pkg_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)_pkg_destroy,

@@ -222,10 +222,17 @@ size_t file_to_cstr(File *self, char *cstr, size_t size)
             name_of(self), self->path, self->mode, state, self);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static io_class _FileCls = {
     .name = "File",
     .size = sizeof(File),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)file_destroy,

@@ -103,9 +103,17 @@ long double_to_int(Double *self)
     return (long)self->val;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
+
 static num_class _DoubleCls = {
     .name = "Double",
     .size = sizeof(Double),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

@@ -66,10 +66,17 @@ size_t bool_to_cstr(Bool *self, char *cstr, size_t size)
     }
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _BoolCls = {
     .name = "Bool",
     .size = sizeof(Bool),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)bool_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

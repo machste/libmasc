@@ -454,10 +454,17 @@ void *argparse_ip(Str *ip_str, Str **err_msg)
     return ip;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _ArgparseCls = {
     .name = "Argparse",
     .size = sizeof(Argparse),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)argparse_vinit,
     .init_copy = (init_copy_cb)_init_copy,
     .destroy = (destroy_cb)argparse_destroy,

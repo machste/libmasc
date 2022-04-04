@@ -234,10 +234,17 @@ static int _get_idx(Array *self, iter_priv *itr)
     return itr->idx;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = IterableCls;
+}
+
 
 static iterable_class _ArrayCls = {
     .name = "Array",
     .size = sizeof(Array),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)array_init_copy,
     .destroy = (destroy_cb)array_destroy,

@@ -62,10 +62,17 @@ size_t char_to_cstr(Char *self, char *cstr, size_t size)
     return 1;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _CharCls = {
     .name = "Char",
     .size = sizeof(Char),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)char_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

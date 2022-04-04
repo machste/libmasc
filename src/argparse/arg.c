@@ -180,10 +180,17 @@ Str *aparg_help(ApArg *self)
     return help;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _ApArgCls = {
     .name = "ApArg",
     .size = sizeof(ApArg),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)_init_copy,
     .destroy = (destroy_cb)_destroy,

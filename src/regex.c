@@ -138,10 +138,17 @@ size_t regex_to_cstr(Regex *self, char *cstr, size_t size)
     return l;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _RegexCls = {
     .name = "Regex",
     .size = sizeof(Regex),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)regex_init_copy,
     .destroy = (destroy_cb)regex_destroy,

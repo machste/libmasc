@@ -143,10 +143,17 @@ size_t tcpserver_to_cstr(TcpServer *self, char *cstr, size_t size)
             self->port, self);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _TcpServerCls = {
     .name = "TcpServer",
     .size = sizeof(TcpServer),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)tcpserver_destroy,
@@ -186,6 +193,8 @@ static size_t _cli_to_cstr(TcpServerCli *self, char *cstr, size_t size)
 static class _TcpServerCliCls = {
     .name = "TcpServerCli",
     .size = sizeof(TcpServerCli),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_cli_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)_cli_destroy,

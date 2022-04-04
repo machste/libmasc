@@ -170,10 +170,17 @@ static void _destroy(LogFacility *self)
     }
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _LogFacilityCls = {
     .name = "LogFacility",
     .size = sizeof(LogFacility),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)_destroy,

@@ -101,10 +101,17 @@ size_t datetime_to_cstr(DateTime *self, char *cstr, size_t size)
     return len;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _DateTimeCls = {
     .name = "DateTime",
     .size = sizeof(DateTime),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)datetime_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

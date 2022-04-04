@@ -31,11 +31,15 @@ typedef struct {
     delete_priv_cb delete_priv;
 } iterable_class;
 
+
+extern const iterable_class *IterableCls;
+
+
 typedef bool (*filter_cb)(Object *obj);
 
-const iterable_class *iterable_class_of(const Iterable *self);
+const iterable_class *iterable_class_of(const Object *self);
 
-size_t len(const Iterable *self);
+size_t len(const Object *self);
 
 void filter(Iterable *self, filter_cb cb);
 

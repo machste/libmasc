@@ -583,10 +583,17 @@ static int _get_idx(Str *self, iter_priv *itr)
     return itr->idx;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = IterableCls;
+}
+
 
 static iterable_class _StrCls = {
     .name = "Str",
     .size = sizeof(Str),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)str_init_copy,
     .destroy = (destroy_cb)str_destroy,

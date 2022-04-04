@@ -3,9 +3,8 @@
 
 #include <stdlib.h>
 
-#include <masc/class.h>
 
-
+typedef struct class class;
 typedef struct Object {
     const class *cls;
 } Object;
@@ -26,5 +25,6 @@ int object_cmp(const Object *self, const Object *other);
 
 size_t object_to_cstr(const Object *self, char *cstr, size_t size);
 
+#include <masc/class.h>
 
 #endif /* _MASC_OBJECT_H_ */

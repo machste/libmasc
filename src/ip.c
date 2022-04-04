@@ -308,10 +308,17 @@ size_t ip_to_cstr(Ip *self, char *cstr, size_t size)
 	return len;
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _IpCls = {
 	.name = "Ip",
 	.size = sizeof(Ip),
+	.super = NULL,
+	.init_class = _init_class,
 	.vinit = (vinit_cb)_vinit,
 	.init_copy = (init_copy_cb)ip_init_copy,
 	.destroy = (destroy_cb)ip_destroy,

@@ -10,10 +10,17 @@ static void _io_vinit(MlIo *self, va_list va)
     self->arg = va_arg(va, void *);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
 
 static class _MlIoCls = {
     .name = "MlIo",
     .size = sizeof(MlIo),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_io_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
     .destroy = (destroy_cb)object_destroy,

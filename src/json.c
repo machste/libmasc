@@ -306,9 +306,17 @@ size_t json_to_cstr(Json *self, char *cstr, size_t size)
     return to_cstr(self->root, cstr, size);
 }
 
+static void _init_class(class *cls)
+{
+    cls->super = ObjectCls;
+}
+
+
 static class _JsonCls = {
     .name = "Json",
     .size = sizeof(Json),
+    .super = NULL,
+    .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)json_init_copy,
     .destroy = (destroy_cb)json_destroy,
