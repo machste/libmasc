@@ -146,14 +146,67 @@ JsonError json_parse(Json *self, const char *cstr)
     return (self->error = json_parse_to_obj(&self->root, cstr));
 }
 
+
+
+
+
 static List *_key_to_tokens(const char *key)
 {
-    Regex re = init(Regex, "[\\.\\[]");
-    List *tokens = regex_split(&re, key, -1);
-    destroy(&re);
-    if (str_is_empty(list_get_at(tokens, 0))) {
-        list_delete_at(tokens, 0);
+    List *tokens = list_new();
+    size_t pos = 0;
+    size_t tok_start = 0;    
+    bool quoted = false;
+    bool indexed = false;
+    bool error = false;
+    Str key_str;
+    str_init_cstr(&key_str, key);
+    str_strip(&key_str);
+    key = key_str.cstr;
+    // Parse tokens
+    while (key[pos] != '\0') {
+        if (key[pos] == '"') {
+            if (indexed) {
+                quoted = !quoted;
+            } else {
+                error = true;
+                break;
+            }
+        } else if (key[pos] == '[' && !quoted) {
+            if (indexed) {
+                error = true;
+                break;
+            }
+            indexed = true;
+            if (pos > tok_start) {
+                list_append(tokens, str_new_slice(&key_str, tok_start, pos));
+            }
+            tok_start = pos + 1;
+        } else if (key[pos] == ']' && !quoted) {
+            if (!indexed) {
+                error = true;
+                break;
+            }
+            indexed = false;
+        } else if (key[pos] == '.' && !quoted) {
+            if (indexed) {
+                error = true;
+                break;
+            }
+            if (pos > tok_start) {
+                list_append(tokens, str_new_slice(&key_str, tok_start, pos));
+            }
+            tok_start = pos + 1;
+        }
+        pos++;
     }
+    if (error || quoted || indexed) {
+        list_delete(tokens);
+        tokens = NULL;
+    } else if (pos > tok_start) {
+        // Save last token
+        list_append(tokens, str_new_slice(&key_str, tok_start, pos));
+    }
+    str_destroy(&key_str);
     return tokens;    
 }
 
@@ -164,7 +217,12 @@ static void *_get_node(void *node, List *tokens)
         if (str_is_empty(tok)) {
             node = NULL;
         } else {
-            if (str_get_at(tok, -1) == ']' && isinstance(node, List)) {
+            if (str_startswith(tok, "\"") && isinstance(node, Map)) {
+                Str stripped_tok;
+                str_init_slice(&stripped_tok, tok, 1, -2);
+                node =  map_get(node, stripped_tok.cstr);
+                str_destroy(&stripped_tok);
+            } else if (str_get_at(tok, -1) == ']' && isinstance(node, List)) {
                 char *endptr;
                 long list_idx = strtol(tok->cstr, &endptr, 10);
                 if (*endptr == ']') {
@@ -185,12 +243,13 @@ static void *_get_node(void *node, List *tokens)
 
 void *json_get_node(Json *self, const char *key)
 {
-    void *node;
+    void *node = self->root;
     List *tokens = _key_to_tokens(key);
+    if (tokens == NULL) {
+        return NULL;
+    }
     if (!list_is_empty(tokens)) {
         node = _get_node(self->root, tokens);
-    } else {
-        node = self->root;
     }
     list_delete(tokens);
     return node;
@@ -200,11 +259,25 @@ bool json_set_node(Json *self, const char *key, void *obj)
 {
     bool ret = true;
     List *tokens = _key_to_tokens(key);
-    if (!list_is_empty(tokens)) {
+    if (tokens == NULL) {
+        return false;
+    }
+    if (list_is_empty(tokens)) {
+        // Replace root node
+        if (self->root != NULL) {
+            delete(self->root);
+        }
+        self->root = obj;
+    } else {
         Str *tok = list_remove_at(tokens, -1); 
         void *prev = _get_node(self->root, tokens);
         if (prev != NULL) {
-            if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
+            if (str_startswith(tok, "\"") && isinstance(prev, Map)) {
+                Str stripped_tok;
+                str_init_slice(&stripped_tok, tok, 1, -2);
+                map_set(prev, stripped_tok.cstr, obj);
+                str_destroy(&stripped_tok);
+            } else if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
                 char *endptr;
                 long list_idx = strtol(tok->cstr, &endptr, 10);
                 if (*endptr == ']') {
@@ -225,11 +298,6 @@ bool json_set_node(Json *self, const char *key, void *obj)
             ret = false;
         }
         delete(tok);
-    } else {
-        if (self->root != NULL) {
-            delete(self->root);
-        }
-        self->root = obj;
     }
     delete(tokens);
     return ret;
@@ -239,11 +307,19 @@ void *json_remove_node(Json *self, const char *key)
 {
     void *node = self->root;
     List *tokens = _key_to_tokens(key);
+    if (tokens == NULL) {
+        return NULL;
+    }
     if (!list_is_empty(tokens)) {
         Str *tok = list_remove_at(tokens, -1); 
         void *prev = _get_node(node, tokens);
         if (prev != NULL) {
-            if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
+            if (str_startswith(tok, "\"") && isinstance(prev, Map)) {
+                Str stripped_tok;
+                str_init_slice(&stripped_tok, tok, 1, -2);
+                node = map_remove_key(prev, stripped_tok.cstr);
+                str_destroy(&stripped_tok);
+            } else if (str_get_at(tok, -1) == ']' && isinstance(prev, List)) {
                 char *endptr;
                 long list_idx = strtol(tok->cstr, &endptr, 10);
                 if (*endptr == ']') {
@@ -261,6 +337,7 @@ void *json_remove_node(Json *self, const char *key)
         }
         delete(tok);
     } else {
+        // Remove root node
         self->root = NULL;
     }
     delete(tokens);
