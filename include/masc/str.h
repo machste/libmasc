@@ -64,6 +64,7 @@ Str *str_fmt(Str *self, const char *fmt, ...);
 Str *str_lower(Str *self);
 Str *str_upper(Str *self);
 Str *str_swapcase(Str *self);
+Str *str_snakecase(Str *self);
 
 Str *str_escape(Str *self);
 Str *str_unescape(Str *self);
@@ -73,6 +74,8 @@ Str *str_reverse(Str *self);
 Str *str_lstrip(Str *self);
 Str *str_rstrip(Str *self);
 Str *str_strip(Str *self);
+
+Str *str_truncate(Str *self, size_t len, const char *end);
 
 Str *str_ljust(Str *self, int width, char fillchar);
 Str *str_rjust(Str *self, int width, char fillchar);

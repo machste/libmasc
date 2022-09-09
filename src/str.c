@@ -308,6 +308,18 @@ Str *str_swapcase(Str *self)
     return self;
 }
 
+Str *str_snakecase(Str *self)
+{
+    for (char *c = self->cstr; *c != '\0'; c++) {
+        if (isalnum(*c)) {
+            *c = tolower(*c);
+        } else {
+            *c = '_';
+        }
+    }
+    return self;
+}
+
 Str *str_escape(Str *self)
 {
     size_t new_size = cstr_escape(NULL, self->cstr, self->size - 1, 0) + 1;
@@ -378,6 +390,24 @@ Str *str_strip(Str *self)
     }
     self->cstr[i] = '\0';
     self->cstr = realloc(self->cstr, self->size);
+    return self;
+}
+
+Str *str_truncate(Str *self, size_t len, const char *end)
+{
+    if (len >= self->size - 1) {
+        return self;
+    }
+    self->size = len + 1;
+    self->cstr = realloc(self->cstr, self->size);
+    size_t end_len = (end != NULL) ? strlen(end) : 0;
+    for (size_t i = 1; i <= end_len; i++) {
+        ssize_t str_idx = len - i;
+        if (str_idx >= 0) {
+            self->cstr[str_idx] = end[end_len - i];
+        }
+    }
+    self->cstr[len] = '\0';
     return self;
 }
 

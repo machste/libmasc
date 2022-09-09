@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     print("lower: %s\n", str_lower(s)->cstr);
     print("upper: %O\n", str_upper(s));
     print("reverse: %O\n", str_reverse(s));
+    print("snakecase: %O\n", str_snakecase(s));
     // Escape string und unescape
     str_copy(s, "Hello\nWorld!\t\"Foo\"\xff\"");
     print("String with special chars:\n%O\n---\n", s);
@@ -33,8 +34,9 @@ int main(int argc, char *argv[])
     print("rstrip: '%O'\n", str_rstrip(s));
     str_copy(s, "   Hello World   ");
     print("strip:  '%O'\n", str_strip(s));
-    print("startswith(\"Ha\"): %d\n", str_startswith(s, "Ha"));
-    print("endswith(\"lt!\"): %d\n", str_endswith(s, "lt!"));
+    print("startswith(\"He\"): %d\n", str_startswith(s, "He"));
+    print("endswith(\"rld\"): %d\n", str_endswith(s, "rdl"));
+    print("truncate(9, \"...\"): %O\n", str_truncate(s, 9, "..."));
     str_delete_at(s, 0);
     print("delete_at(s, 0): %s\n", s->cstr);
     str_delete_at(s, -1);
