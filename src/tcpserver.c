@@ -106,28 +106,34 @@ TcpServerError tcpserver_start(TcpServer *self)
     if (self->err != TCPSERVER_SUCCESS) {
         return self->err;
     }
-    self->sock = new(Socket, AF_INET, SOCK_STREAM, 0);
-    if (!is_open(self->sock)) {
+    if (self->sock != NULL) {
+        self->err = TCPSERVER_SOCKET_IN_USE;
+        return self->err;
+    }
+    Socket *sock = new(Socket, AF_INET, SOCK_STREAM, 0);
+    if (!is_open(sock)) {
         self->err = TCPSERVER_SOCKET_ERR;
         return self->err;
     }
     int o = 1;
-    if (socket_setsockopt(self->sock, SOL_SOCKET, SO_REUSEADDR,
+    if (socket_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
             &o, sizeof(o)) < 0) {
-        delete(self->sock);
+        delete(sock);
         self->err = TCPSERVER_SETSOCKET_ERR;
         return self->err;
     }
-    if (!socket_bind(self->sock, self->ip, self->port)) {
-        delete(self->sock);
+    if (!socket_bind(sock, self->ip, self->port)) {
+        delete(sock);
         self->err = TCPSERVER_BIND_ERR;
         return self->err;
     }
-    if (!socket_listen(self->sock, self->listen_backlog)) {
-        delete(self->sock);
+    if (!socket_listen(sock, self->listen_backlog)) {
+        delete(sock);
         self->err = TCPSERVER_LISTEN_ERR;
         return self->err;
     }
+    // Use socket in the mloop
+    self->sock = sock;
     mloop_io_new(self->sock, ML_IO_READ, _server_cb, self);
     return self->err;
 }
