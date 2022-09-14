@@ -32,6 +32,16 @@ int put_repr(const void *obj)
     return len;
 }
 
+ssize_t put_cstr(const char *cstr)
+{
+    size_t len = strlen(cstr);
+    ssize_t written_len = fwrite(cstr, 1, len, stdout);
+    if (written_len != len) {
+        written_len = -1;
+    }
+    return written_len;
+}
+
 ssize_t print(const char *fmt, ...)
 {
     va_list va;
@@ -365,7 +375,7 @@ ssize_t pretty_print(const void *obj)
     size_t size = pretty_cstr(obj, NULL, 0) + 1;
     char *cstr = malloc(size);
     pretty_cstr(obj, cstr, size);
-    ssize_t len = print(cstr);
+    ssize_t len = put_cstr(cstr);
     free(cstr);
     return len;
 }
