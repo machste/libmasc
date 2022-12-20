@@ -28,6 +28,7 @@
 #include <masc/print.h>
 #include <masc/random.h>
 #include <masc/regex.h>
+#include <masc/serial.h>
 #include <masc/socket.h>
 #include <masc/str.h>
 #include <masc/tcpclient.h>
