@@ -1,6 +1,10 @@
 #include <stdio.h>
 
 #include <masc/io.h>
+#include <masc/math.h>
+
+
+#define IO_READ_BUFFER 128
 
 
 void io_init(Io *self, int fd)
@@ -36,14 +40,52 @@ ssize_t io_read(Io *self, void *data, size_t size)
     return read(self->fd, data, size);
 }
 
-Str *io_readstr(IoBase *self, ssize_t len)
+static Str *_read_until(Io *self, char key, ssize_t len)
 {
-    return NULL;
+    Str *str = NULL;
+    size_t buf_len = (len >= 0) ? max(len, IO_READ_BUFFER) : IO_READ_BUFFER;
+    char buf[buf_len];
+    while(true) {
+        int i;
+        // Read bytes into buffer
+        for (i = 0; i < buf_len - 1; i++) {
+            char c;
+            ssize_t r = read(self->fd, &c, 1);
+            if (r <= 0) {
+                break;
+            } else if (c == key) {
+                buf[i++] = c;
+                break;
+            }
+            buf[i] = c;
+        }
+        buf[i] = '\0';
+        // Check if an error occured on the first read
+        if (i == 0 && str == NULL) {
+            break;
+        } else {
+            if (str == NULL) {
+                str = str_new_cstr(buf);
+            } else {
+                str_append(str, buf);
+            }
+            // Check if str is complete
+            if (i < buf_len - 1 || buf[i - 1] == key) {
+                break;
+            }
+        }
+    }
+    return str;
 }
 
-Str *io_readline(IoBase *self)
+Str *io_readstr(Io *self, ssize_t len)
 {
-    return NULL;
+    return _read_until(self, '\0', len);
+}
+
+Str *io_readline(Io *self)
+{
+    return _read_until(self, '\n', -1);
 }
 
 ssize_t io_write(Io *self, const void *data, size_t size)

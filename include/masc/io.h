@@ -27,8 +27,8 @@ bool io_is_readable(Io *self);
 bool io_is_writable(Io *self);
 
 ssize_t io_read(Io *self, void *data, size_t size);
-Str *io_readstr(IoBase *self, ssize_t len);
-Str *io_readline(IoBase *self);
+Str *io_readstr(Io *self, ssize_t len);
+Str *io_readline(Io *self);
 
 ssize_t io_write(Io *self, const void *data, size_t size);
 
