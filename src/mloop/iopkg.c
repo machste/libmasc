@@ -15,8 +15,8 @@ static void _pkg_data_cb(MlIoPkg *self, void *_data, size_t _size, void *arg)
         size = self->size += _size;
     }
     // Search for complete packets which end with a sentinel
-    size_t i = 0, pos = 0;
-    for (i = 0; i < size; i++) {
+    size_t pos = 0;
+    for (size_t i = 0; i < size; i++) {
         if (data[i] == self->sentinel) {
             if (self->pkg_cb != NULL) {
                 self->pkg_cb(self, data + pos, i - pos + 1, arg);
@@ -26,10 +26,13 @@ static void _pkg_data_cb(MlIoPkg *self, void *_data, size_t _size, void *arg)
         }
     }
     // Copy remaining data to MlFdPkg object for the next round
-    if (pos < i) {
-        self->size = i - pos;
+    if (pos < size) {
+        self->size = size - pos;
         self->data = realloc(self->data, self->size);
-        memcpy(self->data, data + pos, self->size);
+        // It is important to copy from right to left (not like memcpy of musl)
+        for (size_t i = 0; i < self->size; i++) {
+            ((char *)self->data)[i] = data[pos + i];
+        }
     } else {
         free(self->data);
         self->data = NULL;
