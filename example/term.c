@@ -34,7 +34,7 @@ static void *baudrate_check(Str *baudrate_str, Str **err_msg)
 static void *device_check(Str *path, Str **err_msg)
 {
     if (!path_exists(str_cstr(path))) {
-        *err_msg = str_new("device '%s' does not exist!\n", path);
+        *err_msg = str_new("device '%O' does not exist!\n", path);
         return NULL;
     }
     return new_copy(path);
