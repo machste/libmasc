@@ -25,14 +25,26 @@ static void _pkg_data_cb(MlIoPkg *self, void *_data, size_t _size, void *arg)
             pos = i + 1;
         }
     }
-    // Copy remaining data to MlFdPkg object for the next round
-    if (pos < size) {
-        self->size = size - pos;
-        self->data = realloc(self->data, self->size);
-        // It is important to copy from right to left (not like memcpy of musl)
+    // Save the remaining to the MlFdPkg object for the next round
+    //  * Determine size of buffer to save remaining data
+    self->size = size - pos;
+    //  * If buffer does not yet exist ...
+    if (self->data == NULL) {
+        // ... create it and save the remaining data.
+        self->data = malloc(self->size);
+        memcpy(self->data, data, self->size);
+    //  * If no sentinel has been found ...
+    } else if (pos == 0) {
+        // ... do nothing and leave the buffer as it is.
+    //  * If a part of the beginning of the buffer has been consumed ... 
+    } else if (pos < size) {
+        // ... copy from right to left (not like memcpy of musl) ...
         for (size_t i = 0; i < self->size; i++) {
             ((char *)self->data)[i] = data[pos + i];
         }
+        // ... and resize the buffer.
+        self->data = realloc(self->data, self->size);
+    // * Otherwise the buffer is empty and is not needed anymore.
     } else {
         free(self->data);
         self->data = NULL;
