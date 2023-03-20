@@ -25,18 +25,37 @@ static void _pkg_data_cb(MlIoPkg *self, void *_data, size_t _size, void *arg)
             pos = i + 1;
         }
     }
-    // Copy remaining data to MlFdPkg object for the next round
-    if (pos < size) {
-        self->size = size - pos;
-        self->data = realloc(self->data, self->size);
-        // It is important to copy from right to left (not like memcpy of musl)
-        for (size_t i = 0; i < self->size; i++) {
-            ((char *)self->data)[i] = data[pos + i];
+    // Determine the size of the remaining data
+    self->size = size - pos;
+    // All data has been consumed, no buffer is needed.
+    if (self->size == 0) {
+        // If there is a buffer from the previous run ...
+        if (self->data != NULL) {
+            // ... free it and set it to null.
+            free(self->data);
+            self->data = NULL;
         }
     } else {
-        free(self->data);
-        self->data = NULL;
-        self->size = 0;
+        // Save the remaining to the MlFdPkg object for the next run
+        //  * If buffer does not yet exist ...
+        if (self->data == NULL) {
+            // ... create it and save the remaining data.
+            self->data = malloc(self->size);
+            memcpy(self->data, data + pos, self->size);
+        } else {
+            // If buffer exitst and data have been consumed ...
+            if (pos > 0) {
+                // ... copy the remaining data to the beginning of the buffer.
+                // Copy from right to left (not like memcpy of musl) ...
+                for (size_t i = 0; i < self->size; i++) {
+                    ((char *)self->data)[i] = data[pos + i];
+                }
+                // ... and resize the buffer.
+                self->data = realloc(self->data, self->size);
+            } else {
+                // Otherwise leave the buffer as it is.
+            }
+        }
     }
 }
 
