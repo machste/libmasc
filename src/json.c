@@ -146,10 +146,6 @@ JsonError json_parse(Json *self, const char *cstr)
     return (self->error = json_parse_to_obj(&self->root, cstr));
 }
 
-
-
-
-
 static List *_key_to_tokens(const char *key)
 {
     List *tokens = list_new();
