@@ -91,9 +91,11 @@ size_t cstr_unescape(char *dest, const char *src, size_t size)
                 char hex[3];
                 src++;
                 cstr_ncopy(hex, src, sizeof(hex));
-                src += sizeof(hex) - 1;
+                src += sizeof(hex) - 2;
                 char c = strtol(hex, NULL, 16);
                 len += cstr_putc(dest + len, c, max(0, size - len));
+            } else {
+                // Invalid escape sequences will be ignored.
             }
         } else {
             len += cstr_putc(dest + len, *src, max(0, size - len));
