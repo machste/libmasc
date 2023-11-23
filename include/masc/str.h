@@ -68,6 +68,7 @@ Str *str_snakecase(Str *self);
 
 Str *str_escape(Str *self);
 Str *str_unescape(Str *self);
+Str *str_unrepr(Str *self);
 
 Str *str_reverse(Str *self);
 

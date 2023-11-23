@@ -25,14 +25,14 @@ static JsonError expect2err[] = {
 static Str *parse_string(const char *cstr, size_t *pos)
 {
     Str *string = NULL;
-    bool unescape = false;
+    bool unrepr = false;
     *pos = 1; // Skip starting quote
     while (cstr[*pos] != '\"') {
         if (cstr[*pos] == '\\') {
             // Skip escape sequence
             (*pos)++;
-            // Unescape string later
-            unescape = true;
+            // String includes escape sequence "unrepresent" it later
+            unrepr = true;
         } else if (cstr[*pos] == '\0') {
             *pos = 0;
             break;
@@ -41,8 +41,8 @@ static Str *parse_string(const char *cstr, size_t *pos)
     }
     if (*pos > 0) {
         string = str_new_ncopy(cstr + 1, *pos - 1);
-        if (unescape) {
-            str_unescape(string);
+        if (unrepr) {
+            str_unrepr(string);
         }
         // Skip ending quote
         (*pos)++;

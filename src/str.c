@@ -340,6 +340,15 @@ Str *str_unescape(Str *self)
     return self;
 }
 
+Str *str_unrepr(Str *self)
+{
+    char *tmp_str = strdup(self->cstr);
+    self->size = cstr_unrepr(self->cstr, tmp_str, self->size) + 1;
+    free(tmp_str);
+    self->cstr = realloc(self->cstr, self->size);
+    return self;
+}
+
 Str *str_reverse(Str *self)
 {
     size_t half_len = str_len(self) / 2;
@@ -541,11 +550,7 @@ bool str_is_match(Str *self, const char *regex)
 
 size_t str_repr(Str *self, char *cstr, size_t size)
 {
-    long len;
-    len = cstr_putc(cstr, '\"', size);
-    len += cstr_escape(cstr + len, self->cstr, self->size - 1, size);
-    len += cstr_putc(cstr + len, '\"', max(0, size - len));
-    return len;
+    return cstr_repr(cstr, self->cstr, self->size - 1, size);
 }
 
 size_t str_to_cstr(Str *self, char *cstr, size_t size)

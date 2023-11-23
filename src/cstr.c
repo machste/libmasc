@@ -1,11 +1,18 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 
 #include <masc/cstr.h>
 #include <masc/str.h>
 #include <masc/math.h>
 #include <masc/macro.h>
+
+
+struct c2esc_t {
+    char c;
+    char *esc;
+};
 
 
 size_t cstr_putc(char *dest, const char c, size_t size)
@@ -38,15 +45,12 @@ size_t cstr_ncopy(char *dest, const char *src, size_t size)
         dest[i] = src[i];
     }
 }
-
-static struct {
-    char c;
-    char *esc;
-} c2esc[] = { {.c = '\0', .esc = "\\0"}, {.c = '\a', .esc = "\\a"},
-              {.c = '\b', .esc = "\\b"}, {.c = '\f', .esc = "\\a"},
-              {.c = '\n', .esc = "\\n"}, {.c = '\r', .esc = "\\a"},
-              {.c = '\t', .esc = "\\t"}, {.c = '\v', .esc = "\\a"},
-              {.c = '\\', .esc = "\\\\"}, {.c = '\"', .esc = "\\\""}
+struct c2esc_t c2esc[] = {
+    {.c = '\0', .esc = "\\0"}, {.c = '\a', .esc = "\\a"},
+    {.c = '\b', .esc = "\\b"}, {.c = '\f', .esc = "\\f"},
+    {.c = '\n', .esc = "\\n"}, {.c = '\r', .esc = "\\r"},
+    {.c = '\t', .esc = "\\t"}, {.c = '\v', .esc = "\\v"},
+    {.c = '\\', .esc = "\\\\"}, {.c = '"', .esc = "\\\""}
 };
 
 size_t cstr_escape(char *dest, const char *src, size_t src_len, size_t size)
@@ -54,6 +58,12 @@ size_t cstr_escape(char *dest, const char *src, size_t src_len, size_t size)
     long len = 0;
     const char *endptr = src + src_len;
     while (src < endptr) {
+        // If character is printable use it, ...
+        if (isprint(*src)) {
+            len += cstr_putc(dest + len, *src++, max(0, size - len));
+            continue;
+        }
+        // ... otherwise escape the character.
         size_t i;
         for (i = 0; i < ARRAY_LEN(c2esc); i++) {
             if (*src == c2esc[i].c) {
@@ -62,8 +72,6 @@ size_t cstr_escape(char *dest, const char *src, size_t src_len, size_t size)
         }
         if (i < ARRAY_LEN(c2esc)) {
             len += cstr_ncopy(dest + len, c2esc[i].esc, max(0, size - len));
-        } else if (isprint(*src)) {
-            len += cstr_putc(dest + len, *src, max(0, size - len));
         } else {
             len += snprintf(dest + len, max(0, size - len),
                     "\\x%02x", *(unsigned char *)src);
@@ -105,9 +113,150 @@ size_t cstr_unescape(char *dest, const char *src, size_t size)
     return len;
 }
 
+struct c2esc_t c2jesc[] = {
+    {.c = '"', .esc = "\\\""}, {.c = '\\', .esc = "\\\\"},
+    {.c = '\b', .esc = "\\b"}, {.c = '\f', .esc = "\\f"},
+    {.c = '\n', .esc = "\\n"}, {.c = '\r', .esc = "\\r"},
+    {.c = '\t', .esc = "\\t"}
+};
+
+static uint8_t _check_utf8_seq(const char *cstr)
+{
+    uint8_t first_byte = (uint8_t)*cstr;
+    if (first_byte < 0x80) {
+        // Normal ASCII character
+        return 1;
+    }
+    uint8_t len = 0;
+    if (first_byte & 0xC0) {
+        len = 1;
+        while (first_byte & 0x40) {
+            cstr++;
+            if (((uint8_t)*cstr & 0xc0) != 0x80) {
+                // Invalid continuation of UTF-8 sequence!
+                return 0;
+            }
+            first_byte <<= 1;
+            len++;
+        }
+    }
+    return len;
+}
+
+size_t cstr_repr(char *dest, const char *src, size_t src_len, size_t size)
+{
+    long len = 0;
+    const char *endptr = src + src_len;
+    len = cstr_putc(dest, '"', size);
+    while (src < endptr) {
+        // If character is printable use it otherwise ...
+        if (isprint(*src)) {
+            len += cstr_putc(dest + len, *src++, max(0, size - len));
+            continue;
+        }
+        // ... check for well-known escape sequence or ...
+        if ((unsigned char)*src < 0x20) {
+            const char *esc = NULL;
+            for (size_t i = 0; i < ARRAY_LEN(c2jesc); i++) {
+                if (*src == c2jesc[i].c) {
+                    esc = c2jesc[i].esc;
+                    break;
+                }
+            }
+            if (esc != NULL) {
+                len += cstr_ncopy(dest + len, esc, max(0, size - len));
+                src++;
+                continue;
+            }
+        }
+        // ... check for UTF-8 sequence.
+        uint8_t utf8_len = _check_utf8_seq(src);
+        if (utf8_len > 1) {
+            // Copy UTF-8 sequence
+            for (size_t i = 0; i < utf8_len; i++) {
+                len += cstr_putc(dest + len, *src++, max(0, size - len));
+            }
+            continue;
+        }
+        // If nothing applies escape single byte with '\x'.
+        len += snprintf(dest + len, max(0, size - len),
+                "\\x%02x", *(unsigned char *)src++);
+    }
+    len += cstr_putc(dest + len, '"', max(0, size - len));
+    return len;
+}
+
+size_t cstr_unrepr(char *dest, const char *src, size_t size){
+    long len = 0;
+    while (*src != '\0') {
+        if (*src == '"') {
+            // Skip all '"' characters
+        } else if (*src == '\\') {
+            size_t i;
+            src++;
+            for (i = 0; i < ARRAY_LEN(c2jesc); i++) {
+                if (*src == c2jesc[i].esc[1]) {
+                    break;
+                }
+            }
+            if (i < ARRAY_LEN(c2jesc)) {
+                len += cstr_putc(dest + len, c2jesc[i].c, max(0, size - len));
+            } else if (*src == 'u') {
+                char hex[5];
+                src++;
+                cstr_ncopy(hex, src, sizeof(hex));
+                src += sizeof(hex) - 2;
+                uint16_t u = strtol(hex, NULL, 16);
+                if (u < 0x80) {
+                    len += cstr_putc(dest + len, u, max(0, size - len));
+                } else if (u < 0x800) {
+                    uint8_t b1 = 0xc0 | (u >> 6);
+                    len += cstr_putc(dest + len, b1, max(0, size - len));
+                    uint8_t b2 = 0x80 | (u & 0x03f);
+                    len += cstr_putc(dest + len, b2, max(0, size - len));
+                } else {
+                    uint8_t b1 = 0xe0 | (u >> 12);
+                    len += cstr_putc(dest + len, b1, max(0, size - len));
+                    uint8_t b2 = 0x80 | ((u >> 6) & 0x03f);
+                    len += cstr_putc(dest + len, b2, max(0, size - len));
+                    uint8_t b3 = 0x80 | (u & 0x03f);
+                    len += cstr_putc(dest + len, b3, max(0, size - len));
+                }
+            } else if (*src == 'x') {
+                char hex[3];
+                src++;
+                cstr_ncopy(hex, src, sizeof(hex));
+                src += sizeof(hex) - 2;
+                char c = strtol(hex, NULL, 16);
+                len += cstr_putc(dest + len, c, max(0, size - len));
+
+            } else {
+                // Invalid escape sequences will be ignored.
+            }
+        } else {
+            len += cstr_putc(dest + len, *src, max(0, size - len));
+        }
+        src++;
+    }
+    return len;
+
+}
+
 bool cstr_is_empty(const char *cstr)
 {
     return cstr[0] == '\0';
+}
+
+bool cstr_is_utf8(const char *cstr)
+{
+    while (*cstr != '\0') {
+        unsigned char utf8_len = _check_utf8_seq(cstr);
+        if (utf8_len == 0) {
+            return false;
+        }
+        cstr += utf8_len;
+    }
+    return true;
 }
 
 bool cstr_eq(const char *cstr, const char *other)
