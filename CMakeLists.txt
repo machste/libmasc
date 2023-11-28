@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(masc VERSION 1.4.3)
+project(masc VERSION 1.4.4)
 
 include(GNUInstallDirs)
 
