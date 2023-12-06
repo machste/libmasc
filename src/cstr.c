@@ -149,25 +149,23 @@ size_t cstr_repr(char *dest, const char *src, size_t src_len, size_t size)
     const char *endptr = src + src_len;
     len = cstr_putc(dest, '"', size);
     while (src < endptr) {
-        // If character is printable use it otherwise ...
+        // Check for well-known escape sequence or ...
+        const char *esc = NULL;
+        for (size_t i = 0; i < ARRAY_LEN(c2jesc); i++) {
+            if (*src == c2jesc[i].c) {
+                esc = c2jesc[i].esc;
+                break;
+            }
+        }
+        if (esc != NULL) {
+            len += cstr_ncopy(dest + len, esc, max(0, size - len));
+            src++;
+            continue;
+        }
+        // ... check for printable character or ...
         if (isprint(*src)) {
             len += cstr_putc(dest + len, *src++, max(0, size - len));
             continue;
-        }
-        // ... check for well-known escape sequence or ...
-        if ((unsigned char)*src < 0x20) {
-            const char *esc = NULL;
-            for (size_t i = 0; i < ARRAY_LEN(c2jesc); i++) {
-                if (*src == c2jesc[i].c) {
-                    esc = c2jesc[i].esc;
-                    break;
-                }
-            }
-            if (esc != NULL) {
-                len += cstr_ncopy(dest + len, esc, max(0, size - len));
-                src++;
-                continue;
-            }
         }
         // ... check for UTF-8 sequence.
         uint8_t utf8_len = _check_utf8_seq(src);

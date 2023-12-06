@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     char s[256];
     cstr_repr(s, utf8, strlen(utf8), sizeof(s));
     print("repr: %s\n", s);
-    utf8 = "Hallo Stefan Mächler!\n\tBad UTF-8: (\xf0\x9d\x05\xa0)\n\t\\u20ac";
+    utf8 = "Hallo Stefan Mächler!\n\tBad UTF-8: \"\xf0\x9d\x05\xa0\"\n\t\\u20ac";
     utf8_ok = cstr_is_utf8(utf8);
     print("UTF-8: '%s' -> %s\n", utf8, utf8_ok ? "ok" : "err");
     cstr_repr(s, utf8, strlen(utf8), sizeof(s));

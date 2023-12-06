@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     print("reverse: %O\n", str_reverse(s));
     print("snakecase: %O\n", str_snakecase(s));
     // Escape string und unescape
-    str_copy(s, "Hello\nWorld!\t\"Name: \"M" "\xc3\xa4" "chler\"");
+    str_copy(s, "Hello\nWorld!\tName: \"M\xc3\xa4" "chler\"");
     print("String with special chars:\n%O\n---\n", s);
     print("escape: '%O'\n", str_escape(s));
     // Append invalid escape sequence '\z'
