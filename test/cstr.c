@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     cstr_repr(s, utf8, strlen(utf8), sizeof(s));
     print("repr: %s\n", s);
     char unrepr_s[256];
+    memset(unrepr_s, 0, sizeof(unrepr_s));
     cstr_unrepr(unrepr_s, s, sizeof(unrepr_s));
     print("unrepr:\n");
     hexdump(unrepr_s, (strlen(unrepr_s) / 16 + 1) * 16);
