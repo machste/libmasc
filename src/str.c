@@ -376,6 +376,9 @@ Str *str_lstrip(Str *self)
 Str *str_rstrip(Str *self)
 {
     ssize_t i;
+    if (self->size < 2) {
+        return self;
+    }
     for (i = self->size - 2; i >= 0 && isspace(self->cstr[i]); i--);
     self->size = i + 2;
     self->cstr = realloc(self->cstr, self->size);
@@ -390,6 +393,9 @@ Str *str_rstrip(Str *self)
 Str *str_strip(Str *self)
 {
     size_t l, i;
+    if (self->size < 2) {
+        return self;
+    }
     for (l = 0; l < self->size - 1 && isspace(self->cstr[l]); l++);
     ssize_t r;
     for (r = self->size - 2; r > l && isspace(self->cstr[r]); r--);
