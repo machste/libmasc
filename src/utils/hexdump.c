@@ -6,13 +6,17 @@
 
 
 void hexdump(const void *data, size_t size) {
+    hexdump_ind("", data, size);
+}
+
+void hexdump_ind(const char *indent, const void *data, size_t size) {
     char ascii[17];
     size_t i, j;
     ascii[16] = '\0';
     for (i = 0; i < size; i++) {
         uint8_t c = ((uint8_t *)data)[i];
         if (i % 16 == 0) {
-            printf("%p: ", data + i);
+            printf("%s%p: ", indent, data + i);
         }
         printf("%02X ", c);
         if (isprint(c)) {
