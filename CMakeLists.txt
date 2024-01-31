@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 
 project(masc VERSION 1.4.5)
 
@@ -12,6 +12,8 @@ endif(UNIX)
 
 option(DEBUG "Enable Debugging (GDB support and no optimisation)." OFF)
 option(LOG_ENABLED "Use logging for more detailed information." ON)
+option(MEM_TRACER "Enable tracing of memory allocations." OFF)
+option(MEM_TRACER_DBG "Enable debugging of the Momory Tracer." OFF)
 
 if(DEBUG)
 	add_definitions(-O0 -ggdb3 -DDEBUG)
@@ -22,6 +24,16 @@ add_definitions(-Wall -Werror -std=gnu11 -fplan9-extensions)
 
 file(GLOB HEADERS include/masc/*.h)
 file(GLOB_RECURSE SOURCES src/*.c)
+
+if(MEM_TRACER)
+    add_definitions(-DMEM_TRACER)
+    add_link_options(-Wl,-wrap,malloc -Wl,-wrap,calloc -Wl,-wrap,realloc
+            -Wl,-wrap,strdup -Wl,-wrap,strndup -Wl,-wrap,free)
+    list(APPEND SOURCES memtracer/mtrace.c)
+    if(MEM_TRACER_DBG)
+        add_definitions(-DMEM_TRACER_DBG)
+    endif()
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
