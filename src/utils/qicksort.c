@@ -55,7 +55,6 @@ static void cycle(size_t width, unsigned char* ar[], int n)
         return;
     }
 
-    ar[n] = tmp;
     while(width) {
         l = sizeof(tmp) < width ? sizeof(tmp) : width;
         memcpy(ar[n], ar[0], l);
