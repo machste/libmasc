@@ -520,6 +520,11 @@ Int *str_to_int(Str *self, bool strict)
     return cstr_to_int(self->cstr, strict, NULL);
 }
 
+Double *str_to_double(Str *self, bool strict)
+{
+    return cstr_to_double(self->cstr, strict, NULL);
+}
+
 int str_find(Str *self, const char *cstr)
 {
     char *pos = strstr(self->cstr, cstr);
