@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <syslog.h>
 
+#include <masc/str.h>
+
 
 #ifdef LOG_ENABLED
 #define log_debug(x, ...) log_msg(LOG_DEBUG, x, ##__VA_ARGS__)
@@ -29,11 +31,16 @@
 #define log_add_stderr() log_add_stream(stderr)
 
 
+typedef void (*log_msg_cb)(int level, Str *msg, void *arg);
+
+
 extern int log_level;
 
 
 void log_init(int level);
 void log_destroy(void);
+
+const char *log_level_to_cstr(int level);
 
 void log_msg(int level, const char *msg_fmt, ...);
 
@@ -41,6 +48,6 @@ void log_add_stream(FILE *file);
 void log_add_file(const char *path);
 void log_add_console(void);
 void log_add_syslog(const char *ident, int option, int facility);
-
+void log_add_custom(log_msg_cb msg_cb, void *arg);
 
 #endif /* _MASC_LOG_H_ */

@@ -4,7 +4,6 @@
 
 #include <masc/log.h>
 #include <masc/object.h>
-#include <masc/str.h>
 #include <masc/list.h>
 
 
@@ -29,13 +28,17 @@ struct LogFacility {
         FILE *file;
         int fd;
         int syslog_facility;
-        void *custom;
+        struct {
+            log_msg_cb msg_cb;
+            void *arg;
+        } custom;
     } sink;
 };
 
 
 static const class *LogFacilityCls;
 
+static List facilities;
 static const char *level_to_cstr[] = {
     [LOG_EMERG] = "emerg",
     [LOG_ALERT] = "alert",
@@ -48,7 +51,6 @@ static const char *level_to_cstr[] = {
 };
 
 int log_level = LOG_EMERG;
-List facilities;
 
 
 void log_init(int level)
@@ -61,6 +63,16 @@ void log_destroy(void)
 {
     log_level = LOG_EMERG;
     list_destroy(&facilities);
+}
+
+const char *log_level_to_cstr(int level)
+{
+    if (level < 0) {
+        level = 0;
+    } else if (level > LOG_DEBUG) {
+        level = LOG_DEBUG;
+    }
+    return level_to_cstr[level];
 }
 
 struct log_msg {
@@ -147,6 +159,23 @@ void log_add_syslog(const char *ident, int option, int facility)
     f->type = LOG_FACILITY_SYSLOG;
     openlog(ident, option, facility);
     f->write_cb = _syslog_write_cb;
+    list_append(&facilities, f);
+}
+
+static void _custom_write_cb(LogFacility *self, int level, Str *msg)
+{
+    if (self->sink.custom.msg_cb != NULL) {
+        self->sink.custom.msg_cb(level, msg, self->sink.custom.arg);
+    }
+}
+
+void log_add_custom(log_msg_cb msg_cb, void *arg)
+{
+    LogFacility *f = new(LogFacility);
+    f->type = LOG_FACILITY_CUSTOM;
+    f->write_cb = _custom_write_cb;
+    f->sink.custom.msg_cb = msg_cb;
+    f->sink.custom.arg = arg;
     list_append(&facilities, f);
 }
 
