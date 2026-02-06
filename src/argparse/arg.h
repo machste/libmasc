@@ -1,5 +1,5 @@
-#ifndef _MASC_ARGPARSE_ARG_H_
-#define _MASC_ARGPARSE_ARG_H_
+#ifndef _INTERNAL_ARGPARSE_ARG_H_
+#define _INTERNAL_ARGPARSE_ARG_H_
 
 #include <masc/argparse.h>
 
@@ -38,4 +38,4 @@ void aparg_set_default(ApArg *self, const char *dfl);
 Str *aparg_usage(ApArg *self);
 Str *aparg_help(ApArg *self);
 
-#endif /* _MASC_ARGPARSE_ARG_H_ */
+#endif /* _INTERNAL_ARGPARSE_ARG_H_ */
