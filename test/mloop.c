@@ -8,6 +8,19 @@
 #include <masc/print.h>
 
 
+MlEvent *event1 = NULL;
+
+static void sigusr1_cb(int signum)
+{
+    print("sigusr1: signum: %i (%i)\n", signum, getpid());
+    mloop_event_fire(event1);
+}
+
+static void event1_cb(MlEvent *self, void *arg)
+{
+    print("event1: %i ms, %O\n", mloop_run_time(), self);
+}
+
 static void timer1_cb(MlTimer *self, void *arg)
 {
     print("timer1: %i ms, %O\n", mloop_run_time(), self);
@@ -55,7 +68,11 @@ static void proc1_done(MlProc *self, int ret, void *arg)
 
 static int proc2_run(void *arg)
 {
-    usleep(30000);
+    pid_t ppid = getppid();
+    usleep(15000);
+    print("proc2: send SIGUSR1 from PID %i to %i\n", getpid(), ppid);
+    kill(ppid, SIGUSR1);
+    usleep(15000);
     return 42;
 }
 
@@ -82,15 +99,18 @@ static void proc3_done(MlProc *self, int ret, void *arg)
 int main(int argc, char *argv[])
 {
     mloop_init();
+    signal(SIGUSR1, sigusr1_cb);
+    event1 = mloop_event_new(event1_cb, NULL);
     mloop_timer_new(100, timer1_cb, NULL);
     MlTimer *timer2 = mloop_timer_new(10, timer2_cb, NULL);
     mloop_proc_new(proc1_run, proc1_done, &(int){40});
-    mloop_proc_new(proc2_run, proc2_done, NULL);
+    mloop_proc_new(proc2_run, proc2_done, event1);
     MlProc *proc3 = mloop_proc_new(proc3_run, proc3_done, NULL);
     mloop_timer_new(2, timer3_cb, proc3);
     mloop_timer_new(50, timer4_cb, timer2);
     mloop_run();
     print("End: %i ms\n", mloop_run_time());
+    delete(event1);
     delete(proc3);
     mloop_destroy();
     return 0;

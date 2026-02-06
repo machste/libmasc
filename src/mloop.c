@@ -21,8 +21,10 @@ static int poll_fd;
 static bool initialised = false;
 static volatile bool running;
 static volatile bool got_sigchld = false;
+static volatile bool pending_event = false;
 static ml_time_t start_time;
 static List timers;
+static List events;
 static List procs;
 static List mlios;
 
@@ -45,6 +47,7 @@ void mloop_init(void)
     running = false;
     start_time = 0;
     list_init(&timers);
+    list_init(&events);
     list_init(&procs);
     list_init(&mlios);
     poll_fd = epoll_create(32);
@@ -61,6 +64,7 @@ void mloop_destroy(void)
 {
     initialised = false;
     list_destroy(&timers);
+    list_destroy(&events);
     list_destroy(&procs);
     list_destroy(&mlios);
     close(poll_fd);
@@ -145,6 +149,38 @@ void mloop_timer_delete(MlTimer *self)
 {
     mloop_timer_cancle(self);
     delete(self);
+}
+
+MlEvent *mloop_event_new(ml_event_cb cb, void *arg)
+{
+    if (!initialised) {
+        return NULL;
+    }
+    MlEvent *event = new(MlEvent, cb, arg);
+    mloop_event_add(event);
+    return event;
+}
+
+void mloop_event_add(MlEvent *self)
+{
+    if (!initialised) {
+        return;
+    }
+    list_append(&events, self);
+}
+
+bool mloop_event_remove(MlEvent *self)
+{
+    if (!initialised) {
+        return false;
+    }
+    return list_remove(&events, self);
+}
+
+void mloop_event_fire(MlEvent *self)
+{
+    pending_event = true;
+    self->fired = true;
 }
 
 static bool _proc_run(MlProc *self)
@@ -306,9 +342,6 @@ void mloop_io_delete(MlIo *self)
 
 static int _next_timer(void)
 {
-    if (!running) {
-        return 0;
-    }
     if (list_is_empty(&timers)) {
         return -1;
     }
@@ -342,6 +375,23 @@ static void _handle_timers(void)
         }
         timer = list_get_at(&timers, 0);
     }
+}
+
+static void _handle_events(void)
+{
+    if (!pending_event) {
+        return;
+    }
+    Iter itr = init(Iter, &events);
+    for (MlEvent *e = next(&itr); e != NULL && running; e = next(&itr)) {
+        if (e->fired) {
+            e->fired = false;
+            if (e->cb != NULL) {
+                e->cb(e, e->arg);
+            }
+        }
+    }
+    destroy(&itr);
 }
 
 static void _handle_processes(void)
@@ -400,6 +450,14 @@ static void _handle_epoll(int timeout)
     }
 }
 
+static int _calculate_timeout(void)
+{
+    if (!running || pending_event || got_sigchld) {
+        return 0;
+    }
+    return _next_timer();
+}
+
 void mloop_run(void)
 {
     // If the main loop is already running, return immediately
@@ -412,13 +470,15 @@ void mloop_run(void)
     while (running) {
         // Handle expired timers
         _handle_timers();
+        // Handle fired events
+        _handle_events();
         // Handle terminated child processes
         if (got_sigchld) {
             got_sigchld = false;
             _handle_processes();
         }
         // Handle file descriptor events
-        _handle_epoll(_next_timer());
+        _handle_epoll(_calculate_timeout());
     }
 }
 

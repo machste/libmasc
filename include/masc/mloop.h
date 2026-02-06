@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #include <masc/object.h>
+#include <masc/mlevent.h>
 #include <masc/io.h>
 
 
@@ -166,6 +167,33 @@ int mloop_timer_msec(MlTimer *self);
  * @brief Remaining Time of the Timer
  */
 int mloop_timer_remaining(MlTimer *self);
+
+/**
+ * @brief Add a New Event
+ *
+ * Create a new event and add it to the main loop.
+ *
+ * @param cb callback function
+ * @param arg optional argument for the callback function
+ *
+ * @return the added MlEvent object otherwise NULL
+ */
+MlEvent *mloop_event_new(ml_event_cb cb, void *arg);
+
+/**
+ * @brief Add an Event to the Main Loop
+ */
+void mloop_event_add(MlEvent *self);
+
+/**
+ * @brief Remove an Event from the Main Loop
+ */
+bool mloop_event_remove(MlEvent *self);
+
+/**
+ * @brief Fire an Event
+ */
+void mloop_event_fire(MlEvent *self);
 
 /**
  * @brief Add and Run a Process
