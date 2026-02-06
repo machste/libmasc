@@ -93,16 +93,19 @@ int mloop_run_time(void)
 
 MlTimer *mloop_timer_new(int msec, ml_timer_cb cb, void *arg)
 {
-    if (initialised && msec >= 0) {
-        MlTimer *timer = new(MlTimer, cb, arg);
-        mloop_timer_in(timer, msec);
-        return timer;
+    if (!initialised || msec <= 0) {
+        return NULL;
     }
-    return NULL;
+    MlTimer *timer = new(MlTimer, cb, arg);
+    mloop_timer_in(timer, msec);
+    return timer;
 }
 
 static void _timer_set(MlTimer *self, ml_time_t time)
 {
+    if (!initialised) {
+        return;
+    }
     if (self->pending) {
         mloop_timer_cancle(self);
     }
@@ -114,7 +117,7 @@ static void _timer_set(MlTimer *self, ml_time_t time)
 
 void mloop_timer_in(MlTimer *self, int msec)
 {
-    if (initialised && msec >= 0) {
+    if (msec > 0) {
         self->msec = msec;
     }
     _timer_set(self, mloop_time() + self->msec);
@@ -122,7 +125,7 @@ void mloop_timer_in(MlTimer *self, int msec)
 
 void mloop_timer_add(MlTimer *self, int msec)
 {
-    if (initialised && msec >= 0) {
+    if (msec > 0) {
         self->msec = msec;
     }
     _timer_set(self, self->time + self->msec);
