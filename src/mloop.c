@@ -343,7 +343,7 @@ void mloop_io_delete(MlIo *self)
 static int _next_timer(void)
 {
     if (list_is_empty(&timers)) {
-        return -1;
+        return MLOOP_MAX_EPOLL_TIMEOUT;
     }
     int diff = ((MlTimer *)list_get_at(&timers, 0))->time - mloop_time();
     if (diff < 0) {

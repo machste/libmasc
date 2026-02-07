@@ -3,6 +3,8 @@
 
 #define VERSION @PROJECT_VERSION@
 
+#define MLOOP_MAX_EPOLL_TIMEOUT 1000
+
 #cmakedefine LOG_ENABLED
 
 #endif /* _MASC_CONFIG_H_ */
