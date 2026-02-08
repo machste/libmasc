@@ -1,29 +1,42 @@
 #include <stdio.h>
 
-#include "timer.h"
+#include <masc/mloop.h>
 
 
-static void _vinit(MlTimer *self, va_list va)
+MlTimer *ml_timer_new(ml_timer_cb cb, void *arg)
+{
+    MlTimer *self = malloc(sizeof(MlTimer));
+    ml_timer_init(self, cb, arg);
+    return self;
+}
+
+void ml_timer_init(MlTimer *self, ml_timer_cb cb, void *arg)
 {
     object_init(self, MlTimerCls);
     self->pending = false;
     self->msec = 0;
     self->time = 0;
-    self->cb = va_arg(va, ml_timer_cb);
-    self->arg = va_arg(va, void *);
+    self->cb = cb;
+    self->arg = arg;
 }
 
-int mloop_timer_remaining(MlTimer *self)
+static void _vinit(MlTimer *self, va_list va)
 {
-    if (!self->pending) {
-        return -1;
-    }
-    return mloop_time() - self->time;
+    ml_timer_cb cb = va_arg(va, ml_timer_cb);
+    void *arg = va_arg(va, void *);
+    ml_timer_init(self, cb, arg);
 }
 
-int mloop_timer_msec(MlTimer *self)
+void ml_timer_destroy(MlTimer *self)
 {
-    return self->msec;
+    mloop_timer_cancle(self);
+    object_destroy(self);
+}
+
+void ml_timer_delete(MlTimer *self)
+{
+    ml_timer_destroy(self);
+    free(self);
 }
 
 int ml_timer_cmp(MlTimer *self, MlTimer *other)
@@ -54,7 +67,7 @@ static class _MlTimerCls = {
     .init_class = _init_class,
     .vinit = (vinit_cb)_vinit,
     .init_copy = (init_copy_cb)object_init_copy,
-    .destroy = (destroy_cb)object_destroy,
+    .destroy = (destroy_cb)ml_timer_destroy,
     .cmp = (cmp_cb)ml_timer_cmp,
     .repr = (repr_cb)_to_cstr,
     .to_cstr = (to_cstr_cb)_to_cstr,

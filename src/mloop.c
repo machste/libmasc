@@ -10,7 +10,6 @@
 #include <masc/list.h>
 #include <masc/iter.h>
 #include <masc/macro.h>
-#include "mloop/timer.h"
 #include "mloop/proc.h"
 #include "mloop/io.h"
 #include "mloop/ioreader.h"
@@ -105,6 +104,19 @@ MlTimer *mloop_timer_new(int msec, ml_timer_cb cb, void *arg)
     return timer;
 }
 
+int mloop_timer_remaining(MlTimer *self)
+{
+    if (!self->pending) {
+        return -1;
+    }
+    return mloop_time() - self->time;
+}
+
+int mloop_timer_msec(MlTimer *self)
+{
+    return self->msec;
+}
+
 static void _timer_set(MlTimer *self, ml_time_t time)
 {
     if (!initialised) {
@@ -143,12 +155,6 @@ bool mloop_timer_cancle(MlTimer *self)
     list_remove(&timers, self);
     self->pending = false;
     return true;
-}
-
-void mloop_timer_delete(MlTimer *self)
-{
-    mloop_timer_cancle(self);
-    delete(self);
 }
 
 MlEvent *mloop_event_new(ml_event_cb cb, void *arg)

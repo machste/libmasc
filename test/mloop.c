@@ -9,6 +9,7 @@
 
 
 MlEvent *event1 = NULL;
+MlTimer timer5;
 
 static void sigusr1_cb(int signum)
 {
@@ -53,6 +54,12 @@ static void timer4_cb(MlTimer *self, void *timer2)
     mloop_timer_delete(self);
 }
 
+static void timer5_cb(MlTimer *self, void *arg)
+{
+    print("timer5: %i ms, %O\n", mloop_run_time(), self);
+    ml_timer_destroy(&timer5);
+}
+
 static int proc1_run(void *arg)
 {
     int i = random_int(10, *(int *)arg);
@@ -63,6 +70,7 @@ static int proc1_run(void *arg)
 static void proc1_done(MlProc *self, int ret, void *arg)
 {
     print("proc1: %i ms, %O\n", mloop_run_time(), self);
+    ml_timer_in(&timer5, 5);
     mloop_proc_delete(self);
 }
 
@@ -108,6 +116,7 @@ int main(int argc, char *argv[])
     MlProc *proc3 = mloop_proc_new(proc3_run, proc3_done, NULL);
     mloop_timer_new(2, timer3_cb, proc3);
     mloop_timer_new(50, timer4_cb, timer2);
+    ml_timer_init(&timer5, timer5_cb, NULL);
     mloop_run();
     print("End: %i ms\n", mloop_run_time());
     delete(event1);

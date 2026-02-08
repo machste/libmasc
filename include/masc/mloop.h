@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #include <masc/object.h>
+#include <masc/mltimer.h>
 #include <masc/mlevent.h>
 #include <masc/io.h>
 
@@ -23,15 +24,11 @@ typedef enum {
     ML_IO_EOF = 8,
 } ml_io_flag_t;
 
-typedef unsigned long ml_time_t;
-
-typedef struct MlTimer MlTimer;
 typedef struct MlProc MlProc;
 typedef struct MlIo MlIo;
 typedef struct MlIoReader MlIoReader;
 typedef struct MlIoPkg MlIoPkg;
 
-typedef void (*ml_timer_cb)(MlTimer *self, void *arg);
 typedef int (*ml_proc_cb)(void *arg);
 typedef void (*ml_proc_done_cb)(MlProc *self, int ret, void *arg);
 typedef void (*ml_io_cb)(MlIo *self, int fd, ml_io_flag_t events, void *arg);
@@ -39,15 +36,6 @@ typedef void (*ml_io_data_cb)(MlIoReader *self, void *data, size_t size,
                               void *arg);
 typedef void (*ml_io_eof_cb)(MlIoReader *self, void *arg);
 typedef void (*ml_io_pkg_cb)(MlIoPkg *self, void *data, size_t size, void *arg);
-
-struct MlTimer {
-    Object;
-    int msec;
-    ml_time_t time;
-    bool pending;
-    ml_timer_cb cb;
-    void *arg;
-};
 
 struct MlProc {
     Object;
@@ -153,10 +141,8 @@ void mloop_timer_add(MlTimer *self, int msec);
  */
 bool mloop_timer_cancle(MlTimer *self);
 
-/**
- * @brief Delete Timer
- */
-void mloop_timer_delete(MlTimer *self);
+#define mloop_timer_destroy(self) ml_timer_destroy(self)
+#define mloop_timer_delete(self) ml_timer_delete(self)
 
 /**
  * @brief Original Time of the Timer
@@ -189,6 +175,9 @@ void mloop_event_add(MlEvent *self);
  * @brief Remove an Event from the Main Loop
  */
 bool mloop_event_remove(MlEvent *self);
+
+#define mloop_event_destroy(self) ml_event_destroy(self)
+#define mloop_event_delete(self) ml_event_delete(self)
 
 /**
  * @brief Fire an Event
