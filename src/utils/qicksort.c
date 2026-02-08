@@ -57,11 +57,12 @@ static void cycle(size_t width, unsigned char* ar[], int n)
 
     while(width) {
         l = sizeof(tmp) < width ? sizeof(tmp) : width;
-        memcpy(ar[n], ar[0], l);
+        memcpy(tmp, ar[0], l);
         for(i = 0; i < n; i++) {
             memcpy(ar[i], ar[i + 1], l);
             ar[i] += l;
         }
+        memcpy(ar[n - 1], tmp, l);
         width -= l;
     }
 }
