@@ -25,6 +25,7 @@
 #include <masc/num.h>
 #include <masc/object.h>
 #include <masc/path.h>
+#include <masc/pointer.h>
 #include <masc/print.h>
 #include <masc/random.h>
 #include <masc/regex.h>
