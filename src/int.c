@@ -111,7 +111,7 @@ double int_to_double(Int *self)
 
 static void _init_class(class *cls)
 {
-    cls->super = ObjectCls;
+    cls->super = NumCls;
 }
 
 

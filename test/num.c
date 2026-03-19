@@ -36,8 +36,10 @@ int main(int argc, char *argv[])
     for (int i = 0; i < ARRAY_LEN(cstr_nums); i++) {
         Num *num = cstr_to_number(cstr_nums[i], false, NULL);
         Num *num_strict = cstr_to_number(cstr_nums[i], true, NULL);
-        print("%s: %O (%s), strict: %O (%s)\n", cstr_nums[i], num, name_of(num),
-                num_strict, name_of(num_strict));
+        const char *is_strict = num_strict != NULL ? "true" : "false";
+        const char *is_num = isinstance(num_strict, Num) ? "true" : "false";
+        print("cstr: '%s' -> %O (%s), is_strict: %s, is_num: %s\n",
+                cstr_nums[i], num, name_of(num), is_strict, is_num);
         delete(num);
         delete(num_strict);
     }

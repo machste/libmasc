@@ -7,9 +7,7 @@
 #include <masc/object.h>
 
 
-typedef struct Num {
-    Object;
-} Num;
+typedef struct Num Num;
 
 typedef int (*to_int_cb)(Num *self);
 typedef double (*to_double_cb)(Num *self);

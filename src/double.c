@@ -105,7 +105,7 @@ long double_to_int(Double *self)
 
 static void _init_class(class *cls)
 {
-    cls->super = ObjectCls;
+    cls->super = NumCls;
 }
 
 

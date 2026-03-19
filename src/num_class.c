@@ -4,7 +4,7 @@
 const num_class *num_class_of(const Num *self)
 {
     if (self != NULL) {
-        return (num_class *)self->cls;
+        return (num_class *)((Object *)self)->cls;
     } else {
         return NULL;
     }

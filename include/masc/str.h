@@ -5,7 +5,8 @@
 
 #include <masc/iter.h>
 #include <masc/list.h>
-#include <masc/num.h>
+#include <masc/int.h>
+#include <masc/double.h>
 
 
 typedef struct {

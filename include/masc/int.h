@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include <masc/num_class.h>
+#include <masc/num.h>
 
 
 typedef struct {

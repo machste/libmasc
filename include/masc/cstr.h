@@ -5,7 +5,8 @@
 #include <stdbool.h>
 
 #include <masc/list.h>
-#include <masc/num.h>
+#include <masc/int.h>
+#include <masc/double.h>
 
 
 size_t cstr_putc(char *dest, const char c, size_t size);

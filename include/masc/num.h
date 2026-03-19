@@ -1,12 +1,15 @@
 #ifndef _MASC_NUM_H_
 #define _MASC_NUM_H_
 
-#include <masc/int.h>
-#include <masc/double.h>
+#include <masc/num_class.h>
 
 
-long num_to_int(Num *self);
-double num_to_double(Num *self);
+struct Num {
+    Object;
+};
+
+
+extern const num_class *NumCls;
 
 
 #endif /* _MASC_NUM_H_ */
