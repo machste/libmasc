@@ -41,8 +41,8 @@ void socket_delete(Socket *self)
 bool socket_connect(Socket *self, const char *ip, int port)
 {
     struct sockaddr_in addr;
-    addr.sin_family = AF_INET;        
-    addr.sin_port = htons(port);    
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
     if (!inet_aton(ip, &addr.sin_addr)) {
         errno = EINVAL;
         return false;
